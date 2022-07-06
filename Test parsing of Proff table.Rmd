@@ -22,11 +22,15 @@ table_kreft <- read_html("Links/Kreftforeningen.html") |>
   html_node("#inner-frame") |> 
   html_table()
 
+table_kreft2 <- table_kreft
+
 # Removing white space
-table_kreft2$REGNSKAPSPERIODE <- table_kreft$REGNSKAPSPERIODE |> str_squish()
+table_kreft2$REGNSKAPSPERIODE <- table_kreft$REGNSKAPSPERIODE |>
+  str_squish()
 
 # Removing empty column
-table_kreft3 <- table_kreft2 |> select(REGNSKAPSPERIODE:`2002`)
+table_kreft3 <- table_kreft2 |>
+  select(REGNSKAPSPERIODE:`2002`)
 
 # Removing duplicate rows
 table_kreft4 <- table_kreft3 |> filter(!grepl("Lukk", REGNSKAPSPERIODE))
