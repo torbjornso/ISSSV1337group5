@@ -1,0 +1,84 @@
+---
+title: "Test parsing of Proff.no table (Kreftforeningen)"
+author: "Torbjørn Skinnemoen Ottersen"
+date: '2022-07-06'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+NOT a model to be followed...
+
+```{r}
+library(tidyverse)
+library(rvest)
+```
+
+```{r}
+# Reading saved html
+table_kreft <- read_html("Links/Kreftforeningen.html") |> 
+  html_node("#inner-frame") |> 
+  html_table()
+
+# Removing white space
+table_kreft2$REGNSKAPSPERIODE <- table_kreft$REGNSKAPSPERIODE |> str_squish()
+
+# Removing empty column
+table_kreft3 <- table_kreft2 |> select(REGNSKAPSPERIODE:`2002`)
+
+# Removing duplicate rows
+table_kreft4 <- table_kreft3 |> filter(!grepl("Lukk", REGNSKAPSPERIODE))
+
+# tidying data:
+
+table_kreft5 <- table_kreft4 |>
+  pivot_longer(`2021`:`2002`, names_to = "year")
+
+table_kreft6 <- table_kreft5
+
+# Turning "-" into NA
+table_kreft6 <- table_kreft6 |> 
+  mutate(value = na_if(value, "-")) 
+
+# Turning years into integers
+table_kreft6$year <-as.integer(table_kreft6$year)
+
+# Removing unnecessary dates
+table_kreft7 <- table_kreft6 |> 
+  filter(
+    REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+      REGNSKAPSPERIODE != "Valutakode")
+
+# Removing whitespace
+table_kreft8 <- table_kreft7 |> 
+  mutate(
+    value = str_replace_all(value, "\\s", "")
+  )
+
+# Converting to numbers
+table_kreft8 <- table_kreft8 |> 
+  mutate(
+    value = as.numeric(value)
+  )
+
+# Viewing table
+table_kreft8 |>
+  arrange(desc(year))
+
+# Quick visualisation
+table_kreft8 |> 
+  filter(year == 2021) |> 
+  ggplot(aes(REGNSKAPSPERIODE, value)) +
+  geom_col() +
+  coord_flip()
+```
+
+Note that we might have to convert implicitly negative numbers.
+
+
+```{r}
+
+```
+
