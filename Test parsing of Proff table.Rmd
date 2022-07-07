@@ -2,7 +2,9 @@
 title: "Test parsing of Proff.no table (Kreftforeningen)"
 author: "Torbjørn Skinnemoen Ottersen"
 date: '2022-07-06'
-output: html_document
+output: 
+  html_document: 
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
@@ -15,6 +17,8 @@ NOT a model to be followed...
 library(tidyverse)
 library(rvest)
 ```
+
+### Reading in stages
 
 ```{r kreftforeningen}
 # Reading saved html
@@ -88,8 +92,9 @@ table_kreft9 |>
   arrange(desc(year))
 ```
 
-Note that we might have to convert implicitly negative numbers.
+>*Note that we might have to convert implicitly negative numbers.*
 
+### Testing with different file
 
 ```{r opera}
 # Reading saved html
@@ -156,6 +161,8 @@ opera |>
 
 ```
 
+### As a single operation
+
 ```{r single operation}
 opera_test <- read_html("Links/opera.html") |> 
   html_node("#inner-frame") |> 
@@ -192,6 +199,7 @@ opera_test <- read_html("Links/opera.html") |>
 identical(opera, opera_test)
 ```
 
+### Function 1
 
 ```{r function}
 # Function
@@ -234,4 +242,50 @@ opera_func <- read_proff("Links/opera.html")
 #Testing identity
 identical(opera, opera_func)
 ```
+
+### Slightly more robust function
+
+- `file`: name and location of html file
+- `start`: first available year as a string ("")
+- `end`: last available year as a string ("")
+
+```{r function_modified}
+read_proff2 <- function(file, start, end){
+  read_html(file, encoding = "UTF-8") |> 
+  html_node("#inner-frame") |> 
+  html_table() |> 
+  select(
+    REGNSKAPSPERIODE:start) |> 
+  mutate(
+    REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+  ) |> 
+    filter(
+      !row_number() > 176
+    ) |>
+  filter(
+    !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |> 
+  pivot_longer(
+    end:start, names_to = "year") |> 
+  mutate(
+    value = na_if(value, "-"),
+    year = as.integer(year)) |> 
+  filter(
+    REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+      REGNSKAPSPERIODE != "Valutakode") |> 
+  mutate(
+    value = str_replace_all(value, "\\s", "")
+  ) |> 
+  mutate(
+    value = as.numeric(value)
+  ) |> 
+  mutate(
+    value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+  )
+}
+
+read_proff2("Links/Kors.html", "2001", "2020") |> 
+  arrange(desc(year))
+```
+
 
