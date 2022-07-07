@@ -188,8 +188,10 @@ opera_test <- read_html("Links/opera.html") |>
     value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
   )
 
+# Testing identity
 identical(opera, opera_test)
 
+# Function
 read_proff <- function(file){
   read_html(file) |> 
   html_node("#inner-frame") |> 
@@ -226,6 +228,7 @@ read_proff <- function(file){
 
 opera_func <- read_proff("Links/opera.html")
 
+#Testing identity
 identical(opera, opera_func)
 ```
 
