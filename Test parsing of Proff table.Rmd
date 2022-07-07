@@ -22,6 +22,8 @@ table_kreft <- read_html("Links/Kreftforeningen.html") |>
   html_node("#inner-frame") |> 
   html_table()
 
+table_kreft
+
 table_kreft2 <- table_kreft
 
 # Removing white space
@@ -92,72 +94,66 @@ Note that we might have to convert implicitly negative numbers.
 ```{r opera}
 # Reading saved html
 opera <- read_html("Links/opera.html") |> 
-  html_node("#inner-frame") |> 
-  html_table()
-
-opera2 <- opera
+  html_element("#inner-frame") |> 
+  html_table(trim = TRUE)
 
 # Removing white space
-opera2$REGNSKAPSPERIODE <- opera2$REGNSKAPSPERIODE |>
+opera$REGNSKAPSPERIODE <- opera$REGNSKAPSPERIODE |>
   str_squish()
 
 # Removing empty column
-opera3 <- opera2 |>
-  select(REGNSKAPSPERIODE:`2002`)
+opera <- opera |>
+  select(REGNSKAPSPERIODE:`1998`)
+
+# Removing duplicate rows (hack)
+opera <- opera |>
+  filter(
+  !row_number() > 176
+)
 
 # Removing duplicate rows
-opera4 <- opera3 |>
+opera <- opera |>
   filter(!grepl("Lukk", REGNSKAPSPERIODE))
 
 # tidying data:
-
-opera5 <- opera4 |>
-  pivot_longer(`2021`:`2002`, names_to = "year")
-
-opera6 <- opera5
+opera <- opera |>
+  pivot_longer(`2021`:`1998`, names_to = "year")
 
 # Turning "-" into NA
-opera6 <- opera6 |> 
+opera <- opera |> 
   mutate(value = na_if(value, "-")) 
 
 # Turning years into integers
-opera6$year <-as.integer(opera6$year)
+opera$year <-as.integer(opera$year)
 
 # Removing unnecessary dates
-opera7 <- opera6 |> 
+opera <- opera |> 
   filter(
     REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
       REGNSKAPSPERIODE != "Valutakode")
 
 # Removing whitespace
-opera8 <- opera7 |> 
+opera <- opera |> 
   mutate(
     value = str_replace_all(value, "\\s", "")
   )
 
 # Converting to numbers
-opera8 <- opera8 |> 
+opera <- opera |> 
   mutate(
     value = as.numeric(value)
   )
 
 # Removing values that are years
-opera9 <- opera8 |> 
+opera <- opera |> 
   mutate(
     value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
   )
 
 # Viewing table
-opera9 |>
+opera |>
   arrange(desc(year))
 
-opera9 |> 
-  mutate(
-    error = year - value
-  ) |> 
-  filter(error == 1)
-
-# Result: duplicated entries with wrong year
 ```
 
 ```{r single operation}
@@ -165,14 +161,17 @@ opera_test <- read_html("Links/opera.html") |>
   html_node("#inner-frame") |> 
   html_table() |> 
   select(
-    REGNSKAPSPERIODE:`2002`) |> 
+    REGNSKAPSPERIODE:`1998`) |> 
   mutate(
     REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
   ) |> 
   filter(
+  !row_number() > 176
+  ) |> 
+  filter(
     !grepl("Lukk", REGNSKAPSPERIODE)) |> 
   pivot_longer(
-    `2021`:`2002`, names_to = "year") |> 
+    `2021`:`1998`, names_to = "year") |> 
   mutate(
     value = na_if(value, "-"),
     year = as.integer(year)) |> 
@@ -189,19 +188,25 @@ opera_test <- read_html("Links/opera.html") |>
     value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
   )
 
+identical(opera, opera_test)
+
 read_proff <- function(file){
   read_html(file) |> 
   html_node("#inner-frame") |> 
   html_table() |> 
   select(
-    REGNSKAPSPERIODE:`2002`) |> 
+    REGNSKAPSPERIODE:`1998`) |> 
   mutate(
     REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
   ) |> 
+    filter(
+      !row_number() > 176
+    ) |>
   filter(
-    !grepl("Lukk", REGNSKAPSPERIODE)) |> 
+    !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |> 
   pivot_longer(
-    `2021`:`2002`, names_to = "year") |> 
+    `2021`:`1998`, names_to = "year") |> 
   mutate(
     value = na_if(value, "-"),
     year = as.integer(year)) |> 
@@ -219,7 +224,8 @@ read_proff <- function(file){
   )
 }
 
-read_proff("Links/opera.html")
+opera_func <- read_proff("Links/opera.html")
 
+identical(opera, opera_func)
 ```
 
