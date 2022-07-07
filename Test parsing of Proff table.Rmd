@@ -284,8 +284,20 @@ read_proff2 <- function(file, start, end){
   )
 }
 
-read_proff2("Links/Kors.html", "2001", "2020") |> 
+Kors <- read_proff2("Links/Kors.html", "2001", "2020") |> 
   arrange(desc(year))
 ```
 
+### Visualisations
+```{r}
+Kors |> 
+  filter(REGNSKAPSPERIODE == "Årsresultat") |> 
+  ggplot(aes(year, value)) +
+  geom_col()
+
+Kors |> 
+  filter(REGNSKAPSPERIODE == "SUM EGENKAPITAL OG GJELD") |> 
+  ggplot(aes(year, value)) +
+  geom_col()
+```
 
