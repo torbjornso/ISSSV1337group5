@@ -1,5 +1,5 @@
 ---
-title: "Test parsing of Proff.no table (Kreftforeningen)"
+title: "Test parsing of Proff.no table"
 author: "Torbjørn Skinnemoen Ottersen"
 date: '2022-07-06'
 output: 
