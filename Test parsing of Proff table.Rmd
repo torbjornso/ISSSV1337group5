@@ -11,12 +11,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 NOT a model to be followed...
 
-```{r}
+```{r libraries}
 library(tidyverse)
 library(rvest)
 ```
 
-```{r}
+```{r kreftforeningen}
 # Reading saved html
 table_kreft <- read_html("Links/Kreftforeningen.html") |> 
   html_node("#inner-frame") |> 
@@ -190,7 +190,10 @@ opera_test <- read_html("Links/opera.html") |>
 
 # Testing identity
 identical(opera, opera_test)
+```
 
+
+```{r function}
 # Function
 read_proff <- function(file){
   read_html(file) |> 
