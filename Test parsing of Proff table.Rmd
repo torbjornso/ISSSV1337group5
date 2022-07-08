@@ -56,6 +56,13 @@ table_kreft6 <- table_kreft6 |>
 # Turning years into integers
 table_kreft6$year <-as.integer(table_kreft6$year)
 
+# currency
+table_kreft6b <- table_kreft6 |> mutate(
+  valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA))
+
+table_kreft6b |> 
+  fill(valutakode, .direction = "updown")
+
 # Removing unnecessary dates
 table_kreft7 <- table_kreft6 |> 
   filter(
@@ -254,32 +261,38 @@ read_proff2 <- function(file, start, end){
   read_html(file, encoding = "UTF-8") |> 
   html_node("#inner-frame") |> 
   html_table() |> 
-  select(
+  select( # removing empty column
     REGNSKAPSPERIODE:start) |> 
-  mutate(
+  mutate( # removing whitespace
     REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
   ) |> 
-    filter(
+  filter( # removing duplicate table
       !row_number() > 176
     ) |>
-  filter(
+  filter( # removing duplicate rows
     !grepl("Lukk", REGNSKAPSPERIODE)
     ) |> 
-  pivot_longer(
+  pivot_longer( # tidying data
     end:start, names_to = "year") |> 
-  mutate(
+  mutate( # changing to real NAs and turning years into numbers
     value = na_if(value, "-"),
     year = as.integer(year)) |> 
-  filter(
+  mutate( # adding currency column
+      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+    ) |> 
+  fill( # filling the currency column
+    valutakode, .direction = "updown"
+    ) |> 
+  filter( # removing dates and redundant currency
     REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
       REGNSKAPSPERIODE != "Valutakode") |> 
-  mutate(
+  mutate( # removing whitespace in numbers
     value = str_replace_all(value, "\\s", "")
   ) |> 
-  mutate(
+  mutate( # turning into numbers
     value = as.numeric(value)
   ) |> 
-  mutate(
+  mutate( # removing years as values
     value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
   )
 }
@@ -290,7 +303,7 @@ Kors <- read_proff2("Links/Kors.html", "2001", "2020") |>
 Kors
 ```
 
-### Visualisations
+### Basic visualisations
 ```{r}
 Kors |> 
   filter(REGNSKAPSPERIODE == "Årsresultat") |> 
