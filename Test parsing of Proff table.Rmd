@@ -16,6 +16,7 @@ NOT a model to be followed...
 ```{r libraries}
 library(tidyverse)
 library(rvest)
+library(plotly)
 ```
 
 ### Reading in stages
@@ -314,5 +315,13 @@ Kors |>
   filter(REGNSKAPSPERIODE == "SUM EGENKAPITAL OG GJELD") |> 
   ggplot(aes(year, value)) +
   geom_col()
+
+plot <- Kors |> 
+  filter(REGNSKAPSPERIODE == "Årsresultat") |> 
+  ggplot(aes(year, value)) +
+  geom_col()
+
+ggplotly(plot)
 ```
+
 
