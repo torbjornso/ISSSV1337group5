@@ -8,3 +8,5 @@ Case: Oslo Philanthropic Exchange (OPX)
 [Kreftforeningen Årsrapport 2021](https://kreftforeningen.no/content/uploads/2022/06/Kreftforeningens-årsrapport-2021.pdf)
 
 [Lov om årsregnskap (Lovdata Pro)](https://lovdata.no/pro/lov/1998-07-17-56)
+
+[Brønnøysund registre](https://data.norge.no/organizations/974760673)

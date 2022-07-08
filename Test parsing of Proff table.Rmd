@@ -286,6 +286,8 @@ read_proff2 <- function(file, start, end){
 
 Kors <- read_proff2("Links/Kors.html", "2001", "2020") |> 
   arrange(desc(year))
+
+Kors
 ```
 
 ### Visualisations
