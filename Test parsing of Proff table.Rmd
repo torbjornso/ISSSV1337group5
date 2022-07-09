@@ -321,7 +321,23 @@ plot <- Kors |>
   ggplot(aes(year, value)) +
   geom_col()
 
+plot2 <- Kors |> 
+  filter(REGNSKAPSPERIODE == "SUM EGENKAPITAL OG GJELD") |> 
+  ggplot(aes(year, value)) +
+  geom_col()
+
 ggplotly(plot)
+ggplotly(plot2)
+
+Kors |> 
+  filter(REGNSKAPSPERIODE == "Driftsresultat") |> 
+  ggplot(aes(year, value)) +
+  geom_col()
+
+Kors |> 
+  filter(REGNSKAPSPERIODE == "Lønn") |> 
+  ggplot(aes(year, value)) +
+  geom_col()
 ```
 
 
