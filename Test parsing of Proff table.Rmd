@@ -338,6 +338,31 @@ Kors |>
   filter(REGNSKAPSPERIODE == "Lønn") |> 
   ggplot(aes(year, value)) +
   geom_col()
+
+Kors |> 
+  filter(REGNSKAPSPERIODE == "Årsresultat") |> 
+  mutate(
+    profit = ifelse(value >= 0, TRUE, FALSE)
+  ) |> 
+  ggplot(aes(year, value * 1000, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = "", big.mark = ".",
+                                                   decimal.mark = ",")) +
+  theme(legend.position = "none", axis.title.y = element_blank())
+
+Kors |> 
+  filter(REGNSKAPSPERIODE == "Ordinært resultat") |> 
+  mutate(
+    profit = ifelse(value >= 0, TRUE, FALSE)
+  ) |> 
+  ggplot(aes(year, value * 1000, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = "", big.mark = ".",
+                                                   decimal.mark = ",")) +
+  theme(legend.position = "none", axis.title.y = element_blank())
+
+?element
+?theme
 ```
 
 
