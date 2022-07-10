@@ -102,8 +102,14 @@ tabula_kreft_full_long |>
 ## Brønnøysund pdf
 ```{r}
 riksmaal <- pdf_text("Data/20220001922542-1.pdf")
+riksmaal
 riksmaal_split <- strsplit(riksmaal, "\\n")
 riksmaal_split
+riksmaal_tibble <- tibble(riksmaal = riksmaal_split)
+riksmaal2 <- riksmaal_tibble |> unnest_auto(col = 1)
+
+riksmaal2$numbers <- riksmaal2$riksmaal |> str_remove_all("[^0-9]")
+riksmaal2
 ```
 
 
