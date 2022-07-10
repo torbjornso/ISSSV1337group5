@@ -99,3 +99,17 @@ tabula_kreft_full_long |>
   coord_flip()
 ```
 
+## Brønnøysund pdf
+```{r}
+riksmaal <- pdf_text("Data/20220001922542-1.pdf")
+riksmaal_split <- strsplit(riksmaal, "\\n")
+riksmaal_split
+```
+
+
+
+
+
+
+
+
