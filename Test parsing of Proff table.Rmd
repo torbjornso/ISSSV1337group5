@@ -43,6 +43,8 @@ table_kreft3 <- table_kreft2 |>
 table_kreft4 <- table_kreft3 |>
   filter(!grepl("Lukk", REGNSKAPSPERIODE))
 
+
+
 # tidying data:
 
 table_kreft5 <- table_kreft4 |>
