@@ -6,7 +6,7 @@ library(janitor)
 
 
 # Leser inn excel-fil og angir kolonnenavn
-jukseark <- read_excel("./OPXfinans.xlsx", col_names = c("entry", "value"))
+jukseark <- read_excel("./OPXfinansAGA.xlsx", col_names = c("entry", "value"))
  
 
 juksedata <- jukseark %>%
@@ -15,7 +15,7 @@ juksedata <- jukseark %>%
   clean_names() %>% # Lager mer r-vennlige kolonnenavn
   mutate(
     KPI = sum_total_revenue+total_assets/total_liabilities) # Legger til en kolonne med KPI,
-# regnet ut som summen av inntekter delt på liabilities. Detter er bare et eksempel.
+# regnet ut som summen av inntekter delt på liabilities. Dette er bare et eksempel.
 # Jeg vet fortsatt ingenting om å lage KPI.
 
 
