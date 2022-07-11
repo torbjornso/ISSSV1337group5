@@ -33,7 +33,20 @@ test2 <- test |>
   fill(category) |> 
   fill(year) |> 
   filter(!is.na(value))
-test2
+test2 |> 
+  filter()
+
+test2_no_totals <- test2 |> 
+  filter(
+    !str_detect(entry, "^Sum") & !str_detect(entry, "^Total")
+  )
+
+test2_no_totals
+test2_no_totals |>
+  group_by(category) |> 
+  summarise(
+    sum = sum(value)
+  )
 ```
 
 ## Wide file
