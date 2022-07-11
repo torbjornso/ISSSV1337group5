@@ -33,14 +33,16 @@ test
 ```{r}
 test2 <- test |> 
   mutate(
-    category = ifelse(is.na(value), entry, NA)
+    category = ifelse(is.na(value), entry, NA) # transferring headings to category
   ) |> 
-  fill(category) |> 
-  fill(year) |> 
-  filter(!is.na(value))
-test2 |> 
-  filter()
+  fill(category) |> # filling category column
+  fill(year) |> # filling year column
+  filter(!is.na(value)) # removing headings
+test2
+```
 
+### Removing rows containing 'sum' and 'total'
+```{r}
 test2_no_totals <- test2 |> 
   filter(
     !str_detect(entry, "^Sum") & !str_detect(entry, "^Total")
@@ -57,7 +59,9 @@ test2_no_totals |>
 ## Wide file
 
 ```{r}
-read_excel("Data/Book1.xlsx") |> 
+wide_data <- read_excel("Data/Book1.xlsx")
+wide_data
+wide_data |> 
   filter(!is.na(Year))
 ```
 
