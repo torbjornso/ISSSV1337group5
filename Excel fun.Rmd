@@ -60,15 +60,13 @@ test4 <- test2 |>
 
 test4
 
+test4 |> 
+  summarise(
+    sum = sum(`Revenue Private contributions`:`Revenue Other`)
+  ) |> 
+  summarise(
+    test = sum == test4$`Revenue Sum total revenue`)
 ```
 
-## Wide file
-
-```{r}
-wide_data <- read_excel("Data/Book1.xlsx")
-wide_data
-wide_data |> 
-  filter(!is.na(Year))
-```
 
 
