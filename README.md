@@ -12,3 +12,5 @@ Case: Oslo Philanthropic Exchange (OPX)
 [Brønnøysund registre](https://data.norge.no/organizations/974760673)
 
 [Tabula](https://tabula.technology)
+
+[R for Data Science](https://r4ds.had.co.nz/index.html)
