@@ -1,0 +1,72 @@
+---
+title: "Excel fun"
+author: "Torbjørn Skinnemoen Ottersen"
+date: '2022-07-11'
+output: 
+  html_document: 
+    df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries, include=FALSE}
+library(readxl)
+library(tidyverse)
+```
+
+## Reading long file
+
+```{r}
+test <- read_excel("Data/OPXfinans test.xlsx")
+test
+```
+
+## Tidying
+
+```{r}
+test2 <- test |> 
+  mutate(
+    category = ifelse(is.na(value), entry, NA) # transferring headings to category
+  ) |> 
+  fill(category) |> # filling category column
+  fill(year) |> # filling year column
+  filter(!is.na(value)) # removing headings
+test2
+```
+
+### Removing rows containing 'sum' and 'total'
+```{r}
+test2_no_totals <- test2 |> 
+  filter(
+    !str_detect(entry, "^Sum") & !str_detect(entry, "^Total")
+  )
+
+test2_no_totals
+test2_no_totals |>
+  group_by(category) |> 
+  summarise(
+    sum = sum(value)
+  )
+```
+
+## `pivot_wider()`
+```{r}
+test4 <- test2 |>
+  unite(entry, c(category, entry), sep = " ") |> 
+  select(-year) |> 
+  pivot_wider(names_from = entry, values_from = value)
+
+test4
+
+test4 |> 
+  summarise(
+    sum = sum(`Revenue Private contributions`:`Revenue Other`)
+  ) |> 
+  summarise(
+    test = sum == test4$`Revenue Sum total revenue`)
+```
+
+
+
