@@ -5,19 +5,32 @@ library(readxl)
 library(janitor)
 
 
-# Leser inn excel-fil og angir kolonnenavn
-jukseark <- read_excel("./OPXfinansAGA.xlsx", col_names = c("entry", "value"))
- 
 
-juksedata <- jukseark %>%
-  na.omit() %>% # Dropper NA (det som var overskrifter i excel)
-  pivot_wider(names_from = entry, values_from = value) %>% # Gjør om rader til kolonner (variabler)
-  clean_names() %>% # Lager mer r-vennlige kolonnenavn
+
+
+jukseark <- read_excel(
+  "C:/Users/Gusia/Desktop/HACKATHON/ISSSV1337/OPXfinans2.xlsx")
+
+jukseark_1 <- read_excel(
+  "C:/Users/Gusia/Desktop/HACKATHON/ISSSV1337/OPXfinansAGA.xlsx",
+                         col_names = c("entry", "value"))
+  
+
+juksedata <- jukseark %>% 
+  pivot_wider(names_from = Name, values_from = Value) %>% 
+  clean_names() %>% 
+    mutate(
+    KPI_ROI = administrative+fundraising/private_contributions/membership_fees)
+
+
+juksedata_1 <- jukseark_1 %>% 
+  pivot_wider(names_from = entry, values_from = value) %>% 
+  na.omit() %>% 
+  clean_names() %>% 
   mutate(
-    KPI = sum_total_revenue+total_assets/total_liabilities) # Legger til en kolonne med KPI,
-# regnet ut som summen av inntekter delt på liabilities. Dette er bare et eksempel.
-# Jeg vet fortsatt ingenting om å lage KPI.
+    KPI_ROI = administrative+fundraising/private_contributions/membership_fees)
 
+  
 
-
-
+  
+ 
