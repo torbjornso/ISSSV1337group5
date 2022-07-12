@@ -16,11 +16,6 @@ library(readxl)
 library(tidyverse)
 ```
 
-## Long vs. wide data
-![](Images/wideLong1-1.png)
-
-Fra [Statology](https://www.statology.org/long-vs-wide-data/).
-
 ## Reading long file
 
 ```{r}
@@ -54,6 +49,17 @@ test2_no_totals |>
   summarise(
     sum = sum(value)
   )
+```
+
+## `pivot_wider()`
+```{r}
+test4 <- test2 |>
+  unite(entry, c(category, entry), sep = " ") |> 
+  select(-year) |> 
+  pivot_wider(names_from = entry, values_from = value)
+
+test4
+
 ```
 
 ## Wide file
