@@ -56,6 +56,17 @@ test2_no_totals |>
   )
 ```
 
+## `pivot_wider()`
+```{r}
+test4 <- test2 |>
+  unite(entry, c(category, entry), sep = " ") |> 
+  select(-year) |> 
+  pivot_wider(names_from = entry, values_from = value)
+
+test4
+
+```
+
 ## Wide file
 
 ```{r}
