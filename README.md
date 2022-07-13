@@ -14,3 +14,5 @@ Case: Oslo Philanthropic Exchange (OPX)
 [Tabula](https://tabula.technology)
 
 [R for Data Science](https://r4ds.had.co.nz/index.html)
+
+[R for Data Science: Tidy data](https://r4ds.had.co.nz/tidy-data.html).
