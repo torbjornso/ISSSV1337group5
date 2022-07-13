@@ -76,4 +76,41 @@ excel <- clean_names(excel)
 
 ```
 
+## Final final?
+```{r}
+excel <- read_excel("Data/OPXfinans_final.xlsx")
+excel <- clean_names(excel)
+excel_united <- excel |> 
+  unite(entry, c(category, sub_category, name), sep = " ")
+excel_united_wide <- excel_united |> 
+  pivot_wider(names_from = entry, values_from = value)
+excel_wide <- excel |> 
+  pivot_wider(names_from = name, values_from = value) |> 
+  arrange(desc(year))
+excel_wide <- clean_names(excel_wide)
+
+excel_united_wide <- clean_names(excel_united_wide)
+
+excel_united_wide
+united <- excel |> 
+  unite(entry, c(category, name), sep = "_")
+united <- clean_names(united)
+united <- united |> 
+  select(-sub_category)
+united_wide <- united |> 
+  pivot_wider(names_from = entry, values_from = value) |> 
+  clean_names()
+united_wide
+united_wide |> 
+  mutate(
+    KPI = expenses_fundraising / revenue_private_contributions * 100
+  ) |> 
+  select(year, firm, KPI)
+
+united_wide |> 
+  mutate(
+    KPI = (revenue_private_contributions - expenses_fundraising) / revenue_private_contributions * 100
+  ) |> 
+  select(year, firm, KPI)
+```
 
