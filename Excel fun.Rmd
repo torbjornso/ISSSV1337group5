@@ -80,18 +80,8 @@ excel <- clean_names(excel)
 ```{r}
 excel <- read_excel("Data/OPXfinans_final.xlsx")
 excel <- clean_names(excel)
-excel_united <- excel |> 
-  unite(entry, c(category, sub_category, name), sep = " ")
-excel_united_wide <- excel_united |> 
-  pivot_wider(names_from = entry, values_from = value)
-excel_wide <- excel |> 
-  pivot_wider(names_from = name, values_from = value) |> 
-  arrange(desc(year))
-excel_wide <- clean_names(excel_wide)
 
-excel_united_wide <- clean_names(excel_united_wide)
-
-excel_united_wide
+excel
 united <- excel |> 
   unite(entry, c(category, name), sep = "_")
 united <- clean_names(united)
@@ -101,16 +91,39 @@ united_wide <- united |>
   pivot_wider(names_from = entry, values_from = value) |> 
   clean_names()
 united_wide
+
 united_wide |> 
   mutate(
     KPI = expenses_fundraising / revenue_private_contributions * 100
   ) |> 
-  select(year, firm, KPI)
+  select(year, firm, KPI) |> 
+  ggplot(aes(as.factor(year), KPI)) +
+  geom_col()
 
-united_wide |> 
-  mutate(
-    KPI = (revenue_private_contributions - expenses_fundraising) / revenue_private_contributions * 100
+test <- excel
+test$result <- excel |> 
+  group_by(category) |> 
+  summarise(
+    value = sum(value)
   ) |> 
-  select(year, firm, KPI)
+  pivot_wider(names_from = category, values_from = value) |> 
+  summarise(
+    result = Revenue - Expenses
+  ) |>
+  toString() |> 
+  as.numeric()
+test
+
+excel |> 
+  mutate(
+    value = ifelse(category == "Expenses" | category == "Liability", -value, value)
+  )
+excel |> 
+  filter(year == 2020) |> 
+  mutate(
+    total = sum(value)
+  )
+
+excel
 ```
 
