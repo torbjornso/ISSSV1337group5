@@ -1,0 +1,36 @@
+---
+title: "Series 990"
+author: "Torbjørn Skinnemoen Ottersen"
+date: '2022-07-13'
+output: html_document
+---
+
+IRS Series 990 er ekstremt komplisert å analysere, viser det seg. Finnes en R-pakke - med varsel om at steg én tar flere dager... Ikke oppdatert på noen år. Charity Navigator har open-sourced litt av sine data, men ikke nok. Kan se mer på det, men da må vi evnt. bestemme oss for at vi ønsker å se på amerikanske charities også.
+
+Laster opp eksempel på xml-fil (det er veldig mange tusen av dem bare i siste data dump) og index.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(XML)
+library(xml2)
+```
+
+```{r}
+xmlToDataFrame("Data/202100079349100000_public.xml")
+xml <- read_xml("Data/202100079349100000_public.xml")
+xml_name(xml)
+xml_children(xml)
+xml_text(xml)
+```
+
+```{r}
+index <- read_csv("Data/index_2022.csv")
+index
+index |> 
+  filter(grepl("^HUMAN RIGHTS", TAXPAYER_NAME))
+```
+
