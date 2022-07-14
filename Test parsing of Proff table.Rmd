@@ -11,6 +11,8 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+`read_proff6` is the current leading contender...
+
 NOT a model to be followed...
 
 ```{r libraries}
@@ -477,7 +479,7 @@ rodekors
 ```
 
 ## New function - ffs
-```{r}
+```{r read_proff6}
 read_proff6 <- function(file, start, end){
   require(rvest)
   require(tidyverse)
@@ -522,7 +524,7 @@ read_proff6 <- function(file, start, end){
   mutate( # values no longer in 1000
       value = value * 1000
     ) |> 
-  distinct() |> # removing duplicate rows
+  distinct() |> # removing any remaining duplicate rows
   pivot_wider( # pivoting
       names_from = REGNSKAPSPERIODE, values_from = value
       ) |> 
@@ -537,7 +539,7 @@ read_proff6 <- function(file, start, end){
 }
 
 read_proff6("Links/Kors.html", "2001", "2020")
-read_proff6("Links/opera.html", "1998", "2021")
+opera <- read_proff6("Links/opera.html", "1998", "2021")
 read_proff6("Links/Riksmaal.html", "2011", "2021")
 
 ```
@@ -624,5 +626,36 @@ riksmaal |>
   ggplot(aes(year, sum_egenkapital_og_gjeld)) +
   geom_col()
   
+```
+
+## Function 6 visualisations
+```{r}
+ggplot(opera, aes(year, lederlonn)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = "", big.mark = ".",
+                                                   decimal.mark = ","))
+opera |> 
+  group_by(year) |> 
+  transmute(
+    sum = sum(lederlonn, leder_annen_godtgjorelse, na.rm = TRUE)
+  ) |> 
+  ggplot(aes(year, sum)) +
+  geom_col()
+opera
+opera_lonn <- opera |> 
+  group_by(year) |> 
+  transmute(
+    sum = sum(lederlonn, leder_annen_godtgjorelse, na.rm = TRUE) / arsresultat,
+    profit = ifelse(arsresultat >= 0, TRUE, FALSE)
+  ) |> 
+  ggplot(aes(year, sum, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_percent(scale = 1),
+                     name = "Godtgjørelse") +
+  xlab("År") +
+  theme(legend.position = "none")
+
+opera_lonn
+ggplotly(opera_lonn)
 ```
 
