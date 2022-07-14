@@ -17,6 +17,7 @@ NOT a model to be followed...
 library(tidyverse)
 library(rvest)
 library(plotly)
+library(janitor)
 ```
 
 ### Reading in stages
@@ -308,7 +309,7 @@ Kors
 
 ## Improved function
 
-```{r}
+```{r, eval=FALSE}
 read_proff3 <- function(file, start, end){
   read_html(file, encoding = "UTF-8") |> 
   html_node("#inner-frame") |> 
@@ -347,14 +348,123 @@ read_proff3 <- function(file, start, end){
   mutate( # removing years as values
     value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
   ) |> 
-    rename( # more 'tidy' name
-      entry = REGNSKAPSPERIODE
-    ) |> 
+    distinct() |> # removing duplicate rows
+    pivot_wider(
+      names_from = REGNSKAPSPERIODE, values_from = value
+      ) |> 
+    clean_names() |> 
     arrange(desc(year)) # arranging by year
 }
 
 read_proff3("Links/Kors.html", "2001", "2020") # Testing
-read_proff3("Links/Riksmaal.html", "2011", "2021") # Testing
+riksmaal <- read_proff3("Links/Riksmaal.html", "2011", "2021") # Testing
+clean_names(riksmaal)
+riksmaal |> 
+  pivot_wider(names_from = entry, values_from = value) |> 
+  clean_names()
+riksmaal
+```
+
+## Even more improved function
+```{r}
+read_proff4 <- function(file, start, end){
+  read_html(file, encoding = "UTF-8") |> 
+  html_node("#inner-frame") |> 
+  html_table() |> 
+  select( # removing empty column
+    REGNSKAPSPERIODE:all_of(start)) |> # using all_of()
+  mutate( # removing whitespace
+    REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+  ) |> 
+  filter( # removing duplicate rows
+    !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |> 
+  pivot_longer( # tidying data
+    all_of(end):all_of(start), names_to = "year") |> # using all_of()
+  mutate( # changing to real NAs and turning years into numbers
+    value = na_if(value, "-"),
+    year = as.integer(year)) |> 
+  mutate( # adding currency column
+      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+    ) |> 
+  fill( # filling the currency column
+    valutakode, .direction = "updown"
+    ) |> 
+  filter( # removing dates and redundant currency
+    REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+      REGNSKAPSPERIODE != "Valutakode") |> 
+  mutate( # removing whitespace in numbers
+    value = str_replace_all(value, "\\s", "")
+  ) |> 
+  mutate( # turning into numbers
+    value = as.numeric(value)
+  ) |> 
+  mutate( # removing years as values
+    value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+  ) |> 
+    distinct() |> # removing duplicate rows
+    pivot_wider( # pivoting
+      names_from = REGNSKAPSPERIODE, values_from = value
+      ) |> 
+    clean_names() |> # tidying names
+    arrange(desc(year)) # arranging by year
+}
+
+riksmaal2 <- read_proff4("Links/Riksmaal.html", "2011", "2021") # Testing
+
+?require
+```
+
+## Function with libraries
+```{r}
+read_proff5 <- function(file, start, end){
+  require(rvest)
+  require(tidyverse)
+  require(janitor)
+  read_html(file, encoding = "UTF-8") |> 
+  html_node("#inner-frame") |> 
+  html_table() |> 
+  select( # removing empty column
+    REGNSKAPSPERIODE:all_of(start)) |> # using all_of()
+  mutate( # removing whitespace
+    REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+  ) |> 
+  filter( # removing duplicate rows
+    !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |> 
+  pivot_longer( # tidying data
+    all_of(end):all_of(start), names_to = "year") |> # using all_of()
+  mutate( # changing to real NAs and turning years into numbers
+    value = na_if(value, "-"),
+    year = as.integer(year)) |> 
+  mutate( # adding currency column
+      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+    ) |> 
+  fill( # filling the currency column
+    valutakode, .direction = "updown"
+    ) |> 
+  filter( # removing dates and redundant currency
+    REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+      REGNSKAPSPERIODE != "Valutakode") |> 
+  mutate( # removing whitespace in numbers
+    value = str_replace_all(value, "\\s", "")
+  ) |> 
+  mutate( # turning into numbers
+    value = as.numeric(value)
+  ) |> 
+  mutate( # removing years as values
+    value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+  ) |> 
+    distinct() |> # removing duplicate rows
+    pivot_wider( # pivoting
+      names_from = REGNSKAPSPERIODE, values_from = value
+      ) |> 
+    clean_names() |> # tidying names
+    arrange(desc(year)) # arranging by year
+}
+
+read_proff5("Links/Riksmaal.html", "2011", "2021")
+
 ```
 
 
