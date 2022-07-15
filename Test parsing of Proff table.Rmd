@@ -492,7 +492,7 @@ read_proff6 <- function(file, start, end){
   mutate( # removing whitespace
     REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
   ) |> 
-    filter( # removing duplicate table - no idea why it's necessary
+  filter( # removing duplicate table - no idea why it's necessary
       !row_number() > 176
     ) |>
   filter( # removing duplicate rows
@@ -645,10 +645,10 @@ opera
 opera_lonn <- opera |> 
   group_by(year) |> 
   transmute(
-    sum = sum(lederlonn, leder_annen_godtgjorelse, na.rm = TRUE) / arsresultat,
+    percentage = sum(lederlonn, leder_annen_godtgjorelse, na.rm = TRUE) / arsresultat,
     profit = ifelse(arsresultat >= 0, TRUE, FALSE)
   ) |> 
-  ggplot(aes(year, sum, fill = profit)) +
+  ggplot(aes(year, percentage, fill = profit)) +
   geom_col() +
   scale_y_continuous(labels = scales::label_percent(scale = 1),
                      name = "Godtgjørelse") +
