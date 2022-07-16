@@ -538,7 +538,7 @@ read_proff6 <- function(file, start, end){
   arrange(desc(year)) # arranging by year
 }
 
-read_proff6("Links/Kors.html", "2001", "2020")
+rodekors <- read_proff6("Links/Kors.html", "2001", "2020")
 opera <- read_proff6("Links/opera.html", "1998", "2021")
 read_proff6("Links/Riksmaal.html", "2011", "2021")
 
@@ -657,5 +657,12 @@ opera_lonn <- opera |>
 
 opera_lonn
 ggplotly(opera_lonn)
+
+rodekors
+
+ggplot(rodekors, aes(year, sum_egenkapital_og_gjeld)) +
+  geom_col() +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = ""))
 ```
 
