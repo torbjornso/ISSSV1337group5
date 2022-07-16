@@ -80,7 +80,8 @@ excel <- clean_names(excel)
 ```{r}
 excel <- read_excel("Data/OPXfinans_final.xlsx")
 excel <- clean_names(excel)
-excel
+excel |> 
+  filter(year == 2020)
 
 excel2
 
@@ -142,6 +143,7 @@ read_excel("Data/OPXfinans_final.xlsx") |>
 ```{r}
 widen_excel <- function(file){
   require(readxl)
+  require(tidyverse)
   read_excel(file) |> 
     mutate(
       Value = Value * 1000
@@ -154,7 +156,13 @@ widen_excel <- function(file){
   clean_names()
 }
 
+View(wide)
 
-widen_excel("Data/OPXfinans_final.xlsx")
+wide <- widen_excel("Data/OPXfinans_final.xlsx")
+
+wide$expenses_fundraising / (wide$revenue_private_contributions + wide$revenue_public_grants + wide$revenue_membership_fees)
+
+wide$expenses_administrative / wide$expenses_program_services * 100
+
 ```
 
