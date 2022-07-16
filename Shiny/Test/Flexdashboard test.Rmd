@@ -11,6 +11,7 @@ runtime: shiny
 if (!require("pacman")) install.packages("pacman"); library(pacman)
 p_load(shiny, tidyverse, scales, rvest, janitor, plotly, readxl, flexdashboard)
 
+# Function to read html
 read_proff6 <- function(file, start, end){
     read_html(file, encoding = "UTF-8") |> 
       html_node("#inner-frame") |> 
@@ -66,8 +67,8 @@ read_proff6 <- function(file, start, end){
       arrange(desc(year)) # arranging by year
   }
   
-  # Function to read Excel file
-  widen_excel <- function(file){
+# Function to read Excel file
+widen_excel <- function(file){
     read_excel(file) |> 
       mutate(
         Value = Value * 1000
@@ -78,7 +79,7 @@ read_proff6 <- function(file, start, end){
       select(-`Sub-category`) |> 
       pivot_wider(names_from = entry, values_from = Value) |> 
       clean_names()
-  }
+}
 ```
 
 Column {.sidebar}
