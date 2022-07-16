@@ -2,7 +2,7 @@
 
 **Please don't rename or move any files.**
 
-Jeg tror Shiny fungerer bedre enn flexdashboard for oss.
+Jeg er usikker på om Shinydashboard eller flexdashboard (med Shiny) er best.
 
 ## Links
 
