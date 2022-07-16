@@ -156,7 +156,7 @@ widen_excel <- function(file){
   clean_names()
 }
 
-View(wide)
+# View(wide)
 
 wide <- widen_excel("Data/OPXfinans_final.xlsx")
 
