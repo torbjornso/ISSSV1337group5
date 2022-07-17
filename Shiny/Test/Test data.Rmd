@@ -16,7 +16,7 @@ Testing ideas for the Shiny app/dashboard.
 # Background
 
 ## Libraries
-```{r}
+```{r libraries}
 if (!require("pacman")) install.packages("pacman"); library(pacman)
 p_load(shiny,tidyverse, scales, rvest, janitor, plotly, readxl, MetBrewer)
 ```
@@ -204,7 +204,8 @@ if (length(unique(kreft_html$valutakode)) == 1) {
   scale_y_continuous(
     labels = scales::label_dollar(prefix = "? ")) +
   scale_fill_met_d("Troy") +
-  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation")
+  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
+       subtitle = "Note: not all values are denominated in the same currency")
 }
 
 # Creating data frame with multiple currencies
