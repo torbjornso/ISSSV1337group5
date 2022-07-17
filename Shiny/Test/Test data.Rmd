@@ -11,7 +11,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Testing ideas for the Shiny app.
+Testing ideas for the Shiny app/dashboard.
 
 # Background
 
@@ -119,6 +119,19 @@ kreft_excel
 
 # Testing
 
+## Data manipulation
+```{r}
+kreft_excel |> 
+  filter(year == max(year))
+
+kreft_html |> 
+  filter(year == max(kreft_excel$year))
+
+kreft_excel |> 
+  left_join(kreft_html, by = "year")
+```
+
+
 ## Visualisation ideas
 
 ### CEO compensation
@@ -163,6 +176,16 @@ arsresultat_p <- kreft_html |>
   scale_y_continuous(labels = scales::label_dollar(prefix = ""))
 ggplotly(arsresultat_p)
 
+arsresultat_p_met <- kreft_html |> 
+  mutate(
+    profit = ifelse(arsresultat >= 0, TRUE, FALSE)
+  ) |> 
+  ggplot(aes(year, arsresultat, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = "")) +
+  scale_fill_met_d("Tsimshian")
+ggplotly(arsresultat_p_met)
+
 ordinaert_p <- kreft_html |> 
   mutate(
     profit = ifelse(ordinaert_resultat >= 0, TRUE, FALSE)
@@ -172,6 +195,17 @@ ordinaert_p <- kreft_html |>
   scale_y_continuous(labels = scales::label_dollar(prefix = "")) +
   theme(legend.position = "none")
 ggplotly(ordinaert_p)
+
+ordinaert_p_met <- kreft_html |> 
+  mutate(
+    profit = ifelse(ordinaert_resultat >= 0, TRUE, FALSE)
+  ) |> 
+  ggplot(aes(year, ordinaert_resultat, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = "")) +
+  theme(legend.position = "none") +
+  scale_fill_met_d("Tsimshian")
+ggplotly(ordinaert_p_met)
 ```
 
 
