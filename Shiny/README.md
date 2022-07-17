@@ -21,3 +21,9 @@ Passende test-data ligger i Data-mappen i Test-mappen. Prøv gjerne med andre ek
 ### Flexdashboard
 
 [Flexdashboard](https://pkgs.rstudio.com/flexdashboard/index.html)
+
+## Mockup
+
+Horribly drawn...
+
+![](Images/Mockup.png)
