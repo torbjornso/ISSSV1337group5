@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Charity analysis"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
@@ -80,26 +80,8 @@ widen_excel <- function(file){
       pivot_wider(names_from = entry, values_from = Value) |> 
       clean_names()
 }
-```
 
-Column {.sidebar}
------------------------------------------------------------------------
-
-### File upload
-
-```{r}
-# HTML
-fileInput("html", label = "Upload html file", accept = ".html")
-
-numericInput("start", label = "Start", value = 2002)
-numericInput("end", label = "End", value = 2021)
-
-# Excel
-fileInput("excel", "Upload Excel file", accept = ".xlsx")
-
-# Button
-actionButton("click", "Analyse")
-
+# Shiny actions
 observeEvent(input$click, { # wait for button click
     
     # creating data frame from html file
@@ -133,16 +115,37 @@ observeEvent(input$click, { # wait for button click
   })
 ```
 
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+### File upload
+
+```{r}
+# HTML
+fileInput("html", label = "Upload html file", accept = ".html")
+
+numericInput("start", label = "Start", value = 2002)
+numericInput("end", label = "End", value = 2021)
+
+# Excel
+fileInput("excel", "Upload Excel file", accept = ".xlsx")
+
+# Button
+actionButton("click", "Analyse")
+
+
+```
+
 Column 
 -----------------------------------------------------------------------
 
-### Chart B
+### Plotly
 
 ```{r}
 plotlyOutput("plotlyplot")
 ```
 
-### Chart C
+### ggplot
 ```{r}
 plotOutput("htmlplot")
 ```
