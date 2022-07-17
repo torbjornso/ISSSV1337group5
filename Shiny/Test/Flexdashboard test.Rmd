@@ -95,6 +95,30 @@ observeEvent(input$click, { # wait for button click
       widen_excel(input$excel$datapath)
     })
     
+    # Creating value box
+    KPI_admin <- reactive({exceldata() |> 
+           mutate(
+    KPI_admin =
+      str_c(
+        format(
+        (expenses_administrative / expenses_program_services *100), digits = 3
+        ), "%"
+        )
+  ) |> 
+  filter(year == max(year)) |> 
+  select(KPI_admin) |> 
+  str_flatten()
+    })
+    
+    output$KPI_box <- renderValueBox({
+      valueBox(
+        value = KPI_admin(),
+        caption = "admin",
+        color = "info",
+        icon = "fa-random"
+      )
+    })
+    
     # creating plots
     
     # ggplot as reactive function
@@ -193,5 +217,10 @@ plotOutput("htmlplot")
 ### Transparency
 ```{r}
 plotlyOutput("fancyplot")
+```
+
+### KPI
+```{r}
+valueBoxOutput("KPI_box")
 ```
 

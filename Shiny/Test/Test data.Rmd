@@ -373,6 +373,25 @@ kreft_excel |>
         )
   ) |> 
   select(year, KPI_admin)
+
+kreft_excel |> 
+  mutate(
+    KPI_admin =
+      str_c(
+        format(
+        (expenses_administrative / expenses_program_services *100), digits = 3
+        ), "%"
+        )
+  ) |> 
+  filter(year == max(year)) |> 
+  select(KPI_admin) |> 
+  str_flatten()
+
+kreft_excel |> mutate(
+            KPI_admin =
+              expenses_administrative / expenses_program_services *100) |> 
+           filter(year == max(year)) |> 
+          select(KPI_admin)
 ```
 
 ### Overhead
