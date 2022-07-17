@@ -134,7 +134,7 @@ kreft_excel |>
 
 ## Visualisation ideas
 
-### CEO compensation
+### CEO compensation and currency testing
 ```{r}
 compensation_p <- kreft_html |> 
   group_by(year) |> 
@@ -169,6 +169,7 @@ ggplotly(compensation_p2)
 # if else structure to check for uniform currency code?
 length(unique(kreft_html$valutakode)) == 1
 
+# Testing with uniform currency
 if (length(unique(kreft_html$valutakode)) == 1) {
   kreft_html |> 
   select(
@@ -205,11 +206,14 @@ if (length(unique(kreft_html$valutakode)) == 1) {
   scale_fill_met_d("Troy") +
   labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation")
 }
+
+# Creating data frame with multiple currencies
 currency_test <- kreft_html |> 
   mutate(
     valutakode = ifelse(year == 2019, "USD", valutakode)
   )
 
+# Testing new data frame
 if (length(unique(currency_test$valutakode)) == 1) {
   currency_test |> 
   select(
