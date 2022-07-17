@@ -9,7 +9,7 @@ runtime: shiny
 
 ```{r setup, include=FALSE}
 if (!require("pacman")) install.packages("pacman"); library(pacman)
-p_load(shiny, tidyverse, scales, rvest, janitor, plotly, readxl, flexdashboard)
+p_load(shiny, tidyverse, scales, rvest, janitor, plotly, readxl, flexdashboard, MetBrewer)
 
 # Function to read html
 read_proff6 <- function(file, start, end){
@@ -109,16 +109,56 @@ observeEvent(input$click, { # wait for button click
     output$plotlyplot <- renderPlotly(
       ggplotly(lonnplot())
     )
+    
+    # Creating ggplot
     output$htmlplot <- renderPlot(
       lonnplot()
     )
+    
+    # Creating fancier plot
+    fancyplot <- reactive(
+      htmldata() |> 
+        select(
+    year, lederlonn, leder_annen_godtgjorelse
+  ) |> 
+  rename(
+    Year = year,
+    Salary = lederlonn,
+    `Other compensation` = leder_annen_godtgjorelse
+  ) |> 
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+  ggplot(aes(Year, value, fill = Compensation)) +
+  geom_col() +
+  scale_y_continuous(
+    labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
+                    label_dollar(prefix = str_c(htmldata()$valutakode[1], " ")),
+                    label_dollar(prefix = "? "))
+      ) +
+  scale_fill_met_d("Troy") +
+  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
+       subtitle = ifelse(length(unique(htmldata()$valutakode)) == 1,
+                         "",
+                         "Note: not all values are denominated in the same currency"))
+    )
+    
+    output$fancyplot <- renderPlotly(
+      ggplotly(fancyplot())
+    )
   })
+
 ```
 
 Column {.sidebar}
 -----------------------------------------------------------------------
 
 ### File upload
+
+Please upload an html copy of annual accounts from [Proff.no](https://www.proff.no) and enter the start and end years from that table.
+
+Then upload an Excel file in the set format.
+
+Click 'Analyse' to analyse the data.
+
 
 ```{r}
 # HTML
@@ -148,5 +188,10 @@ plotlyOutput("plotlyplot")
 ### ggplot
 ```{r}
 plotOutput("htmlplot")
+```
+
+### Transparency
+```{r}
+plotlyOutput("fancyplot")
 ```
 

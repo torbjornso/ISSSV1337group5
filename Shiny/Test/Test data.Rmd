@@ -252,6 +252,58 @@ if (length(unique(currency_test$valutakode)) == 1) {
   labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
        subtitle = "Note: not all values are denominated in the same currency")
 }
+
+# Could probably be done with two internal ifelse() functions
+
+# ifelse() version
+
+# Testing
+currency_test |> 
+  select(
+    year, lederlonn, leder_annen_godtgjorelse
+  ) |> 
+  rename(
+    Year = year,
+    Salary = lederlonn,
+    `Other compensation` = leder_annen_godtgjorelse
+  ) |> 
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+  ggplot(aes(Year, value, fill = Compensation)) +
+  geom_col() +
+  scale_y_continuous(
+    labels = ifelse(length(unique(currency_test$valutakode)) == 1,
+                    label_dollar(prefix = str_c(kreft_html$valutakode[1], " ")),
+                    label_dollar(prefix = "? "))
+      ) +
+  scale_fill_met_d("Troy") +
+  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
+       subtitle = ifelse(length(unique(currency_test$valutakode)) == 1,
+                         element_blank(),
+                         "Note: not all values are denominated in the same currency"))
+
+# Original
+kreft_html |> 
+  select(
+    year, lederlonn, leder_annen_godtgjorelse
+  ) |> 
+  rename(
+    Year = year,
+    Salary = lederlonn,
+    `Other compensation` = leder_annen_godtgjorelse
+  ) |> 
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+  ggplot(aes(Year, value, fill = Compensation)) +
+  geom_col() +
+  scale_y_continuous(
+    labels = ifelse(length(unique(kreft_html$valutakode)) == 1,
+                    label_dollar(prefix = str_c(kreft_html$valutakode[1], " ")),
+                    label_dollar(prefix = "? "))
+      ) +
+  scale_fill_met_d("Troy") +
+  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
+       subtitle = ifelse(length(unique(kreft_html$valutakode)) == 1,
+                         "",
+                         "Note: not all values are denominated in the same currency"))
 ```
 
 ### Result
