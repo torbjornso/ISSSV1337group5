@@ -159,10 +159,94 @@ compensation_p2 <- kreft_html |>
   pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
   ggplot(aes(Year, value, fill = Compensation)) +
   geom_col() +
-  scale_y_continuous(labels = scales::label_dollar(prefix = "")) +
+  scale_y_continuous(
+    labels = scales::label_dollar(prefix =
+                                    str_c(kreft_html$valutakode[1], " "))) +
   scale_fill_met_d("Troy") +
   labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation")
 ggplotly(compensation_p2)
+
+# if else structure to check for uniform currency code?
+length(unique(kreft_html$valutakode)) == 1
+
+if (length(unique(kreft_html$valutakode)) == 1) {
+  kreft_html |> 
+  select(
+    year, lederlonn, leder_annen_godtgjorelse
+  ) |> 
+  rename(
+    Year = year,
+    Salary = lederlonn,
+    `Other compensation` = leder_annen_godtgjorelse
+  ) |> 
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+  ggplot(aes(Year, value, fill = Compensation)) +
+  geom_col() +
+  scale_y_continuous(
+    labels = scales::label_dollar(prefix =
+                                    str_c(kreft_html$valutakode[1], " "))) +
+  scale_fill_met_d("Troy") +
+  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation")
+} else {
+    kreft_html |> 
+  select(
+    year, lederlonn, leder_annen_godtgjorelse
+  ) |> 
+  rename(
+    Year = year,
+    Salary = lederlonn,
+    `Other compensation` = leder_annen_godtgjorelse
+  ) |> 
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+  ggplot(aes(Year, value, fill = Compensation)) +
+  geom_col() +
+  scale_y_continuous(
+    labels = scales::label_dollar(prefix = "? ")) +
+  scale_fill_met_d("Troy") +
+  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation")
+}
+currency_test <- kreft_html |> 
+  mutate(
+    valutakode = ifelse(year == 2019, "USD", valutakode)
+  )
+
+if (length(unique(currency_test$valutakode)) == 1) {
+  currency_test |> 
+  select(
+    year, lederlonn, leder_annen_godtgjorelse
+  ) |> 
+  rename(
+    Year = year,
+    Salary = lederlonn,
+    `Other compensation` = leder_annen_godtgjorelse
+  ) |> 
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+  ggplot(aes(Year, value, fill = Compensation)) +
+  geom_col() +
+  scale_y_continuous(
+    labels = scales::label_dollar(prefix =
+                                    str_c(kreft_html$valutakode[1], " "))) +
+  scale_fill_met_d("Troy") +
+  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation")
+} else {
+    currency_test |> 
+  select(
+    year, lederlonn, leder_annen_godtgjorelse
+  ) |> 
+  rename(
+    Year = year,
+    Salary = lederlonn,
+    `Other compensation` = leder_annen_godtgjorelse
+  ) |> 
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+  ggplot(aes(Year, value, fill = Compensation)) +
+  geom_col() +
+  scale_y_continuous(
+    labels = scales::label_dollar(prefix = "? ")) +
+  scale_fill_met_d("Troy") +
+  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
+       subtitle = "Note: not all values are denominated in the same currency")
+}
 ```
 
 ### Result
