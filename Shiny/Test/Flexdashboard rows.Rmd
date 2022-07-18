@@ -91,7 +91,7 @@ Row
 
 ### Transparency
 ```{r}
-plotlyOutput("fancyplot")
+plotlyOutput("fancyplotly")
 ```
 
 Details
@@ -154,7 +154,7 @@ observeEvent(input$click, { # wait for button click
     output$KPI_box <- renderValueBox({
       valueBox(
         value = KPI_admin(),
-        caption = "admin",
+        caption = "primary",
         color = "primary",
         icon = "fa-random"
       )
@@ -189,9 +189,9 @@ observeEvent(input$click, { # wait for button click
       output$KPI_box5 <- renderValueBox({
       valueBox(
         value = KPI_admin(),
-        caption = "admin",
+        caption = "warning",
         color = "warning",
-        icon = "fal fa-abacus"
+        icon = "fas fa-battery-empty"
 )})
   
     
@@ -244,14 +244,10 @@ observeEvent(input$click, { # wait for button click
 
   # Creating fancy plotlyplot
     fancyplotly <- reactive({
-      ggplotly(fancyplot(), layout(
-                                legend = list(
-                                orientation = 'h', x = 0.3, y = -0.1, 
-                                title = list(text = 'My legend title'))))
+      ggplotly(fancyplot())
     })
-    
-    output$fancyplot <- renderPlotly(
-      fancyplot()
+    output$fancyplotly <- renderPlotly(
+      fancyplotly()
     )
 })
 

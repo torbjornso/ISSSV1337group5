@@ -13,7 +13,7 @@ p_load(fontawesome, tidyverse)
 
 [Fontawesome v5](https://fontawesome.com/v5/search?m=free)
 
-Flexdashboard har ikke alle Fontawesome-ikonene. Pakken fontawesome har opp til ca. v. 5.15.3. Det enkleste for å finne ikoner er kanskje å bruke linken over og så sjekke navnet mot `fontawesome` ved å bruke koden nedenfor(`df$icon_names_full |> str_view_all("søketerm"), match = TRUE`)
+Flexdashboard har ikke alle Fontawesome-ikonene. Pakken `fontawesome` har opp til ca. v. 5.15.3. Det enkleste for å finne ikoner er kanskje å bruke linken over og så sjekke navnet mot `fontawesome` ved å bruke koden nedenfor(`df$icon_names_full |> str_view_all("søketerm"), match = TRUE`)
 
 Lag evnt. en kopi av Flexdashboard rows.Rmd og bytt ut icon-navnet i en ValueBox for å sjekke om det fungerer:
 
@@ -29,7 +29,7 @@ output$KPI_box5 <- renderValueBox({
 
 
 
-```{r pressure, echo=FALSE}
+```{r}
 # Creating df
 df <- fontawesome::fa_metadata()
 # Version check
