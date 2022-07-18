@@ -16,6 +16,9 @@ library(janitor)
 
 >Du har ikke lastet opp det nye Excel-arket :) (Plasser det gjerne i Data-mappen ;)) --Torbjørn
 
+>Nå er arket lastet opp i Data-mappen
+--Aga
+
 Jeg har et forslag til et alternativt excel-ark som jeg synes er enklere å bruke. Det er lastet opp i Github (håper jeg) og heter OPXfinansAGA 
 
 ```{r alternativt excel-fil}
