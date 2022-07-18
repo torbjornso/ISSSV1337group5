@@ -2,7 +2,7 @@
 title: "Charity analysis"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: columns
+    orientation: rows
     vertical_layout: scroll
 runtime: shiny
 ---
@@ -24,7 +24,6 @@ Then upload an Excel file in the set format.
 
 Click 'Analyse' to analyse the data.
 
-
 ```{r sidebar}
 # HTML
 fileInput("html", label = "Upload html file", accept = ".html")
@@ -41,11 +40,33 @@ actionButton("click", "Analyse")
 
 ```
 
-Column 
+Row 
+-----------------------------------------------------------------------
+
+### KPI
+```{r}
+valueBoxOutput("KPI_box")
+```
+
+### KPI 2
+```{r}
+valueBoxOutput("KPI_box2")
+```
+
+### KPI 3
+```{r}
+valueBoxOutput("KPI_box3")
+```
+
+### KPI 4
+```{r}
+valueBoxOutput("KPI_box4")
+```
+
+Row
 -----------------------------------------------------------------------
 
 ### Plotly
-
 ```{r}
 plotlyOutput("plotlyplot")
 ```
@@ -55,7 +76,7 @@ plotlyOutput("plotlyplot")
 plotOutput("htmlplot")
 ```
 
-Column 
+Row 
 -----------------------------------------------------------------------
 
 ### Transparency
@@ -63,10 +84,6 @@ Column
 plotlyOutput("fancyplot")
 ```
 
-### KPI
-```{r}
-valueBoxOutput("KPI_box")
-```
 
 ```{r shiny, include=FALSE}
 # Shiny actions
@@ -106,6 +123,33 @@ observeEvent(input$click, { # wait for button click
         icon = "fa-random"
       )
     })
+    
+  output$KPI_box2 <- renderValueBox({
+      valueBox(
+        value = KPI_admin(),
+        caption = "admin",
+        color = "info",
+        icon = "fa-random"
+      )
+    })
+    output$KPI_box3 <- renderValueBox({
+      valueBox(
+        value = KPI_admin(),
+        caption = "admin",
+        color = "info",
+        icon = "fa-random"
+      )
+    })
+    
+    output$KPI_box4 <- renderValueBox({
+      valueBox(
+        value = KPI_admin(),
+        caption = "admin",
+        color = "info",
+        icon = "fa-random"
+      )
+    })
+    
 #---- Plots --------------------------------------------------------------------    
     # creating plots
     
@@ -131,30 +175,38 @@ observeEvent(input$click, { # wait for button click
     fancyplot <- reactive(
       htmldata() |> 
         select(
-    year, lederlonn, leder_annen_godtgjorelse
-  ) |> 
-  rename(
-    Year = year,
-    Salary = lederlonn,
-    `Other compensation` = leder_annen_godtgjorelse
-  ) |> 
-  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
-  ggplot(aes(Year, value, fill = Compensation)) +
-  geom_col() +
-  scale_y_continuous(
-    labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
+          year, lederlonn, leder_annen_godtgjorelse
+         ) |> 
+        rename(
+          Year = year,
+          Salary = lederlonn,
+          `Other compensation` = leder_annen_godtgjorelse
+        ) |> 
+        pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+        ggplot(aes(Year, value, fill = Compensation)) +
+        geom_col() +
+        scale_y_continuous(
+        labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
                     label_dollar(prefix = str_c(htmldata()$valutakode[1], " ")),
                     label_dollar(prefix = "? "))
-      ) +
-  scale_fill_met_d("Troy") +
-  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
-       subtitle = ifelse(length(unique(htmldata()$valutakode)) == 1,
+         ) +
+        scale_fill_met_d("Troy") +
+        labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
+        subtitle = ifelse(length(unique(htmldata()$valutakode)) == 1,
                          "",
                          "Note: not all values are denominated in the same currency"))
-    )
+        )
+
+  # Creating fancy plotlyplot
+    fancyplotly <- reactive({
+      ggplotly(fancyplot(), layout(
+                                legend = list(
+                                orientation = 'h', x = 0.3, y = -0.1, 
+                                title = list(text = 'My legend title'))))
+    })
     
     output$fancyplot <- renderPlotly(
-      ggplotly(fancyplot())
+      fancyplot()
     )
   })
 ```
