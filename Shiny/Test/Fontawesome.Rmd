@@ -15,6 +15,19 @@ p_load(fontawesome, tidyverse)
 
 Flexdashboard har ikke alle Fontawesome-ikonene. Pakken fontawesome har opp til ca. v. 5.15.3. Det enkleste for å finne ikoner er kanskje å bruke linken over og så sjekke navnet mot `fontawesome` ved å bruke koden nedenfor(`df$icon_names_full |> str_view_all("søketerm"), match = TRUE`)
 
+Lag evnt. en kopi av Flexdashboard rows.Rmd og bytt ut icon-navnet i en ValueBox for å sjekke om det fungerer:
+
+```{r eval=FALSE}
+output$KPI_box5 <- renderValueBox({
+      valueBox(
+        value = KPI_admin(),
+        caption = "admin",
+        color = "warning",
+        icon = "fal fa-abacus"  # <-- Icon
+})
+```
+
+
 
 ```{r pressure, echo=FALSE}
 # Creating df
