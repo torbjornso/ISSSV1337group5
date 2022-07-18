@@ -10,11 +10,13 @@ runtime: shiny
 ```{r setup, include=FALSE}
 if (!require("pacman")) install.packages("pacman"); library(pacman)
 p_load(shiny, tidyverse, scales, rvest, janitor, plotly, readxl,
-       flexdashboard, MetBrewer)
+       flexdashboard, MetBrewer, DT, fontawesome)
+htmltools::tagList(fontawesome::fa_html_dependency())
 ```
 
-Column {.sidebar}
------------------------------------------------------------------------
+
+Sidebar {.sidebar}
+=======================================================================
 
 ### File upload
 
@@ -40,6 +42,9 @@ actionButton("click", "Analyse")
 
 ```
 
+Dashboard
+=======================================================================
+
 Row 
 -----------------------------------------------------------------------
 
@@ -63,6 +68,11 @@ valueBoxOutput("KPI_box3")
 valueBoxOutput("KPI_box4")
 ```
 
+### KPI 5
+```{r}
+valueBoxOutput("KPI_box5")
+```
+
 Row
 -----------------------------------------------------------------------
 
@@ -84,6 +94,30 @@ Row
 plotlyOutput("fancyplot")
 ```
 
+Details
+=======================================================================
+
+Row 
+-----------------------------------------------------------------------
+
+### Information 1
+
+The KPIs are based on the following calculations
+
+- **admin** is based on dividing
+```{r}
+
+```
+
+Row 
+-----------------------------------------------------------------------
+
+### Information 2
+```{r}
+
+```
+
+
 
 ```{r shiny, include=FALSE}
 # Shiny actions
@@ -99,7 +133,9 @@ observeEvent(input$click, { # wait for button click
     exceldata <- reactive({
       widen_excel(input$excel$datapath)
     })
-#---- Value Box ----------------------------------------------------------------    
+
+#---- Value Boxes ----------------------------------------------------------------    
+    
     # Creating value box
     KPI_admin <- reactive({exceldata() |> 
            mutate(
@@ -119,24 +155,25 @@ observeEvent(input$click, { # wait for button click
       valueBox(
         value = KPI_admin(),
         caption = "admin",
-        color = "info",
+        color = "primary",
         icon = "fa-random"
       )
     })
     
+    # Duplicate value boxes for testing
   output$KPI_box2 <- renderValueBox({
       valueBox(
         value = KPI_admin(),
-        caption = "admin",
-        color = "info",
+        caption = "danger",
+        color = "danger",
         icon = "fa-random"
       )
     })
     output$KPI_box3 <- renderValueBox({
       valueBox(
         value = KPI_admin(),
-        caption = "admin",
-        color = "info",
+        caption = "success",
+        color = "success",
         icon = "fa-random"
       )
     })
@@ -144,11 +181,19 @@ observeEvent(input$click, { # wait for button click
     output$KPI_box4 <- renderValueBox({
       valueBox(
         value = KPI_admin(),
-        caption = "admin",
+        caption = "info",
         color = "info",
         icon = "fa-random"
-      )
-    })
+      )})
+      
+      output$KPI_box5 <- renderValueBox({
+      valueBox(
+        value = KPI_admin(),
+        caption = "admin",
+        color = "warning",
+        icon = "fal fa-abacus"
+)})
+  
     
 #---- Plots --------------------------------------------------------------------    
     # creating plots
@@ -208,7 +253,8 @@ observeEvent(input$click, { # wait for button click
     output$fancyplot <- renderPlotly(
       fancyplot()
     )
-  })
+})
+
 ```
 
 ```{r functions, include=FALSE}
@@ -281,6 +327,5 @@ widen_excel <- function(file){
       pivot_wider(names_from = entry, values_from = Value) |> 
       clean_names()
 }
-
 ```
 
