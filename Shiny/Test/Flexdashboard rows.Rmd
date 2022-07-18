@@ -11,7 +11,7 @@ runtime: shiny
 # Packages using pacman
 if (!require("pacman")) install.packages("pacman"); library(pacman)
 p_load(shiny, tidyverse, scales, rvest, janitor, plotly, readxl,
-       flexdashboard, MetBrewer, DT, fontawesome, htmltools)
+       flexdashboard, MetBrewer, fontawesome, htmltools)
 # Using package fontawesome for fontawesome icons
 htmltools::tagList(fontawesome::fa_html_dependency())
 ```
@@ -201,7 +201,7 @@ observeEvent(input$click, { # wait for button click
   
     
 #---- Plots --------------------------------------------------------------------    
-    # creating plots
+    # creating plots - CEO compensation
     
     # ggplot as reactive function
     lonnplot <- reactive({
@@ -221,27 +221,32 @@ observeEvent(input$click, { # wait for button click
       lonnplot()
     )
     
-    # Creating fancier plot
+    # fancier plot function
     fancyplot <- reactive(
       htmldata() |> 
         select(
           year, lederlonn, leder_annen_godtgjorelse
          ) |> 
-        rename(
+        rename( # renaming for the purposes of the plot
           Year = year,
           Salary = lederlonn,
           `Other compensation` = leder_annen_godtgjorelse
         ) |> 
+        # pivoting to join the two values to use fill
         pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
         ggplot(aes(Year, value, fill = Compensation)) +
         geom_col() +
         scale_y_continuous(
+          # Checking for uniform currency code
         labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
+                        # Using the currency code if uniform
                     label_dollar(prefix = str_c(htmldata()$valutakode[1], " ")),
+                        # alternative prefix if multiple currencies in the data
                     label_dollar(prefix = "? "))
          ) +
-        scale_fill_met_d("Troy") +
+        scale_fill_met_d("Troy") + # pretty colours
         labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
+             # Checking again for currency; including warning if not uniform
         subtitle = ifelse(length(unique(htmldata()$valutakode)) == 1,
                          "",
                          "Note: not all values are denominated in the same currency"))
@@ -251,6 +256,7 @@ observeEvent(input$click, { # wait for button click
     fancyplotly <- reactive({
       ggplotly(fancyplot())
     })
+    
   # Creating fancy plotly output  
     output$fancyplotly <- renderPlotly(
       fancyplotly()
