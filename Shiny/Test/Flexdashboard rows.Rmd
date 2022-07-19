@@ -2,19 +2,23 @@
 title: "Charity analysis"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: columns
+    orientation: rows
     vertical_layout: scroll
 runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
+# Loading packages using pacman to ensure they're all installed
 if (!require("pacman")) install.packages("pacman"); library(pacman)
 p_load(shiny, tidyverse, scales, rvest, janitor, plotly, readxl,
-       flexdashboard, MetBrewer)
+       flexdashboard, MetBrewer, fontawesome, htmltools)
+# Using fontawesome for more up-to-date fontawesome icons
+htmltools::tagList(fontawesome::fa_html_dependency())
 ```
 
-Column {.sidebar}
------------------------------------------------------------------------
+
+Sidebar {.sidebar}
+=======================================================================
 
 ### File upload
 
@@ -24,11 +28,11 @@ Then upload an Excel file in the set format.
 
 Click 'Analyse' to analyse the data.
 
-
 ```{r sidebar}
 # HTML
 fileInput("html", label = "Upload html file", accept = ".html")
 
+# Year inputs
 numericInput("start", label = "Start", value = 2002)
 numericInput("end", label = "End", value = 2021)
 
@@ -41,11 +45,41 @@ actionButton("click", "Analyse")
 
 ```
 
-Column 
+Dashboard
+=======================================================================
+
+Row 
+-----------------------------------------------------------------------
+
+### KPI
+```{r}
+valueBoxOutput("KPI_box")
+```
+
+### KPI 2
+```{r}
+valueBoxOutput("KPI_box2")
+```
+
+### KPI 3
+```{r}
+valueBoxOutput("KPI_box3")
+```
+
+### KPI 4
+```{r}
+valueBoxOutput("KPI_box4")
+```
+
+### KPI 5
+```{r}
+valueBoxOutput("KPI_box5")
+```
+
+Row
 -----------------------------------------------------------------------
 
 ### Plotly
-
 ```{r}
 plotlyOutput("plotlyplot")
 ```
@@ -55,23 +89,44 @@ plotlyOutput("plotlyplot")
 plotOutput("htmlplot")
 ```
 
-Column 
+Row 
 -----------------------------------------------------------------------
 
 ### Transparency
 ```{r}
-plotlyOutput("fancyplot")
+plotlyOutput("fancyplotly")
 ```
 
-### KPI
+Details
+=======================================================================
+
+Row 
+-----------------------------------------------------------------------
+
+### Information 1
+
+The KPIs are based on the following calculations
+
+- **admin** is based on dividing
 ```{r}
-valueBoxOutput("KPI_box")
+
 ```
+
+Row 
+-----------------------------------------------------------------------
+
+### Information 2
+```{r}
+
+```
+
+
 
 ```{r shiny, include=FALSE}
 # Shiny actions
 observeEvent(input$click, { # wait for button click
-    
+
+#---- Data frames --------------------------------------------------------------      
     # creating data frame from html file
     htmldata <- reactive({
       read_proff6(input$html$datapath,
@@ -82,32 +137,73 @@ observeEvent(input$click, { # wait for button click
     exceldata <- reactive({
       widen_excel(input$excel$datapath)
     })
-#---- Value Box ----------------------------------------------------------------    
-    # Creating value box
+
+#---- Value Boxes --------------------------------------------------------------    
+    
+    # Creating KPI_admin value
     KPI_admin <- reactive({exceldata() |> 
            mutate(
-    KPI_admin =
-      str_c(
-        format(
-        (expenses_administrative / expenses_program_services *100), digits = 3
-        ), "%"
-        )
-  ) |> 
-  filter(year == max(year)) |> 
-  select(KPI_admin) |> 
-  str_flatten()
-    })
+      KPI_admin =
+        str_c( # Using str_c() to concatenate value and % sign
+         format( # shortening(lengthening) the resulting value
+           # calculating the value
+          (expenses_administrative / expenses_program_services *100), digits = 3
+          ), "%"
+         )
+      ) |> 
+      filter(year == max(year)) |> # selecting latest available year
+       select(KPI_admin) |> # dropping all other variables
+        str_flatten() # turning into a single string
+         })
     
+    # Creating the first value box
     output$KPI_box <- renderValueBox({
       valueBox(
         value = KPI_admin(),
-        caption = "admin",
-        color = "info",
+        caption = "primary",
+        color = "primary",
         icon = "fa-random"
+        )
+      })
+    
+    # Duplicate value boxes for testing
+    output$KPI_box2 <- renderValueBox({
+      valueBox(
+        value = KPI_admin(),
+        caption = "danger",
+        color = "danger",
+        icon = "fas fa-dog"
+      )
+      
+    })
+    output$KPI_box3 <- renderValueBox({
+      valueBox(
+        value = KPI_admin(),
+        caption = "success",
+        color = "success",
+        icon = "fas fa-coffee"
       )
     })
+    
+    output$KPI_box4 <- renderValueBox({
+      valueBox(
+        value = KPI_admin(),
+        caption = "info",
+        color = "info",
+        icon = "fas fa-skull-crossbones"
+      )})
+      
+      output$KPI_box5 <- renderValueBox({
+      valueBox(
+        value = KPI_admin(),
+        caption = "warning",
+        color = "warning",
+        icon = "fas fa-battery-empty"
+)})
+  
+    
 #---- Plots --------------------------------------------------------------------    
-    # creating plots
+    # creating plots - CEO compensation
     
     # ggplot as reactive function
     lonnplot <- reactive({
@@ -127,36 +223,48 @@ observeEvent(input$click, { # wait for button click
       lonnplot()
     )
     
-    # Creating fancier plot
+    # fancier plot function
     fancyplot <- reactive(
       htmldata() |> 
         select(
-    year, lederlonn, leder_annen_godtgjorelse
-  ) |> 
-  rename(
-    Year = year,
-    Salary = lederlonn,
-    `Other compensation` = leder_annen_godtgjorelse
-  ) |> 
-  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
-  ggplot(aes(Year, value, fill = Compensation)) +
-  geom_col() +
-  scale_y_continuous(
-    labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
+          year, lederlonn, leder_annen_godtgjorelse
+         ) |> 
+        rename( # renaming for the purposes of the plot
+          Year = year,
+          Salary = lederlonn,
+          `Other compensation` = leder_annen_godtgjorelse
+        ) |> 
+        # pivoting to join the two values to use fill
+        pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+        ggplot(aes(Year, value, fill = Compensation)) +
+        geom_col() +
+        scale_y_continuous(
+          # Checking for uniform currency code
+        labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
+                        # Using the currency code if uniform
                     label_dollar(prefix = str_c(htmldata()$valutakode[1], " ")),
+                        # alternative prefix if multiple currencies in the data
                     label_dollar(prefix = "? "))
-      ) +
-  scale_fill_met_d("Troy") +
-  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
-       subtitle = ifelse(length(unique(htmldata()$valutakode)) == 1,
+         ) +
+        scale_fill_met_d("Troy") + # pretty colours
+        labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
+             # Checking again for currency; including warning if not uniform
+        subtitle = ifelse(length(unique(htmldata()$valutakode)) == 1,
                          "",
                          "Note: not all values are denominated in the same currency"))
-    )
-    
-    output$fancyplot <- renderPlotly(
+        )
+
+  # Creating fancy plotlyplot
+    fancyplotly <- reactive({
       ggplotly(fancyplot())
+    })
+    
+  # Creating fancy plotly output  
+    output$fancyplotly <- renderPlotly(
+      fancyplotly()
     )
-  })
+})
+
 ```
 
 ```{r functions, include=FALSE}
@@ -219,16 +327,16 @@ read_proff6 <- function(file, start, end){
 # Function to read Excel file
 widen_excel <- function(file){
     read_excel(file) |> 
-      mutate(
+      mutate( # Changing values
         Value = Value * 1000
       ) |> 
-      unite(
+      unite( # uniting Category and Name to deal with multiple 'Other'
         entry, c(Category, Name), sep = "_"
       ) |> 
-      select(-`Sub-category`) |> 
+      select(-`Sub-category`) |> # deleting Sub-category
+    # pivoting
       pivot_wider(names_from = entry, values_from = Value) |> 
-      clean_names()
+      clean_names() # cleaning names
 }
-
 ```
 
