@@ -23,7 +23,7 @@ Jeg har et forslag til et alternativt excel-ark som jeg synes er enklere å bruk
 
 ```{r alternativt excel-fil}
 # Leser inn excel-fil og angir kolonnenavn
-jukseark <- read_excel("./OPXfinansAGA.xlsx", col_names = c("entry", "value"))
+jukseark <- read_excel("./Data/OPXfinansAGA.xlsx", col_names = c("entry", "value"))
 
 # Lager et nytt objekt
 juksedata <- jukseark %>%
@@ -40,10 +40,10 @@ juksedata <- jukseark %>%
   # Ved pivot ble alle kolonnene satt til character pga. den første kolonnen med 
   # organisasjonsnavn. Det gjør det umulig å regne, så alle kolonnene unntatt den første
   # må konverteres til numeric
-  mutate_at(vars(-name), as.numeric) %>%
+  mutate_at(vars(-org_name), as.numeric) %>%
   
   # Legger til en kolonne med KPI
-  mutate(KPI_ROI = administrative+fundraising/private_contributions+membership_fees)
+  mutate(KPI_ROI = fundraising/(private_contributions+membership_fees))
 ```
 
 Med den fila vi har brukt til nå, får mange variabler flere rader med NA-verdier og flere av de verdiene vi skal regne sammen ligger på ulike rader og blir istedenfor regnet sammen med en NA-verdi, som gir NA i KPI-variabelen.  
@@ -62,7 +62,7 @@ juksedata_1 <- jukseark_1 %>%
   clean_names() %>% 
   
   # Legger til en kolonne med KPI men alt er NA
-  mutate(KPI_ROI = administrative+fundraising/private_contributions+membership_fees)
+  mutate(KPI_ROI = fundraising/(private_contributions+membership_fees))
 
 ```
 
@@ -80,7 +80,7 @@ juksedata_1 <- jukseark_1 %>%
 juksedata_1 <- jukseark_1 %>% 
   pivot_wider(names_from = Name, values_from = Value) %>%
   clean_names() %>% 
-  mutate(KPI_ROI = administrative+fundraising/private_contributions+membership_fees, 
+  mutate(KPI_ROI = undraising/(private_contributions+membership_fees), 
          na.rm = TRUE)
 
 ```
