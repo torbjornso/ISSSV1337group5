@@ -38,3 +38,6 @@ df$version
 df$icon_names_full |> str_view_all("skull", match = TRUE)
 ```
 
+### Ideas
+
+- fas fa-donate
