@@ -35,6 +35,6 @@ df <- fontawesome::fa_metadata()
 # Version check
 df$version
 # Example search
-df$icon_names_full |> str_view_all("battery", match = TRUE)
+df$icon_names_full |> str_view_all("skull", match = TRUE)
 ```
 

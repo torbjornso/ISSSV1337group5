@@ -171,7 +171,7 @@ observeEvent(input$click, { # wait for button click
         value = KPI_admin(),
         caption = "danger",
         color = "danger",
-        icon = "fa-random"
+        icon = "fas fa-dog"
       )
     })
     output$KPI_box3 <- renderValueBox({
@@ -179,7 +179,7 @@ observeEvent(input$click, { # wait for button click
         value = KPI_admin(),
         caption = "success",
         color = "success",
-        icon = "fa-random"
+        icon = "fas fa-coffee"
       )
     })
     
@@ -188,7 +188,7 @@ observeEvent(input$click, { # wait for button click
         value = KPI_admin(),
         caption = "info",
         color = "info",
-        icon = "fa-random"
+        icon = "fas fa-skull-and-crossbones"
       )})
       
       output$KPI_box5 <- renderValueBox({
