@@ -84,9 +84,9 @@ Row
 plotlyOutput("plotlyplot")
 ```
 
-### ggplot
+### Annual result
 ```{r}
-plotOutput("htmlplot")
+plotlyOutput("arsresultat_plot")
 ```
 
 Row 
@@ -141,7 +141,8 @@ observeEvent(input$click, { # wait for button click
 #---- Value Boxes --------------------------------------------------------------    
     
     # Creating KPI_admin value
-    KPI_admin <- reactive({exceldata() |> 
+    KPI_admin <- reactive({
+      exceldata() |> 
            mutate(
       KPI_admin =
         str_c( # Using str_c() to concatenate value and % sign
@@ -157,44 +158,51 @@ observeEvent(input$click, { # wait for button click
          })
     
     # Creating Fundraising ROI value
-    KPI_fundraising <- reactive({
+    KPI_fundraising_num <- reactive({
       exceldata() |> 
           mutate(
-    KPI_admin =
-      str_c(
-        format(
-        ((revenue_private_contributions +                  revenue_membership_fees) / expenses_fundraising * 100), digits = 3
-        ), "%"
-        )
-  ) |> 
-  filter(year == max(year)) |> 
-  select(KPI_admin) |> 
-  str_flatten()
+            # Calculating the value as a percentage
+            KPI_fundraising_num =
+              (revenue_private_contributions +
+                 revenue_membership_fees - expenses_fundraising) /
+              expenses_fundraising * 100) |> 
+        # most recent year
+          filter(year == max(year)) |> 
+        # just want the single number
+          select(KPI_fundraising_num) |> 
+          pull()
     })
     
-    # Creating the first value box
+    # Creating the value box for administrative expenses
     output$KPI_box <- renderValueBox({
       valueBox(
         value = KPI_admin(),
-        caption = "primary",
+        caption = "Admin spend",
         color = "primary",
         icon = "fa-random"
         )
       })
     
-    # Duplicate value boxes for testing
+    # Creating value box for fundraising ROI
+      # Unsure about colour levels
     output$KPI_box2 <- renderValueBox({
       valueBox(
-        value = KPI_admin(),
-        caption = "danger",
-        color = "danger",
-        icon = "fas fa-dog"
+        # shortening(lengthening) the value with format()
+        # Using str_c() to concatenate value and % sign;
+        value = str_c(format(KPI_fundraising_num(), digits = 3), "%"),
+        caption = "Fundraising ROI",
+        # Colour depends on value
+        color = if (KPI_fundraising_num() < 100) {"danger"
+          } else if (KPI_fundraising_num() < 200) {"warning"
+            } else {"success"},
+        icon = "fas fa-donate"
       )
-      
     })
+    
+    # Duplicate value boxes for testing
     output$KPI_box3 <- renderValueBox({
       valueBox(
-        value = KPI_fundraising(),
+        value = str_c(format(KPI_fundraising_num(), digits = 3), "%"),
         caption = "success",
         color = "success",
         icon = "fas fa-coffee"
@@ -207,19 +215,19 @@ observeEvent(input$click, { # wait for button click
         caption = "info",
         color = "info",
         icon = "fas fa-skull-crossbones"
-      )})
+    )})
       
-      output$KPI_box5 <- renderValueBox({
+    output$KPI_box5 <- renderValueBox({
       valueBox(
         value = KPI_admin(),
         caption = "warning",
         color = "warning",
         icon = "fas fa-battery-empty"
-)})
+    )})
   
     
 #---- Plots --------------------------------------------------------------------    
-    # creating plots - CEO compensation
+# creating plots - CEO compensation
     
     # ggplot as reactive function
     lonnplot <- reactive({
@@ -245,7 +253,8 @@ observeEvent(input$click, { # wait for button click
         select(
           year, lederlonn, leder_annen_godtgjorelse
          ) |> 
-        rename( # renaming for the purposes of the plot
+        # renaming for the purposes of the plot
+        rename( 
           Year = year,
           Salary = lederlonn,
           `Other compensation` = leder_annen_godtgjorelse
@@ -262,25 +271,50 @@ observeEvent(input$click, { # wait for button click
                         # alternative prefix if multiple currencies in the data
                     label_dollar(prefix = "? "))
          ) +
-        scale_fill_met_d("Troy") + # pretty colours
+        # pretty colours
+        scale_fill_met_d("Troy") + 
         labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
              # Checking again for currency; including warning if not uniform
         subtitle = ifelse(length(unique(htmldata()$valutakode)) == 1,
                          "",
                          "Note: not all values are denominated in the same currency"))
         )
-
-  # Creating fancy plotlyplot
-    fancyplotly <- reactive({
-      ggplotly(fancyplot())
-    })
     
   # Creating fancy plotly output  
     output$fancyplotly <- renderPlotly(
-      fancyplotly()
+      ggplotly(fancyplot())
     )
+    
+# Creating plots - annual result
+    arsresultat_plot <- reactive({
+      htmldata() |> 
+      mutate(
+        profit = ifelse(arsresultat >= 0, TRUE, FALSE)
+      ) |> 
+      ggplot(aes(year, arsresultat, fill = profit)) +
+      geom_col() +
+      scale_y_continuous(
+        labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
+                        # Using the currency code if uniform
+                    label_dollar(prefix = str_c(htmldata()$valutakode[1], " ")),
+                        # alternative prefix if multiple currencies in the data
+                    label_dollar(prefix = "? "))
+        ) +
+      scale_fill_met_d("Tsimshian") +
+      theme(legend.position = "none") +
+      labs(x = "Year", y = "", title = "Annual result",
+             # Checking again for currency; including warning if not uniform
+        subtitle = ifelse(length(unique(htmldata()$valutakode)) == 1,
+                         "",
+                         "Note: not all values are denominated in the same currency"))
+    })
+    
+    output$arsresultat_plot <- renderPlotly(
+      ggplotly(arsresultat_plot())
+    )
+    
+    
 })
-
 ```
 
 ```{r functions, include=FALSE}
