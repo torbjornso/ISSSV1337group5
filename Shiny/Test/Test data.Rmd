@@ -352,6 +352,30 @@ ordinaert_p_met <- kreft_html |>
 ggplotly(ordinaert_p_met)
 ```
 
+### Egenkapital og gjeld
+```{r}
+kreft_html2 <- kreft_html |> 
+  mutate(
+    profit = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
+  )
+kreft_html2 |> 
+  ggplot(aes(year, sum_egenkapital_og_gjeld, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = label_dollar()) +
+  scale_fill_met_d("Tsimshian",
+                   direction = if (mean(kreft_html2$profit) == 1){-1} else {1})
+
+kreft_html2 |> 
+  ggplot(aes(year, sum_egenkapital_og_gjeld, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = label_dollar()) +
+  scale_fill_met_d("Tsimshian",
+                   direction = ifelse(mean(kreft_html2$profit) == 1,-1, 1))
+
+# Need to add profit variables
+
+```
+
 
 ## KPI ideas
 

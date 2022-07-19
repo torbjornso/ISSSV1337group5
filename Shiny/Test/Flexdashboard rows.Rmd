@@ -105,9 +105,12 @@ Row
 
 ### Information 1
 
-The KPIs are based on the following calculations
+The KPIs are based on the following calculations:
 
-- **admin** is based on dividing
+- **admin** is based on dividing - expenses_administrative / expenses_program_services *100
+- **Fundraising ROI** - (revenue_private_contributions +
+                 revenue_membership_fees - expenses_fundraising) /
+              expenses_fundraising * 100
 ```{r}
 
 ```
