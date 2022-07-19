@@ -8,11 +8,11 @@ runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
-# Packages using pacman
+# Loading packages using pacman to ensure they're all installed
 if (!require("pacman")) install.packages("pacman"); library(pacman)
 p_load(shiny, tidyverse, scales, rvest, janitor, plotly, readxl,
        flexdashboard, MetBrewer, fontawesome, htmltools)
-# Using package fontawesome for fontawesome icons
+# Using fontawesome for more up-to-date fontawesome icons
 htmltools::tagList(fontawesome::fa_html_dependency())
 ```
 
@@ -144,15 +144,16 @@ observeEvent(input$click, { # wait for button click
     KPI_admin <- reactive({exceldata() |> 
            mutate(
       KPI_admin =
-        str_c(
-         format(
+        str_c( # Using str_c() to concatenate value and % sign
+         format( # shortening(lengthening) the resulting value
+           # calculating the value
           (expenses_administrative / expenses_program_services *100), digits = 3
           ), "%"
          )
       ) |> 
-      filter(year == max(year)) |> 
-       select(KPI_admin) |> 
-        str_flatten()
+      filter(year == max(year)) |> # selecting latest available year
+       select(KPI_admin) |> # dropping all other variables
+        str_flatten() # turning into a single string
          })
     
     # Creating the first value box
@@ -173,6 +174,7 @@ observeEvent(input$click, { # wait for button click
         color = "danger",
         icon = "fas fa-dog"
       )
+      
     })
     output$KPI_box3 <- renderValueBox({
       valueBox(
