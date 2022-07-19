@@ -253,6 +253,10 @@ observeEvent(input$click, { # wait for button click
         select(
           year, lederlonn, leder_annen_godtgjorelse
          ) |> 
+        mutate(
+          lederlonn = lederlonn * 1000,
+          leder_annen_godtgjorelse = leder_annen_godtgjorelse * 1000
+        ) |> 
         # renaming for the purposes of the plot
         rename( 
           Year = year,
@@ -302,7 +306,7 @@ observeEvent(input$click, { # wait for button click
         ) +
       scale_fill_met_d("Tsimshian") +
       theme(legend.position = "none") +
-      labs(x = "Year", y = "", title = "Annual result",
+      labs(x = "Year", y = "", title = "Annual result (in thousands)",
              # Checking again for currency; including warning if not uniform
         subtitle = ifelse(length(unique(htmldata()$valutakode)) == 1,
                          "",
@@ -357,9 +361,6 @@ read_proff6 <- function(file, start, end){
       mutate( # removing years as values
         value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
       ) |> 
-      mutate( # values no longer in 1000
-        value = value * 1000
-      ) |> 
       distinct() |> # removing any remaining duplicate rows
       pivot_wider( # pivoting
         names_from = REGNSKAPSPERIODE, values_from = value
@@ -377,9 +378,6 @@ read_proff6 <- function(file, start, end){
 # Function to read Excel file
 widen_excel <- function(file){
     read_excel(file) |> 
-      mutate( # Changing values
-        Value = Value * 1000
-      ) |> 
       unite( # uniting Category and Name to deal with multiple 'Other'
         entry, c(Category, Name), sep = "_"
       ) |> 
