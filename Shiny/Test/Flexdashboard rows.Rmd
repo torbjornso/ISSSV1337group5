@@ -156,6 +156,22 @@ observeEvent(input$click, { # wait for button click
         str_flatten() # turning into a single string
          })
     
+    # Creating Fundraising ROI value
+    KPI_fundraising <- reactive({
+      exceldata() |> 
+          mutate(
+    KPI_admin =
+      str_c(
+        format(
+        ((revenue_private_contributions +                  revenue_membership_fees) / expenses_fundraising * 100), digits = 3
+        ), "%"
+        )
+  ) |> 
+  filter(year == max(year)) |> 
+  select(KPI_admin) |> 
+  str_flatten()
+    })
+    
     # Creating the first value box
     output$KPI_box <- renderValueBox({
       valueBox(
@@ -178,7 +194,7 @@ observeEvent(input$click, { # wait for button click
     })
     output$KPI_box3 <- renderValueBox({
       valueBox(
-        value = KPI_admin(),
+        value = KPI_fundraising(),
         caption = "success",
         color = "success",
         icon = "fas fa-coffee"

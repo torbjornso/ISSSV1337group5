@@ -359,6 +359,33 @@ kreft_excel |>
     KPI_ROI = expenses_fundraising / (revenue_private_contributions + revenue_membership_fees)
   ) |> 
   select(year, KPI_ROI)
+
+kreft_excel |> 
+          mutate(
+            KPI_fundraising =
+              str_c(format((revenue_private_contributions +                  revenue_membership_fees) / expenses_fundraising) * 100, digits = 3
+          ), "%"
+         ) |> 
+  filter(year == max(year)) |> # selecting latest available year
+             select(KPI_fundraising) |> 
+        str_flatten() # turning into a single string
+
+kreft_excel |> 
+  mutate(
+    KPI_admin =
+      str_c(
+        format(
+        ((revenue_private_contributions +                  revenue_membership_fees) / expenses_fundraising * 100), digits = 3
+        ), "%"
+        )
+  ) |> 
+  filter(year == max(year)) |> 
+  select(KPI_admin) |> 
+  str_flatten()
+
+(kreft_excel$revenue_private_contributions + kreft_excel$revenue_membership_fees) / kreft_excel$expenses_fundraising
+
+
 ```
 
 ### Administrative expenses
