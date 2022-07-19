@@ -35,9 +35,18 @@ df <- fontawesome::fa_metadata()
 # Version check
 df$version
 # Example search
-df$icon_names_full |> str_view_all("skull", match = TRUE)
+df$icon_names_full |> str_view_all("hands-helping", match = TRUE)
 ```
 
 ### Ideas
 
+#### Checked
+
+- fas fa-seedling
 - fas fa-donate
+- fas fa-hand-holding-usd
+- fas fa-hands-helping
+
+#### Not yet checked
+
+#### Not available
