@@ -9,9 +9,12 @@ runtime: shiny
 
 ```{r setup, include=FALSE}
 # Loading packages using pacman to ensure they're all installed
-if (!require("pacman")) install.packages("pacman"); library(pacman)
-p_load(shiny, tidyverse, scales, rvest, janitor, plotly, readxl,
-       flexdashboard, MetBrewer, fontawesome, htmltools)
+if (!require("pacman")) install.packages("pacman")
+library(pacman)
+p_load(
+  shiny, tidyverse, scales, rvest, janitor, plotly, readxl,
+  flexdashboard, MetBrewer, fontawesome, htmltools
+)
 # Using fontawesome for more up-to-date fontawesome icons
 htmltools::tagList(fontawesome::fa_html_dependency())
 ```
@@ -86,7 +89,7 @@ plotlyOutput("arsresultat_plotly")
 
 ### Balance
 ```{r}
-
+plotlyOutput("balance_plotly")
 ```
 
 Row 
@@ -129,246 +132,310 @@ Row
 # Shiny actions
 observeEvent(input$click, { # wait for button click
 
-#---- Data frames --------------------------------------------------------------      
-    # creating data frame from html file
-    htmldata <- reactive({
-      read_proff8(input$html$datapath,
-                  as.character(input$start), as.character(input$end))
-      })
-    
-    # Creating data frame from Excel file
-    exceldata <- reactive({
-      widen_excel(input$excel$datapath)
-    })
-
-#---- Value Boxes --------------------------------------------------------------    
-    
-    # Creating KPI_admin value
-    KPI_admin <- reactive({
-      exceldata() |> 
-           mutate(
-      KPI_admin =
-        str_c( # Using str_c() to concatenate value and % sign
-         format( # shortening(lengthening) the resulting value
-           # calculating the value
-          (expenses_administrative / expenses_program_services *100), digits = 3
-          ), "%"
-         )
-      ) |> 
-      filter(year == max(year)) |> # selecting latest available year
-       select(KPI_admin) |> # dropping all other variables
-        str_flatten() # turning into a single string
-         })
-    
-    # Creating Fundraising ROI value
-    KPI_fundraising_num <- reactive({
-      exceldata() |> 
-          mutate(
-            # Calculating the value as a percentage
-            KPI_fundraising_num =
-              (revenue_private_contributions +
-                 revenue_membership_fees - expenses_fundraising) /
-              expenses_fundraising * 100) |> 
-        # most recent year
-          filter(year == max(year)) |> 
-        # just want the single number
-          select(KPI_fundraising_num) |> 
-          pull()
-    })
-    
-    # Creating the value box for administrative expenses
-    output$KPI_box <- renderValueBox({
-      valueBox(
-        value = KPI_admin(),
-        caption = "Admin spend",
-        color = met.brewer("Wissing", n = 1),
-        icon = "fa-random"
-        )
-      })
-    
-    # Creating value box for fundraising ROI
-      # Unsure about colour levels
-    output$KPI_box2 <- renderValueBox({
-      valueBox(
-        # shortening(lengthening) the value with format()
-        # Using str_c() to concatenate value and % sign;
-        value = str_c(format(KPI_fundraising_num(), digits = 3), "%"),
-        caption = "Fundraising ROI",
-        # Colour depends on value
-        color = if (KPI_fundraising_num() < 100) {"danger"
-          } else if (KPI_fundraising_num() < 200) {"warning"
-            } else {"success"},
-        icon = "fas fa-donate"
-      )
-    })
-    
-    # Duplicate value boxes for testing
-    output$KPI_box3 <- renderValueBox({
-      valueBox(
-        value = str_c(format(KPI_fundraising_num(), digits = 3), "%"),
-        caption = "success",
-        color = "success",
-        icon = "fas fa-coffee"
-      )
-    })
-    
-    output$KPI_box4 <- renderValueBox({
-      valueBox(
-        value = KPI_admin(),
-        caption = "info",
-        color = "info",
-        icon = "fas fa-skull-crossbones"
-    )})
-      
-    output$KPI_box5 <- renderValueBox({
-      valueBox(
-        value = KPI_admin(),
-        caption = "warning",
-        color = "warning",
-        icon = "fas fa-battery-empty"
-    )})
-  
-    
-#---- Plots --------------------------------------------------------------------    
-#----CEO compensation-----------------------------------------------------------
-    CEO_plot <- reactive(
-      htmldata() |> 
-        select(
-          year, lederlonn, leder_annen_godtgjorelse
-         ) |> 
-        # Compensation in ordinary numbers
-        mutate(
-          lederlonn = lederlonn * 1000,
-          leder_annen_godtgjorelse = leder_annen_godtgjorelse * 1000
-        ) |> 
-        # renaming for the purposes of the plot
-        rename( 
-          Year = year,
-          Salary = lederlonn,
-          `Other compensation` = leder_annen_godtgjorelse
-        ) |> 
-        # pivoting to join the two values to use fill
-        pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
-        ggplot(aes(Year, value, fill = Compensation)) +
-        geom_col() +
-        scale_y_continuous(
-          # Checking for uniform currency code
-        labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
-                        # Using the currency code if uniform
-                    label_dollar(prefix = str_c(htmldata()$valutakode[1], " ")),
-                        # alternative prefix if multiple currencies in the data
-                    label_dollar(prefix = "? "))
-         ) +
-        # pretty colours
-        scale_fill_met_d("Troy") + 
-        labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
-             # Checking again for currency; including warning if not uniform
-        subtitle = ifelse(length(unique(htmldata()$valutakode)) == 1,
-                         "",
-                         "Note: not all values are denominated in the same currency"))
-        )
-    
-  # Creating fancy plotly output  
-    output$CEO_plotly <- renderPlotly(
-      ggplotly(CEO_plot())
+  #---- Data frames --------------------------------------------------------------      
+  # creating data frame from html file
+  htmldata <- reactive({
+    read_proff8(
+      input$html$datapath,
+      as.character(input$start), as.character(input$end)
     )
-    
-#----Annual result---------------------------------------------
-    arsresultat_plot <- reactive({
-      htmldata() |>
+  })
+
+  # Creating data frame from Excel file
+  exceldata <- reactive({
+    widen_excel(input$excel$datapath)
+  })
+
+  #---- Value Boxes --------------------------------------------------------------    
+
+  # Creating KPI_admin value
+  KPI_admin <- reactive({
+    exceldata() |>
+      mutate(
+        KPI_admin =
+          str_c( # Using str_c() to concatenate value and % sign
+            format( # shortening(lengthening) the resulting value
+              # calculating the value
+              (expenses_administrative / expenses_program_services * 100),
+              digits = 3
+            ), "%"
+          )
+      ) |>
+      filter(year == max(year)) |> # selecting latest available year
+      select(KPI_admin) |> # dropping all other variables
+      str_flatten() # turning into a single string
+  })
+
+  # Creating Fundraising ROI value -- transmute?
+  KPI_fundraising_num <- reactive({
+    exceldata() |>
+      # most recent year
+      filter(year == max(year)) |>
+      transmute(
+        # Calculating the value as a percentage; removing all other
+        KPI_fundraising_num =
+          (revenue_private_contributions +
+            revenue_membership_fees - expenses_fundraising) /
+            expenses_fundraising * 100
+      ) |>
+      # just want the single number
+      pull()
+  })
+
+  # Creating the value box for administrative expenses
+  output$KPI_box <- renderValueBox({
+    valueBox(
+      value = KPI_admin(),
+      caption = "Admin spend",
+      color = met.brewer("Wissing", n = 1),
+      icon = "fa-random"
+    )
+  })
+
+  # Creating value box for fundraising ROI
+  # Unsure about colour levels
+  output$KPI_box2 <- renderValueBox({
+    valueBox(
+      # shortening(lengthening) the value with format()
+      # Using str_c() to concatenate value and % sign;
+      value = str_c(format(KPI_fundraising_num(), digits = 3), "%"),
+      caption = "Fundraising ROI",
+
+      # Colour depends on value
+      color = if (KPI_fundraising_num() < 100) {
+        "danger"
+      } else if (KPI_fundraising_num() < 200) {
+        "warning"
+      } else {
+        "success"
+      },
+      icon = "fas fa-donate"
+    )
+  })
+
+  # Duplicate value boxes for testing
+  output$KPI_box3 <- renderValueBox({
+    valueBox(
+      value = str_c(format(KPI_fundraising_num(), digits = 3), "%"),
+      caption = "primary",
+      color = "primary",
+      icon = "fas fa-coffee"
+    )
+  })
+
+  output$KPI_box4 <- renderValueBox({
+    valueBox(
+      value = KPI_admin(),
+      caption = "info",
+      color = "info",
+      icon = "fas fa-skull-crossbones"
+    )
+  })
+
+  output$KPI_box5 <- renderValueBox({
+    valueBox(
+      value = KPI_admin(),
+      caption = "warning",
+      color = "warning",
+      icon = "fas fa-battery-empty"
+    )
+  })
+
+
+  #---- Plots --------------------------------------------------------------------    
+  #----CEO compensation-----------------------------------------------------------
+  CEO_plot <- reactive({
+    htmldata() |>
+      # preparing for pivoting
+      select(
+        year, lederlonn, leder_annen_godtgjorelse
+      ) |>
+      # Compensation in ordinary numbers
+      mutate(
+        lederlonn = lederlonn * 1000,
+        leder_annen_godtgjorelse = leder_annen_godtgjorelse * 1000
+      ) |>
+      # renaming for the purposes of the plot
+      rename(
+        Year = year,
+        Salary = lederlonn,
+        `Other compensation` = leder_annen_godtgjorelse
+      ) |>
+      # pivoting to join the two values to use fill
+      pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |>
+      ggplot(aes(Year, value, fill = Compensation)) +
+      geom_col() +
+      scale_y_continuous(
+        # Checking for uniform currency code
+        labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
+          # Using the currency code if uniform
+          label_dollar(prefix = str_c(htmldata()$valutakode[1], " ")),
+          # alternative prefix if multiple currencies in the data
+          label_dollar(prefix = "? ")
+        )
+      ) +
+      # pretty colours
+      scale_fill_met_d("Troy") +
+      labs(
+        x = "Year", y = "Total compensation", title = "Annual CEO compensation",
+        # Checking again for currency; including warning if not uniform
+        subtitle = ifelse(length(unique(htmldata()$valutakode)) == 1,
+          "",
+          "Note: not all values are denominated in the same currency"
+        )
+      )
+  })
+
+  # Creating fancy plotly output
+  output$CEO_plotly <- renderPlotly(
+    ggplotly(CEO_plot())
+  )
+
+  #----Annual result---------------------------------------------
+  arsresultat_plot <- reactive({
+    htmldata() |>
       ggplot(aes(year, arsresultat, fill = annual_profit)) +
       geom_col() +
       scale_y_continuous(
         labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
-                        # Using the currency code if uniform
-                    label_dollar(prefix = str_c(htmldata()$valutakode[1], " ")),
-                        # alternative prefix if multiple currencies in the data
-                    label_dollar(prefix = "? "))
-        ) +
-        # slightly nicer colours + ensuring positive values are always green
+          # Using the currency code if uniform
+          label_dollar(prefix = str_c(htmldata()$valutakode[1], " ")),
+          # alternative prefix if multiple currencies in the data
+          label_dollar(prefix = "? ")
+        )
+      ) +
+      # slightly nicer colours + ensuring positive values are always green
       scale_fill_met_d("Tsimshian",
-                   direction = ifelse(mean(htmldata()$annual_profit, na.rm = TRUE) == 1,-1, 1)) +
+        direction =
+          ifelse(mean(htmldata()$annual_profit,
+            na.rm = TRUE
+          ) == 1, -1, 1)
+      ) +
       theme(legend.position = "none") +
-      labs(x = "Year", y = "", title = "Annual result (in thousands)",
-             # Checking again for currency; including warning if not uniform
+      labs(
+        x = "Year", y = "", title = "Annual result (in thousands)",
+        # Checking again for currency; including warning if not uniform
         subtitle = ifelse(length(unique(htmldata()$valutakode)) == 1,
-                         "",
-                         "Note: not all values are denominated in the same currency"))
-    })
+          "",
+          "Note: not all values are denominated in the same currency"
+        )
+      )
+  })
 
-    output$arsresultat_plotly <- renderPlotly(
-      ggplotly(arsresultat_plot())
-    )
-#----Balance--------------------------------------------------------------------    
-    
+  output$arsresultat_plotly <- renderPlotly(
+    ggplotly(arsresultat_plot())
+  )
+  #----Balance--------------------------------------------------------------------    
+  balance_plot <- reactive({
+    htmldata() |>
+      ggplot(aes(year, sum_egenkapital_og_gjeld, fill = balance_positive)) +
+      geom_col() +
+      scale_y_continuous(
+        labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
+          # Using the currency code if uniform
+          label_dollar(prefix = str_c(htmldata()$valutakode[1], " ")),
+          # alternative prefix if multiple currencies in the data
+          label_dollar(prefix = "? ")
+        )
+      ) +
+      # slightly nicer colours + ensuring positive values are always green
+      scale_fill_met_d("Tsimshian",
+        direction = ifelse(
+          mean(htmldata()$balance_positive,
+            na.rm = TRUE
+          ) == 1, -1, 1
+        )
+      ) +
+      theme(legend.position = "none") +
+      labs(
+        x = "Year", y = "", title = "Balance (in thousands)",
+        # Checking again for currency; including warning if not uniform
+        subtitle =
+          ifelse(length(unique(htmldata()$valutakode)) == 1,
+            "",
+            "Note: not all values are denominated in the same currency"
+          )
+      )
+  })
+
+  output$balance_plotly <- renderPlotly(
+    ggplotly(balance_plot())
+  )
 })
 ```
 
 ```{r functions, include=FALSE}
 # Function to read html file
-read_proff8 <- function(file, start, end){
-    read_html(file, encoding = "UTF-8") |> 
-      html_node("#inner-frame") |> 
-      html_table() |> 
-      select( # removing empty column
-        REGNSKAPSPERIODE:all_of(start)) |> # using all_of()
-      mutate( # removing whitespace
-        REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
-      ) |> 
-      filter( # removing duplicate table - no idea why it's necessary
-        !row_number() > 176
-      ) |>
-      filter( # removing duplicate rows
-        !grepl("Lukk", REGNSKAPSPERIODE)
-      ) |> 
-      pivot_longer( # tidying data
-        all_of(end):all_of(start), names_to = "year"
-        ) |> # using all_of()
-      mutate( # changing to real NAs and turning years into numbers
-        value = na_if(value, "-"),
-        year = as.integer(year), 
-        valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
-      ) |> 
-      fill( # filling the currency column
-        valutakode, .direction = "updown"
-      ) |> 
-      filter( # removing dates and redundant currency
-        REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
-          REGNSKAPSPERIODE != "Valutakode") |> 
-      mutate( # removing whitespace in numbers
-        value = str_replace_all(value, "\\s", ""),
-        value = as.numeric(value),
-        value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
-      ) |> 
-      distinct() |> # removing any remaining duplicate rows
-      pivot_wider( # pivoting
-        names_from = REGNSKAPSPERIODE, values_from = value
-      ) |> 
-      clean_names() |> # tidying names
-      select(-lederlonn_i_hele_1000,
-             -resultatregnskap_i_hele_1000,
-             -balanseregnskap_i_hele_1000) |> # removing headings
-      rename( # making it clear what lonn refers to
-        lederlonn = lonn
-      ) |> 
-      # Creating new variables for plots
-      mutate(
-        annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
-        balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
-      ) |> 
-      arrange(desc(year)) # arranging by year
+read_proff8 <- function(file, start, end) {
+  read_html(file, encoding = "UTF-8") |>
+    html_node("#inner-frame") |>
+    html_table() |>
+    select( # removing empty column
+      REGNSKAPSPERIODE:all_of(start)
+    ) |> # using all_of()
+    mutate( # removing whitespace
+      REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+    ) |>
+    filter( # removing duplicate table - no idea why it's necessary
+      !row_number() > 176
+    ) |>
+    filter( # removing duplicate rows
+      !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |>
+    pivot_longer( # tidying data
+      all_of(end):all_of(start),
+      names_to = "year"
+    ) |> # using all_of()
+    mutate( # changing to real NAs and turning years into numbers
+      value = na_if(value, "-"),
+      year = as.integer(year),
+      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+    ) |>
+    fill( # filling the currency column
+      valutakode,
+      .direction = "updown"
+    ) |>
+    filter( # removing dates and redundant currency
+      REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+        REGNSKAPSPERIODE != "Valutakode"
+    ) |>
+    mutate( # removing whitespace in numbers
+      value = str_replace_all(value, "\\s", ""),
+      value = as.numeric(value),
+      value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+    ) |>
+    distinct() |> # removing any remaining duplicate rows
+    pivot_wider( # pivoting
+      names_from = REGNSKAPSPERIODE, values_from = value
+    ) |>
+    clean_names() |> # tidying names
+    select(
+      -lederlonn_i_hele_1000,
+      -resultatregnskap_i_hele_1000,
+      -balanseregnskap_i_hele_1000
+    ) |> # removing headings
+    rename( # making it clear what lonn refers to
+      lederlonn = lonn
+    ) |>
+    # Creating new variables for plots
+    mutate(
+      annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
+      balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
+    ) |>
+    arrange(desc(year)) # arranging by year
 }
-  
+
 # Function to read Excel file
-widen_excel <- function(file){
-    read_excel(file) |> 
-      unite( # uniting Category and Name to deal with multiple 'Other'
-        entry, c(Category, Name), sep = "_"
-      ) |> 
-      select(-`Sub-category`) |> # deleting Sub-category
+widen_excel <- function(file) {
+  read_excel(file) |>
+    unite( # uniting Category and Name to deal with multiple 'Other'
+      entry, c(Category, Name),
+      sep = "_"
+    ) |>
+    select(-`Sub-category`) |> # deleting Sub-category
     # pivoting
-      pivot_wider(names_from = entry, values_from = Value) |> 
-      clean_names() # cleaning names
+    pivot_wider(names_from = entry, values_from = Value) |>
+    clean_names() # cleaning names
 }
 ```
 
