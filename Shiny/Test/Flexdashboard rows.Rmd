@@ -4,6 +4,7 @@ output:
   flexdashboard::flex_dashboard:
     orientation: rows
     vertical_layout: scroll
+    theme: lumen
 runtime: shiny
 ---
 
@@ -17,6 +18,8 @@ p_load(
 )
 # Using fontawesome for more up-to-date fontawesome icons
 htmltools::tagList(fontawesome::fa_html_dependency())
+
+# Considering lumen or cerulean theme
 ```
 
 
@@ -187,7 +190,7 @@ observeEvent(input$click, { # wait for button click
     valueBox(
       value = KPI_admin(),
       caption = "Admin spend",
-      color = met.brewer("Wissing", n = 1),
+      color = met.brewer("Troy", n = 1),
       icon = "fa-random"
     )
   })
@@ -286,7 +289,7 @@ observeEvent(input$click, { # wait for button click
       )
   })
 
-  # Creating fancy plotly output
+  # Creating plotly output
   output$CEO_plotly <- renderPlotly(
     ggplotly(CEO_plot())
   )
