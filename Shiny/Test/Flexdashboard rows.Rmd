@@ -59,12 +59,12 @@ Row
 
 ### KPI
 ```{r}
-valueBoxOutput("KPI_box")
+valueBoxOutput("KPI_box_admin")
 ```
 
 ### KPI 2
 ```{r}
-valueBoxOutput("KPI_box2")
+valueBoxOutput("KPI_box_fundraising")
 ```
 
 ### KPI 3
@@ -169,7 +169,7 @@ observeEvent(input$click, { # wait for button click
       str_flatten() # turning into a single string
   })
 
-  # Creating Fundraising ROI value -- transmute?
+  # Creating Fundraising ROI value
   KPI_fundraising_num <- reactive({
     exceldata() |>
       # most recent year
@@ -186,7 +186,7 @@ observeEvent(input$click, { # wait for button click
   })
 
   # Creating the value box for administrative expenses
-  output$KPI_box <- renderValueBox({
+  output$KPI_box_admin <- renderValueBox({
     valueBox(
       value = KPI_admin(),
       caption = "Admin spend",
@@ -197,7 +197,7 @@ observeEvent(input$click, { # wait for button click
 
   # Creating value box for fundraising ROI
   # Unsure about colour levels
-  output$KPI_box2 <- renderValueBox({
+  output$KPI_box_fundraising <- renderValueBox({
     valueBox(
       # shortening(lengthening) the value with format()
       # Using str_c() to concatenate value and % sign;
