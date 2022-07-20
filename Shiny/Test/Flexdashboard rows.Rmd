@@ -181,7 +181,7 @@ observeEvent(input$click, { # wait for button click
       valueBox(
         value = KPI_admin(),
         caption = "Admin spend",
-        color = "primary",
+        color = met.brewer("Wissing", n = 1),
         icon = "fa-random"
         )
       })

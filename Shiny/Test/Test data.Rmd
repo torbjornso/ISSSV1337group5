@@ -130,6 +130,57 @@ read_proff7 <- function(file, start, end){
       arrange(desc(year)) # arranging by year
 }
 
+read_proff8 <- function(file, start, end){
+    read_html(file, encoding = "UTF-8") |> 
+      html_node("#inner-frame") |> 
+      html_table() |> 
+      select( # removing empty column
+        REGNSKAPSPERIODE:all_of(start)) |> # using all_of()
+      mutate( # removing whitespace
+        REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+      ) |> 
+      filter( # removing duplicate table - no idea why it's necessary
+        !row_number() > 176
+      ) |>
+      filter( # removing duplicate rows
+        !grepl("Lukk", REGNSKAPSPERIODE)
+      ) |> 
+      pivot_longer( # tidying data
+        all_of(end):all_of(start), names_to = "year"
+        ) |> # using all_of()
+      mutate( # changing to real NAs and turning years into numbers
+        value = na_if(value, "-"),
+        year = as.integer(year), 
+        valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+      ) |> 
+      fill( # filling the currency column
+        valutakode, .direction = "updown"
+      ) |> 
+      filter( # removing dates and redundant currency
+        REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+          REGNSKAPSPERIODE != "Valutakode") |> 
+      mutate( # removing whitespace in numbers
+        value = str_replace_all(value, "\\s", ""),
+        value = as.numeric(value),
+        value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value),
+        value = value * 1000
+      ) |> 
+      distinct() |> # removing any remaining duplicate rows
+      pivot_wider( # pivoting
+        names_from = REGNSKAPSPERIODE, values_from = value
+      ) |> 
+      clean_names() |> # tidying names
+      select(-lederlonn_i_hele_1000,
+             -resultatregnskap_i_hele_1000,
+             -balanseregnskap_i_hele_1000) |> # removing headings
+      rename( # making it clear what lonn refers to
+        lederlonn = lonn
+      ) |> 
+      arrange(desc(year)) # arranging by year
+}
+
+
+
 
 ```
 
@@ -157,6 +208,10 @@ kreft_excel <- widen_excel("Data/OPXfinans_final.xlsx")
 kreft_html3 <- read_proff7("Data/Kreftforeningen.html", "2002", "2021")
 
 identical(kreft_html, kreft_html3)
+
+kreft_html5 <- read_proff8("Data/Kreftforeningen.html", "2002", "2021")
+
+identical(kreft_html, kreft_html5)
 ```
 
 ## Viewing data
@@ -432,6 +487,9 @@ kreft_html2 |>
 
 ```
 
+annual_profit
+balance_positive
+
 
 ## KPI ideas
 
@@ -529,6 +587,9 @@ kreft_excel |> mutate(
 ```
 
 
+```{r}
+
+```
 
 
 
