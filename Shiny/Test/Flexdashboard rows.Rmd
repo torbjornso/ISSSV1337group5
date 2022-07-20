@@ -79,14 +79,14 @@ valueBoxOutput("KPI_box5")
 Row
 -----------------------------------------------------------------------
 
-### Plotly
-```{r}
-plotlyOutput("plotlyplot")
-```
-
 ### Annual result
 ```{r}
-plotlyOutput("arsresultat_plot")
+plotlyOutput("arsresultat_plotly")
+```
+
+### Balance
+```{r}
+
 ```
 
 Row 
@@ -94,7 +94,7 @@ Row
 
 ### Transparency
 ```{r}
-plotlyOutput("fancyplotly")
+plotlyOutput("CEO_plotly")
 ```
 
 Details
@@ -132,7 +132,7 @@ observeEvent(input$click, { # wait for button click
 #---- Data frames --------------------------------------------------------------      
     # creating data frame from html file
     htmldata <- reactive({
-      read_proff6(input$html$datapath,
+      read_proff8(input$html$datapath,
                   as.character(input$start), as.character(input$end))
       })
     
@@ -230,32 +230,13 @@ observeEvent(input$click, { # wait for button click
   
     
 #---- Plots --------------------------------------------------------------------    
-# creating plots - CEO compensation
-    
-    # ggplot as reactive function
-    lonnplot <- reactive({
-      ggplot(data = htmldata(), aes(year, lederlonn)) +
-        geom_col() +
-        scale_y_continuous(
-          labels = scales::label_dollar(prefix = ""))
-    })
-    
-    # Creating plotly plot
-    output$plotlyplot <- renderPlotly(
-      ggplotly(lonnplot())
-    )
-    
-    # Creating ggplot
-    output$htmlplot <- renderPlot(
-      lonnplot()
-    )
-    
-    # fancier plot function
-    fancyplot <- reactive(
+#----CEO compensation-----------------------------------------------------------
+    CEO_plot <- reactive(
       htmldata() |> 
         select(
           year, lederlonn, leder_annen_godtgjorelse
          ) |> 
+        # Compensation in ordinary numbers
         mutate(
           lederlonn = lederlonn * 1000,
           leder_annen_godtgjorelse = leder_annen_godtgjorelse * 1000
@@ -288,17 +269,14 @@ observeEvent(input$click, { # wait for button click
         )
     
   # Creating fancy plotly output  
-    output$fancyplotly <- renderPlotly(
-      ggplotly(fancyplot())
+    output$CEO_plotly <- renderPlotly(
+      ggplotly(CEO_plot())
     )
     
-# Creating plots - annual result
+#----Annual result---------------------------------------------
     arsresultat_plot <- reactive({
-      htmldata() |> 
-      mutate(
-        profit = ifelse(arsresultat >= 0, TRUE, FALSE)
-      ) |> 
-      ggplot(aes(year, arsresultat, fill = profit)) +
+      htmldata() |>
+      ggplot(aes(year, arsresultat, fill = annual_profit)) +
       geom_col() +
       scale_y_continuous(
         labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
@@ -307,7 +285,9 @@ observeEvent(input$click, { # wait for button click
                         # alternative prefix if multiple currencies in the data
                     label_dollar(prefix = "? "))
         ) +
-      scale_fill_met_d("Tsimshian") +
+        # slightly nicer colours + ensuring positive values are always green
+      scale_fill_met_d("Tsimshian",
+                   direction = ifelse(mean(htmldata()$annual_profit, na.rm = TRUE) == 1,-1, 1)) +
       theme(legend.position = "none") +
       labs(x = "Year", y = "", title = "Annual result (in thousands)",
              # Checking again for currency; including warning if not uniform
@@ -315,18 +295,18 @@ observeEvent(input$click, { # wait for button click
                          "",
                          "Note: not all values are denominated in the same currency"))
     })
-    
-    output$arsresultat_plot <- renderPlotly(
+
+    output$arsresultat_plotly <- renderPlotly(
       ggplotly(arsresultat_plot())
     )
-    
+#----Balance--------------------------------------------------------------------    
     
 })
 ```
 
 ```{r functions, include=FALSE}
 # Function to read html file
-read_proff6 <- function(file, start, end){
+read_proff8 <- function(file, start, end){
     read_html(file, encoding = "UTF-8") |> 
       html_node("#inner-frame") |> 
       html_table() |> 
@@ -342,11 +322,11 @@ read_proff6 <- function(file, start, end){
         !grepl("Lukk", REGNSKAPSPERIODE)
       ) |> 
       pivot_longer( # tidying data
-        all_of(end):all_of(start), names_to = "year") |> # using all_of()
+        all_of(end):all_of(start), names_to = "year"
+        ) |> # using all_of()
       mutate( # changing to real NAs and turning years into numbers
         value = na_if(value, "-"),
-        year = as.integer(year)) |> 
-      mutate( # adding currency column
+        year = as.integer(year), 
         valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
       ) |> 
       fill( # filling the currency column
@@ -356,12 +336,8 @@ read_proff6 <- function(file, start, end){
         REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
           REGNSKAPSPERIODE != "Valutakode") |> 
       mutate( # removing whitespace in numbers
-        value = str_replace_all(value, "\\s", "")
-      ) |> 
-      mutate( # turning into numbers
-        value = as.numeric(value)
-      ) |> 
-      mutate( # removing years as values
+        value = str_replace_all(value, "\\s", ""),
+        value = as.numeric(value),
         value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
       ) |> 
       distinct() |> # removing any remaining duplicate rows
@@ -375,8 +351,13 @@ read_proff6 <- function(file, start, end){
       rename( # making it clear what lonn refers to
         lederlonn = lonn
       ) |> 
+      # Creating new variables for plots
+      mutate(
+        annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
+        balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
+      ) |> 
       arrange(desc(year)) # arranging by year
-  }
+}
   
 # Function to read Excel file
 widen_excel <- function(file){
