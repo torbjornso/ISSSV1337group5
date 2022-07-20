@@ -80,54 +80,61 @@ read_proff6 <- function(file, start, end){
       arrange(desc(year)) # arranging by year
 }
 
-read_proff7 <- function(file, start, end){
-    read_html(file, encoding = "UTF-8") |> 
-      html_node("#inner-frame") |> 
-      html_table() |> 
-      select( # removing empty column
-        REGNSKAPSPERIODE:all_of(start)) |> # using all_of()
-      mutate( # removing whitespace
-        REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
-      ) |> 
-      filter( # removing duplicate table - no idea why it's necessary
-        !row_number() > 176
-      ) |>
-      filter( # removing duplicate rows
-        !grepl("Lukk", REGNSKAPSPERIODE)
-      ) |> 
-      pivot_longer( # tidying data
-        all_of(end):all_of(start), names_to = "year"
-        ) |> # using all_of()
-      mutate( # changing to real NAs and turning years into numbers
-        value = na_if(value, "-"),
-        year = as.integer(year)) |> 
-      mutate( # adding currency column
-        valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
-      ) |> 
-      fill( # filling the currency column
-        valutakode, .direction = "updown"
-      ) |> 
-      filter( # removing dates and redundant currency
-        REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
-          REGNSKAPSPERIODE != "Valutakode") |> 
-      mutate( # removing whitespace in numbers
-        value = str_replace_all(value, "\\s", ""),
-        value = as.numeric(value),
-        value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value),
-        value = value * 1000
-      ) |> 
-      distinct() |> # removing any remaining duplicate rows
-      pivot_wider( # pivoting
-        names_from = REGNSKAPSPERIODE, values_from = value
-      ) |> 
-      clean_names() |> # tidying names
-      select(-lederlonn_i_hele_1000,
-             -resultatregnskap_i_hele_1000,
-             -balanseregnskap_i_hele_1000) |> # removing headings
-      rename( # making it clear what lonn refers to
-        lederlonn = lonn
-      ) |> 
-      arrange(desc(year)) # arranging by year
+read_proff7 <- function(file, start, end) {
+  read_html(file, encoding = "UTF-8") |>
+    html_node("#inner-frame") |>
+    html_table() |>
+    select( # removing empty column
+      REGNSKAPSPERIODE:all_of(start)
+    ) |> # using all_of()
+    mutate( # removing whitespace
+      REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+    ) |>
+    filter( # removing duplicate table - no idea why it's necessary
+      !row_number() > 176
+    ) |>
+    filter( # removing duplicate rows
+      !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |>
+    pivot_longer( # tidying data
+      all_of(end):all_of(start),
+      names_to = "year"
+    ) |> # using all_of()
+    mutate( # changing to real NAs and turning years into numbers
+      value = na_if(value, "-"),
+      year = as.integer(year)
+    ) |>
+    mutate( # adding currency column
+      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+    ) |>
+    fill( # filling the currency column
+      valutakode,
+      .direction = "updown"
+    ) |>
+    filter( # removing dates and redundant currency
+      REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+        REGNSKAPSPERIODE != "Valutakode"
+    ) |>
+    mutate( # removing whitespace in numbers
+      value = str_replace_all(value, "\\s", ""),
+      value = as.numeric(value),
+      value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value),
+      value = value * 1000
+    ) |>
+    distinct() |> # removing any remaining duplicate rows
+    pivot_wider( # pivoting
+      names_from = REGNSKAPSPERIODE, values_from = value
+    ) |>
+    clean_names() |> # tidying names
+    select(
+      -lederlonn_i_hele_1000,
+      -resultatregnskap_i_hele_1000,
+      -balanseregnskap_i_hele_1000
+    ) |> # removing headings
+    rename( # making it clear what lonn refers to
+      lederlonn = lonn
+    ) |>
+    arrange(desc(year)) # arranging by year
 }
 
 read_proff8 <- function(file, start, end){
@@ -200,7 +207,73 @@ read_proff8 <- function(file, start, end){
       arrange(desc(year)) 
 }
 
-
+read_proff_tidied <- function(file, start, end) {
+    read_html(file, encoding = "UTF-8") |>
+        html_node("#inner-frame") |>
+        html_table() |>
+        # removing empty column
+    select(REGNSKAPSPERIODE:all_of(start)) |>
+        # removing whitespace
+    mutate(REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)) |>
+        # removing duplicate table - no idea why it's necessary
+    filter(!row_number() > 176) |>
+        # removing duplicate rows
+    filter(!grepl("Lukk", REGNSKAPSPERIODE)) |>
+        # tidying data
+    pivot_longer(
+        all_of(end):all_of(start),
+        names_to = "year"
+    ) |>
+        # changing to real NAs and turning years into numbers picking
+        # out the currency
+    mutate(
+        value = na_if(value, "-"),
+        year = as.integer(year),
+        valutakode = ifelse(
+            REGNSKAPSPERIODE == "Valutakode", value,
+            NA
+        )
+    ) |>
+        # filling the currency column
+    fill(valutakode, .direction = "updown") |>
+        # removing dates and redundant currency
+    filter(
+        REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE !=
+            "Startdato" & REGNSKAPSPERIODE != "Valutakode"
+    ) |>
+        # removing white space in numbers and removing years as numbers
+    mutate(
+        value = str_replace_all(value, "\\s", ""),
+        value = as.numeric(value),
+        value = ifelse(
+            grepl("i hele 1000", REGNSKAPSPERIODE),
+            NA, value
+        )
+    ) |>
+        # removing any remaining duplicate rows
+    distinct() |>
+        # pivoting
+    pivot_wider(names_from = REGNSKAPSPERIODE, values_from = value) |>
+        # tidying names
+    clean_names() |>
+        # removing headings
+    select(
+        -lederlonn_i_hele_1000, -resultatregnskap_i_hele_1000,
+        -balanseregnskap_i_hele_1000
+    ) |>
+        # making it clear what lonn refers to
+    rename(lederlonn = lonn) |>
+        # Creating new variables for plots
+    mutate(
+        annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
+        balance_positive = ifelse(
+            sum_egenkapital_og_gjeld >= 0, TRUE,
+            FALSE
+        )
+    ) |>
+        # arranging by year
+    arrange(desc(year))
+}
 
 
 ```
@@ -414,28 +487,32 @@ currency_test |>
                          "Note: not all values are denominated in the same currency"))
 
 # Original
-kreft_html |> 
+kreft_html |>
   select(
     year, lederlonn, leder_annen_godtgjorelse
-  ) |> 
+  ) |>
   rename(
     Year = year,
     Salary = lederlonn,
     `Other compensation` = leder_annen_godtgjorelse
-  ) |> 
-  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+  ) |>
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |>
   ggplot(aes(Year, value, fill = Compensation)) +
   geom_col() +
   scale_y_continuous(
     labels = ifelse(length(unique(kreft_html$valutakode)) == 1,
-                    label_dollar(prefix = str_c(kreft_html$valutakode[1], " ")),
-                    label_dollar(prefix = "? "))
-      ) +
+      label_dollar(prefix = str_c(kreft_html$valutakode[1], " ")),
+      label_dollar(prefix = "? ")
+    )
+  ) +
   scale_fill_met_d("Troy") +
-  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
-       subtitle = ifelse(length(unique(kreft_html$valutakode)) == 1,
-                         "",
-                         "Note: not all values are denominated in the same currency"))
+  labs(
+    x = "Year", y = "Total compensation", title = "Annual CEO compensation",
+    subtitle = ifelse(length(unique(kreft_html$valutakode)) == 1,
+      "",
+      "Note: not all values are denominated in the same currency"
+    )
+  )
 
 
 
