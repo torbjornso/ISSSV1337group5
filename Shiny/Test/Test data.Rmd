@@ -134,45 +134,61 @@ read_proff8 <- function(file, start, end){
     read_html(file, encoding = "UTF-8") |> 
       html_node("#inner-frame") |> 
       html_table() |> 
-      select( # removing empty column
-        REGNSKAPSPERIODE:all_of(start)) |> # using all_of()
-      mutate( # removing whitespace
+    # removing empty column
+      select( 
+        REGNSKAPSPERIODE:all_of(start)) |>
+    # removing whitespace
+      mutate( 
         REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
       ) |> 
-      filter( # removing duplicate table - no idea why it's necessary
+    # removing duplicate table - no idea why it's necessary
+      filter(
         !row_number() > 176
       ) |>
-      filter( # removing duplicate rows
+    # removing duplicate rows
+      filter( 
         !grepl("Lukk", REGNSKAPSPERIODE)
       ) |> 
-      pivot_longer( # tidying data
+    # tidying data
+      pivot_longer( 
         all_of(end):all_of(start), names_to = "year"
-        ) |> # using all_of()
-      mutate( # changing to real NAs and turning years into numbers
+        ) |> 
+    # changing to real NAs and turning years into numbers
+    # picking out the currency
+      mutate( 
         value = na_if(value, "-"),
         year = as.integer(year), 
         valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
       ) |> 
-      fill( # filling the currency column
+    # filling the currency column
+      fill( 
         valutakode, .direction = "updown"
       ) |> 
-      filter( # removing dates and redundant currency
+    # removing dates and redundant currency
+      filter( 
         REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
           REGNSKAPSPERIODE != "Valutakode") |> 
-      mutate( # removing whitespace in numbers
+    # removing white space in numbers
+    # removing years as numbers
+      mutate( 
         value = str_replace_all(value, "\\s", ""),
         value = as.numeric(value),
         value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
       ) |> 
-      distinct() |> # removing any remaining duplicate rows
-      pivot_wider( # pivoting
+    # removing any remaining duplicate rows
+      distinct() |> 
+    # pivoting
+      pivot_wider( 
         names_from = REGNSKAPSPERIODE, values_from = value
       ) |> 
-      clean_names() |> # tidying names
+    # tidying names
+      clean_names() |> 
+    # removing headings
       select(-lederlonn_i_hele_1000,
              -resultatregnskap_i_hele_1000,
-             -balanseregnskap_i_hele_1000) |> # removing headings
-      rename( # making it clear what lonn refers to
+             -balanseregnskap_i_hele_1000) |> 
+    # making it clear what lonn refers to
+      rename( 
         lederlonn = lonn
       ) |> 
     # Creating new variables for plots
@@ -180,7 +196,8 @@ read_proff8 <- function(file, start, end){
       annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
       balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
     ) |> 
-      arrange(desc(year)) # arranging by year
+    # arranging by year
+      arrange(desc(year)) 
 }
 
 
@@ -210,7 +227,7 @@ kreft_html3 <- read_proff7("Data/Kreftforeningen.html", "2002", "2021")
 
 identical(kreft_html, kreft_html3)
 
-kreft_html5 <- read_proff8("Data/Kreftforeningen.html", "2002", "2021")
+kreft_html_with_variables <- read_proff8("Data/Kreftforeningen.html", "2002", "2021")
 
 identical(kreft_html, kreft_html5)
 
@@ -548,7 +565,35 @@ kreft_html2 |>
   scale_fill_met_d("Tsimshian",
                    direction = ifelse(mean(kreft_html2$profit) == 1,-1, 1))
 
+kreft_html2 |> 
+  ggplot(aes(year, sum_egenkapital_og_gjeld, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = label_dollar()) +
+  scale_fill_met_d("Tsimshian",
+                   direction = ifelse(mean(kreft_html2$profit) == 1,-1, 1))
+
 # Need to add profit variables
+
+kreft_html_with_variables |> 
+  ggplot(aes(year, sum_egenkapital_og_gjeld, fill = balance_positive)) +
+  geom_col() +
+  scale_y_continuous(
+        labels = ifelse(length(unique(kreft_html_with_variables$valutakode)) == 1,
+                        # Using the currency code if uniform
+                    label_dollar(prefix = str_c(kreft_html_with_variables$valutakode[1], " ")),
+                        # alternative prefix if multiple currencies in the data
+                    label_dollar(prefix = "? "))
+        ) +
+  scale_fill_met_d("Tsimshian",
+                   direction = ifelse(
+                     mean(kreft_html_with_variables$balance_positive,
+                          na.rm = TRUE) == 1,-1, 1)) +
+  theme(legend.position = "none") +
+  labs(x = "Year", y = "", title = "Balance (in thousands)",
+             # Checking again for currency; including warning if not uniform
+        subtitle = ifelse(length(unique(kreft_html_with_variables$valutakode)) == 1,
+                         "",
+                         "Note: not all values are denominated in the same currency"))
 
 ```
 
