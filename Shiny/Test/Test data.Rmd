@@ -516,6 +516,11 @@ layout(title = list(text='Plot Title', y = 0.95, x = 0.5, xanchor = 'center', ya
 string <- "test"
 
 "Note: not all values are denominated in the same currency"
+
+# bad test
+    mutate(
+    valutakode = ifelse(year == 2019, "USD", valutakode)
+  ) |>
 ```
 
 ### Result
@@ -638,7 +643,7 @@ currency_scale <- function()
 
 ### Expenses
 ```{r}
-kreft_excel |> 
+expenses_plot <- kreft_excel |> 
   transmute(
     Year = as.factor(year),
     Other = expenses_other,
@@ -657,7 +662,30 @@ kreft_excel |>
   coord_flip() +
   scale_y_continuous(labels = label_dollar()) +
   scale_fill_met_d("Troy")
-  
+
+ggplotly(expenses_plot) |>
+      layout(
+        annotations =
+          list(
+            x = 1, y = -0.1, text = "currency_caption()",
+            showarrow = F, xref = "paper", yref = "paper",
+            xanchor = "right", yanchor = "auto", xshift = 0, yshift = 0,
+            font = list(size = 11)
+          )
+      )
+
+plotlylayout <- function()({
+  list(
+            x = 1, y = -0.1, text = "currency_caption()",
+            showarrow = F, xref = "paper", yref = "paper",
+            xanchor = "right", yanchor = "auto", xshift = 0, yshift = 0,
+            font = list(size = 11)
+          )
+})
+
+ggplotly(expenses_plot) |> 
+layout(annotations = plotlylayout())
+
 kreft_excel |> 
   transmute(
     Year = as.factor(year),
