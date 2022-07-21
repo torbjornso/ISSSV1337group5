@@ -857,6 +857,27 @@ kreft_excel |>
 ?pull
 ```
 
+### Public grants growth
+```{r}
+kreft_excel |> 
+  transmute(
+    growth = revenue_public_grants[1] / revenue_public_grants[2] * 100
+  ) |> 
+  pull() |> 
+  first()
+```
+
+### Private/public
+```{r}
+kreft_excel |> 
+  transmute(
+    proportion = revenue_private_contributions / revenue_public_grants * 100
+  ) |> 
+  pull() |> 
+  first()
+```
+
+
 ### Their KPI
 
 ```{r}
