@@ -1,5 +1,5 @@
 ---
-title: "Charity analysis"
+title: "NGO analysis"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
@@ -174,7 +174,7 @@ observeEvent(input$click, { # wait for button click
       # just want the single number
       pull()
   })
-
+  
   # Creating Fundraising ROI value
   KPI_fundraising_num <- reactive({
     exceldata() |>
@@ -288,15 +288,7 @@ observeEvent(input$click, { # wait for button click
       pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |>
       ggplot(aes(Year, value, fill = Compensation)) +
       geom_col() +
-      scale_y_continuous(
-        # Checking for uniform currency code
-        labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
-          # Using the currency code if uniform
-          label_dollar(prefix = str_c(htmldata()$valutakode[1], " ")),
-          # alternative prefix if multiple currencies in the data
-          label_dollar(prefix = "? ")
-        )
-      ) +
+      currency_scale() +
       # pretty colours
       scale_fill_met_d("Troy") +
       labs(
@@ -309,12 +301,7 @@ observeEvent(input$click, { # wait for button click
     ggplotly(CEO_plot()) |>
       layout(
         annotations =
-          list(
-            x = 1, y = -0.1, text = currency_caption(),
-            showarrow = F, xref = "paper", yref = "paper",
-            xanchor = "right", yanchor = "auto", xshift = 0, yshift = 0,
-            font = list(size = 11)
-          )
+          plotly_caption()
       )
   )
 
@@ -324,13 +311,7 @@ observeEvent(input$click, { # wait for button click
       ggplot(aes(year, arsresultat, fill = annual_profit)) +
       geom_col() +
       currency_scale() +
-      # slightly nicer colours + ensuring positive values are always green
-      scale_fill_met_d("Tsimshian",
-        direction =
-          ifelse(mean(htmldata()$annual_profit,
-            na.rm = TRUE
-          ) == 1, -1, 1)
-      ) +
+      scale_fill_green() +
       theme(legend.position = "none") +
       labs(
         x = "", y = "", title = "Annual result (in thousands)"
@@ -341,12 +322,7 @@ observeEvent(input$click, { # wait for button click
     ggplotly(arsresultat_plot()) |>
       layout(
         annotations =
-          list(
-            x = 1, y = -0.1, text = currency_caption(),
-            showarrow = F, xref = "paper", yref = "paper",
-            xanchor = "right", yanchor = "auto", xshift = 0, yshift = 0,
-            font = list(size = 11)
-          )
+          plotly_caption()
       )
   )
   #----Balance--------------------------------------------------------------------    
@@ -355,14 +331,7 @@ observeEvent(input$click, { # wait for button click
       ggplot(aes(year, sum_egenkapital_og_gjeld, fill = balance_positive)) +
       geom_col() +
       currency_scale() +
-      # slightly nicer colours + ensuring positive values are always green
-      scale_fill_met_d("Tsimshian",
-        direction = ifelse(
-          mean(htmldata()$balance_positive,
-            na.rm = TRUE
-          ) == 1, -1, 1
-        )
-      ) +
+      scale_fill_green() +
       theme(legend.position = "none") +
       labs(
         x = "", y = "", title = "Balance (in thousands)",
@@ -373,18 +342,14 @@ observeEvent(input$click, { # wait for button click
     ggplotly(balance_plot()) |>
       layout(
         annotations =
-          list(
-            x = 1, y = -0.1, text = currency_caption(),
-            showarrow = F, xref = "paper", yref = "paper",
-            xanchor = "right", yanchor = "auto", xshift = 0, yshift = 0,
-            font = list(size = 11)
-          )
+          plotly_caption()
       )
   )
 
   #----Expenses---------------------------------------
   expenses_plot <- reactive({
     exceldata() |>
+      # Renaming for the purposes of the plot + dropping other variables
       transmute(
         Year = as.factor(year),
         Other = expenses_other,
@@ -392,18 +357,11 @@ observeEvent(input$click, { # wait for button click
         Fundraising = expenses_fundraising,
         `Program services` = expenses_program_services
       ) |>
+      # Pivoting to use fill
       pivot_longer(c(Other:`Program services`), names_to = "Expenses") |>
-      mutate(
-        Expenses = ordered(Expenses,
-          levels =
-            c(
-              "Program services", "Administrative",
-              "Fundraising", "Other"
-            )
-        )
-      ) |>
       ggplot(aes(Year, value, fill = Expenses)) +
       geom_col() +
+      # Flipping, because the Excel file only contains two years atm
       coord_flip() +
       currency_scale() +
       scale_fill_met_d("Troy") +
@@ -414,12 +372,7 @@ observeEvent(input$click, { # wait for button click
     ggplotly(expenses_plot()) |>
       layout(
         annotations =
-          list(
-            x = 1, y = -0.1, text = currency_caption(),
-            showarrow = F, xref = "paper", yref = "paper",
-            xanchor = "right", yanchor = "auto", xshift = 0, yshift = 0,
-            font = list(size = 11)
-          )
+          plotly_caption()
       )
   )
 
@@ -439,11 +392,37 @@ observeEvent(input$click, { # wait for button click
 
   # Reactive function to create currency caption
   currency_caption <- reactive({
+    # Checking for uniform currency code
     if (length(unique(htmldata()$valutakode)) == 1) {
+      # Empty caption if uniform
       ""
+      # Warning if multiple currencies
     } else {
       "Note: not all values are denominated in the same currency"
     }
+  })
+
+  # Reactive function to create plotly caption
+  # (ggplot captions and subtitles are lost in the conversion)
+  # (shamelessly stolen from the Internet, with minor modifications)
+  plotly_caption <- reactive({
+    list(
+      x = 1, y = -0.1, text = currency_caption(),
+      showarrow = F, xref = "paper", yref = "paper",
+      xanchor = "right", yanchor = "auto", xshift = 0, yshift = 0,
+      font = list(size = 11)
+    )
+  })
+
+  # Reactive function with slightly nicer colours + ensuring positive values are always green
+  scale_fill_green <- reactive({
+    scale_fill_met_d("Tsimshian",
+      direction = ifelse(
+        mean(htmldata()$balance_positive,
+          na.rm = TRUE
+        ) == 1, -1, 1
+      )
+    )
   })
 })
 
@@ -452,6 +431,66 @@ observeEvent(input$click, { # wait for button click
 
 ```{r non-reactive functions, include=FALSE}
 # Function to read html file
+# read_proff8 <- function(file, start, end) {
+#   read_html(file, encoding = "UTF-8") |>
+#     html_node("#inner-frame") |>
+#     html_table() |>
+#     select( # removing empty column
+#       REGNSKAPSPERIODE:all_of(start)
+#     ) |> # using all_of()
+#     mutate( # removing whitespace
+#       REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+#     ) |>
+#     filter( # removing duplicate table - no idea why it's necessary
+#       !row_number() > 176
+#     ) |>
+#     filter( # removing duplicate rows
+#       !grepl("Lukk", REGNSKAPSPERIODE)
+#     ) |>
+#     pivot_longer( # tidying data
+#       all_of(end):all_of(start),
+#       names_to = "year"
+#     ) |> # using all_of()
+#     mutate( # changing to real NAs and turning years into numbers
+#       value = na_if(value, "-"),
+#       year = as.integer(year),
+#       valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+#     ) |>
+#     fill( # filling the currency column
+#       valutakode,
+#       .direction = "updown"
+#     ) |>
+#     filter( # removing dates and redundant currency
+#       REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+#         REGNSKAPSPERIODE != "Valutakode"
+#     ) |>
+#     mutate( # removing whitespace in numbers
+#       value = str_replace_all(value, "\\s", ""),
+#       value = as.numeric(value),
+#       value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+#     ) |>
+#     distinct() |> # removing any remaining duplicate rows
+#     pivot_wider( # pivoting
+#       names_from = REGNSKAPSPERIODE, values_from = value
+#     ) |>
+#     clean_names() |> # tidying names
+#     select(
+#       -lederlonn_i_hele_1000,
+#       -resultatregnskap_i_hele_1000,
+#       -balanseregnskap_i_hele_1000
+#     ) |> # removing headings
+#     rename( # making it clear what lonn refers to
+#       lederlonn = lonn
+#     ) |>
+#     # Creating new variables for plots
+#     mutate(
+#       annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
+#       balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
+#     ) |>
+#     arrange(desc(year)) # arranging by year
+# }
+
+# Test version of function - multiple currencies
 read_proff8 <- function(file, start, end) {
   read_html(file, encoding = "UTF-8") |>
     html_node("#inner-frame") |>
@@ -508,6 +547,10 @@ read_proff8 <- function(file, start, end) {
       annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
       balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
     ) |>
+    # bad test - REMOVE
+    mutate(
+    valutakode = ifelse(year == 2019, "USD", valutakode)
+  ) |>
     arrange(desc(year)) # arranging by year
 }
 
@@ -526,9 +569,14 @@ widen_excel <- function(file) {
 
 # Function to turn KPI values into NA or percentage string
 KPI_to_string <- function(variable){
-  if (variable == 0 | is.na(variable)){
+  # Returning NA if the KPI is Inf (division by zero) or NA, to avoid
+  # layout-breaking errors, otherwise formatting
+  if (is.na(variable)){
+    NA
+  } else if (variable == Inf){
     NA
   } else {
+    # Shortening (lengthening) the value, adding %
     str_c(format(variable, digits = 3), "%")
   }
 }
