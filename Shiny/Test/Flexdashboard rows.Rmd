@@ -74,7 +74,7 @@ valueBoxOutput("KPI_box_OPX")
 
 ### KPI 4
 ```{r}
-valueBoxOutput("KPI_box4")
+valueBoxOutput("KPI_box_private")
 ```
 
 ### KPI 5
@@ -204,13 +204,33 @@ observeEvent(input$click, { # wait for button click
       ) |>
       pull()
   })
+  
+  # Creating private donations growth
+  KPI_private_num <- reactive({
+    exceldata() |>
+      transmute(
+        growth = revenue_private_contributions[1] / revenue_private_contributions[2] * 100
+      ) |>
+      pull() |>
+      first()
+  })
+
+  # Creating public grants growth
+  KPI_public_num <- reactive({
+    exceldata() |>
+      transmute(
+        growth = revenue_public_grants[1] / revenue_public_grants[2] * 100
+      ) |>
+      pull() |>
+      first()
+  })
 
   # Creating the value box for administrative expenses
   output$KPI_box_admin <- renderValueBox({
     valueBox(
       value = KPI_to_string(KPI_admin_num()),
       caption = "Administration as a % of total expenses",
-      color = met.brewer("Wissing", n = 1),
+      color = "primary",
       icon = "fa-random"
     )
   })
@@ -240,27 +260,26 @@ observeEvent(input$click, { # wait for button click
       value = str_c(format(KPI_OPX_num(), digits = 3), "%"),
       caption = "Liquid assets / obligations",
       color = ifelse(KPI_OPX_num() <= 100, "success", "danger"),
-      icon = "fas fa-coffee"
+      icon = "fas fa-seedling"
     )
   })
-
-  # Duplicate value boxes for testing
-
-  output$KPI_box4 <- renderValueBox({
+  
+  # Creating value box for public grants growth
+  output$KPI_box_private <- renderValueBox({
     valueBox(
-      value = KPI_to_string(KPI_admin_num()),
-      caption = "Administration as a % of total expenses",
-      color = met.brewer("Wissing", n = 1),
-      icon = "fa-random"
+      value = KPI_to_string(KPI_private_num()),
+      caption = "Private donation growth",
+      color = ifelse(KPI_private_num() < 100, "warning", "success"),
+      icon = "fas fa-hands-helping"
     )
   })
 
   output$KPI_box5 <- renderValueBox({
     valueBox(
-      value = KPI_to_string(KPI_admin_num()),
-      caption = "Administration as a % of total expenses",
-      color = met.brewer("Wissing", n = 1),
-      icon = "fa-random"
+      value = KPI_to_string(KPI_public_num()),
+      caption = "Public grants growth",
+      color = ifelse(KPI_public_num() < 100, "warning", "success"),
+      icon = "fas fa-hand-holding-usd"
     )
   })
 
@@ -290,7 +309,7 @@ observeEvent(input$click, { # wait for button click
       geom_col() +
       currency_scale() +
       # pretty colours
-      scale_fill_met_d("Troy") +
+      scale_fill_met_d("Hokusai2", direction = -1) +
       labs(
         x = "", y = "Total compensation", title = "CEO compensation"
       )
@@ -359,12 +378,19 @@ observeEvent(input$click, { # wait for button click
       ) |>
       # Pivoting to use fill
       pivot_longer(c(Other:`Program services`), names_to = "Expenses") |>
+      # Ordering for the plot
+      mutate(
+        Expenses = ordered(Expenses,
+          levels =
+            c("Program services", "Other", "Fundraising", "Administrative")
+        )
+      ) |>
       ggplot(aes(Year, value, fill = Expenses)) +
       geom_col() +
       # Flipping, because the Excel file only contains two years atm
       coord_flip() +
       currency_scale() +
-      scale_fill_met_d("VanGogh3") +
+      scale_fill_met_d("Hokusai2", direction = -1) +
       labs(x = "", y = "", title = "Expenses (in thousands)")
   })
 
@@ -414,7 +440,8 @@ observeEvent(input$click, { # wait for button click
     )
   })
 
-  # Reactive function with slightly nicer colours + ensuring positive values are always green
+  # Reactive function with slightly nicer colours + ensuring positive values are
+  # always green
   scale_fill_green <- reactive({
     scale_fill_met_d("Tsimshian",
       direction = ifelse(
