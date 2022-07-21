@@ -57,7 +57,7 @@ Dashboard
 Row 
 -----------------------------------------------------------------------
 
-### KPI
+### KPI 1
 ```{r}
 valueBoxOutput("KPI_box_admin")
 ```
@@ -79,7 +79,7 @@ valueBoxOutput("KPI_box_private")
 
 ### KPI 5
 ```{r}
-valueBoxOutput("KPI_box5")
+valueBoxOutput("KPI_box_public")
 ```
 
 Row
@@ -274,7 +274,7 @@ observeEvent(input$click, { # wait for button click
     )
   })
 
-  output$KPI_box5 <- renderValueBox({
+  output$KPI_box_public <- renderValueBox({
     valueBox(
       value = KPI_to_string(KPI_public_num()),
       caption = "Public grants growth",
