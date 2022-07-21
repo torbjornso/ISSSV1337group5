@@ -805,13 +805,13 @@ kreft_excel |> mutate(
 ### Private donation growth
 ```{r}
 kreft_excel |> 
-  select(year, revenue_private_contributions) |> 
-  pivot_wider(names_from = year, values_from = revenue_private_contributions) |> 
-  mutate(
-    growth = `2020` / `2019` * 100
-  )
+  transmute(
+    growth = revenue_private_contributions[1] / revenue_private_contributions[2] * 100
+  ) |> 
+  pull() |> 
+  first()
 
-?pivot_wider
+?pull
 ```
 
 ### Their KPI
