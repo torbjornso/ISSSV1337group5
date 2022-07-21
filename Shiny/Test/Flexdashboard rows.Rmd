@@ -364,7 +364,7 @@ observeEvent(input$click, { # wait for button click
       # Flipping, because the Excel file only contains two years atm
       coord_flip() +
       currency_scale() +
-      scale_fill_met_d("Troy") +
+      scale_fill_met_d("VanGogh3") +
       labs(x = "", y = "", title = "Expenses (in thousands)")
   })
 
