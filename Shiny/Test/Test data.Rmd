@@ -312,7 +312,7 @@ kreft_html5 |>
 
 ### `View()`
 ```{r view, eval=FALSE}
-View(kreft_html)
+View(kreft_html_with_variables)
 View(kreft_excel)
 ```
 
@@ -320,6 +320,9 @@ View(kreft_excel)
 ```{r}
 kreft_html
 kreft_excel
+kreft_html_with_variables
+
+
 ```
 
 # Testing
@@ -674,8 +677,39 @@ kreft_html_with_variables |>
 
 ```
 
-annual_profit
-balance_positive
+### Expenses
+```{r}
+kreft_excel |> 
+  transmute(
+    Year = as.factor(year),
+    Other = expenses_other,
+    Administrative = expenses_administrative,
+    Fundraising = expenses_fundraising,
+    `Program services` = expenses_program_services
+  ) |> 
+  pivot_longer(c(Other:`Program services`), names_to = "Expenses") |> 
+  mutate(
+    Expenses = ordered(Expenses, levels =
+                         c("Program services", "Administrative",
+                         "Fundraising", "Other")) 
+  ) |> 
+  ggplot(aes(Year, value, fill = Expenses)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(labels = label_dollar()) +
+  scale_fill_met_d("Troy")
+  
+kreft_excel |> 
+  transmute(
+    Year = as.factor(year),
+    Administrative = expenses_administrative,
+    Fundraising = expenses_fundraising,
+    `Program services` = expenses_program_services,
+    Other = expenses_other
+  )
+?as_factor
+```
+
 
 
 ## KPI ideas
@@ -768,14 +802,41 @@ kreft_excel |> mutate(
           select(KPI_admin)
 ```
 
-### Overhead
+### Private donation growth
 ```{r}
+kreft_excel |> 
+  select(year, revenue_private_contributions) |> 
+  pivot_wider(names_from = year, values_from = revenue_private_contributions) |> 
+  mutate(
+    growth = `2020` / `2019` * 100
+  )
 
+?pivot_wider
 ```
 
+### Their KPI
 
 ```{r}
+# private contributions, investments, cash in bank / short-term garnts payable, revocable endowments, long-term grants payable
 
+mutate(kreft_excel,
+    KPI_OPX = (revenue_private_contributions + revenue_investments +
+                 assets_cash_in_bank_and_cash_equivalents) /
+      (liability_short_term_grants_payable +
+         liability_revocable_endowments +
+         liability_long_term_grants_payable) * 100
+  ) |> select(year, KPI_OPX)
+
+kreft_excel |> 
+  filter(year == max(year)) |> 
+      transmute(
+        KPI_OPX = (revenue_private_contributions + revenue_investments +
+                 assets_cash_in_bank_and_cash_equivalents) /
+      (liability_short_term_grants_payable +
+         liability_revocable_endowments +
+         liability_long_term_grants_payable) * 100
+      ) |> 
+      pull()
 ```
 
 ## More functions

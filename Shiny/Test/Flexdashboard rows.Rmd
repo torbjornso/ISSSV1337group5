@@ -69,7 +69,7 @@ valueBoxOutput("KPI_box_fundraising")
 
 ### KPI 3
 ```{r}
-valueBoxOutput("KPI_box3")
+valueBoxOutput("KPI_box_OPX")
 ```
 
 ### KPI 4
@@ -93,6 +93,14 @@ plotlyOutput("arsresultat_plotly")
 ### Balance
 ```{r}
 plotlyOutput("balance_plotly")
+```
+
+Row 
+-----------------------------------------------------------------------
+
+### Expenses
+```{r}
+plotlyOutput("expenses_plotly")
 ```
 
 Row 
@@ -159,7 +167,10 @@ observeEvent(input$click, { # wait for button click
           str_c( # Using str_c() to concatenate value and % sign
             format( # shortening(lengthening) the resulting value
               # calculating the value
-              (expenses_administrative / expenses_program_services * 100),
+              (expenses_administrative / (expenses_program_services +
+                                            expenses_administrative +
+                                            expenses_fundraising +
+                                            expenses_other) * 100),
               digits = 3
             ), "%"
           )
@@ -184,12 +195,26 @@ observeEvent(input$click, { # wait for button click
       # just want the single number
       pull()
   })
+  
+  # Creating OPX KPI
+  KPI_OPX_num <- reactive({
+    exceldata() |> 
+      filter(year == max(year)) |> 
+      transmute(
+        KPI_OPX = (revenue_private_contributions + revenue_investments +
+                 assets_cash_in_bank_and_cash_equivalents) /
+      (liability_short_term_grants_payable +
+         liability_revocable_endowments +
+         liability_long_term_grants_payable) * 100
+      ) |> 
+      pull()
+  })
 
   # Creating the value box for administrative expenses
   output$KPI_box_admin <- renderValueBox({
     valueBox(
       value = KPI_admin(),
-      caption = "Admin spend",
+      caption = "Administration as a % of total expenses",
       color = met.brewer("Wissing", n = 1),
       icon = "fa-random"
     )
@@ -216,15 +241,17 @@ observeEvent(input$click, { # wait for button click
     )
   })
 
-  # Duplicate value boxes for testing
-  output$KPI_box3 <- renderValueBox({
+  # KPI_OPX
+  output$KPI_box_OPX <- renderValueBox({
     valueBox(
-      value = str_c(format(KPI_fundraising_num(), digits = 3), "%"),
-      caption = "primary",
-      color = "primary",
+      value = str_c(format(KPI_OPX_num(), digits = 3), "%"),
+      caption = "Liquid assets / obligations",
+      color = ifelse(KPI_OPX_num() <= 100, "success", "danger"),
       icon = "fas fa-coffee"
     )
   })
+  
+  # Duplicate value boxes for testing
 
   output$KPI_box4 <- renderValueBox({
     valueBox(
@@ -330,39 +357,66 @@ observeEvent(input$click, { # wait for button click
   )
   #----Balance--------------------------------------------------------------------    
   balance_plot <- reactive({
-    htmldata() |>
-      ggplot(aes(year, sum_egenkapital_og_gjeld, fill = balance_positive)) +
-      geom_col() +
-      scale_y_continuous(
-        labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
-          # Using the currency code if uniform
-          label_dollar(prefix = str_c(htmldata()$valutakode[1], " ")),
-          # alternative prefix if multiple currencies in the data
-          label_dollar(prefix = "? ")
-        )
-      ) +
-      # slightly nicer colours + ensuring positive values are always green
-      scale_fill_met_d("Tsimshian",
-        direction = ifelse(
-          mean(htmldata()$balance_positive,
-            na.rm = TRUE
-          ) == 1, -1, 1
-        )
-      ) +
-      theme(legend.position = "none") +
-      labs(
-        x = "Year", y = "", title = "Balance (in thousands)",
-        # Checking again for currency; including warning if not uniform
-        subtitle =
-          ifelse(length(unique(htmldata()$valutakode)) == 1,
-            "",
-            "Note: not all values are denominated in the same currency"
-          )
+  htmldata() |>
+    ggplot(aes(year, sum_egenkapital_og_gjeld, fill = balance_positive)) +
+    geom_col() +
+    scale_y_continuous(
+      labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
+        # Using the currency code if uniform
+        label_dollar(prefix = str_c(htmldata()$valutakode[1], " ")),
+        # alternative prefix if multiple currencies in the data
+        label_dollar(prefix = "? ")
       )
-  })
+    ) +
+    # slightly nicer colours + ensuring positive values are always green
+    scale_fill_met_d("Tsimshian",
+      direction = ifelse(
+        mean(htmldata()$balance_positive,
+          na.rm = TRUE
+        ) == 1, -1, 1
+      )
+    ) +
+    theme(legend.position = "none") +
+    labs(
+      x = "Year", y = "", title = "Balance (in thousands)",
+      # Checking again for currency; including warning if not uniform
+      subtitle =
+        ifelse(length(unique(htmldata()$valutakode)) == 1,
+          "",
+          "Note: not all values are denominated in the same currency"
+        )
+    )
+})
 
   output$balance_plotly <- renderPlotly(
     ggplotly(balance_plot())
+  )
+  
+  #----Expenses---------------------------------------
+  expenses_plot <- reactive({
+    exceldata() |> 
+  transmute(
+    Year = as.factor(year),
+    Other = expenses_other,
+    Administrative = expenses_administrative,
+    Fundraising = expenses_fundraising,
+    `Program services` = expenses_program_services
+  ) |> 
+  pivot_longer(c(Other:`Program services`), names_to = "Expenses") |> 
+  mutate(
+    Expenses = ordered(Expenses, levels =
+                         c("Program services", "Administrative",
+                         "Fundraising", "Other")) 
+  ) |> 
+  ggplot(aes(Year, value, fill = Expenses)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(labels = label_dollar()) +
+  scale_fill_met_d("Troy")
+  })
+  
+  output$expenses_plotly <- renderPlotly(
+    ggplotly(expenses_plot())
   )
 })
 ```
