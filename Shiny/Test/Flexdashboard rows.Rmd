@@ -164,7 +164,7 @@ observe({ # wait for button click
   })
 
   #---- Value Boxes ------------------------------------------------------------    
-  
+
   # Creating Fundraising ROI value
   KPI_fundraising_num <- reactive({
     exceldata() |>
@@ -178,7 +178,7 @@ observe({ # wait for button click
             expenses_fundraising * 100
       ) |>
       # just want the single number
-      pull() |> 
+      pull() |>
       first()
   })
 
@@ -196,10 +196,10 @@ observe({ # wait for button click
             liability_long_term_grants_payable) * 100
       ) |>
       # Just the single number
-      pull() |> 
+      pull() |>
       first()
   })
-  
+
   # Creating private donations growth
   KPI_private_num <- reactive({
     exceldata() |>
@@ -223,15 +223,15 @@ observe({ # wait for button click
       pull() |>
       first()
   })
-  
+
   # Creating public/private proportion
   KPI_proportion <- reactive({
-    exceldata() |> 
-    transmute(
-    proportion = (revenue_private_contributions + revenue_membership_fees) / (revenue_public_grants + revenue_private_contributions + revenue_membership_fees) * 100
-  ) |> 
-  pull() |> 
-  first()
+    exceldata() |>
+      transmute(
+        proportion = (revenue_private_contributions + revenue_membership_fees) / (revenue_public_grants + revenue_private_contributions + revenue_membership_fees) * 100
+      ) |>
+      pull() |>
+      first()
   })
 
   # Creating value box for fundraising ROI
@@ -269,15 +269,15 @@ observe({ # wait for button click
       icon = "fas fa-seedling"
     )
   })
-  
+
   # Creating value box for private donations growth
   output$KPI_box_private <- renderValueBox({
     valueBox(
       value = KPI_to_string(KPI_private_num()),
       caption = "Private donation growth",
-      color = if (is.na(KPI_private_num())){
+      color = if (is.na(KPI_private_num())) {
         "primary"
-      } else if (KPI_private_num() < 100){
+      } else if (KPI_private_num() < 100) {
         "warning"
       } else {
         "success"
@@ -285,15 +285,15 @@ observe({ # wait for button click
       icon = "fas fa-hands-helping"
     )
   })
-  
+
   # Creating value box for public grants growth
   output$KPI_box_public <- renderValueBox({
     valueBox(
       value = KPI_to_string(KPI_public_num()),
       caption = "Public grants growth",
-      color = if (is.na(KPI_public_num())){
+      color = if (is.na(KPI_public_num())) {
         "primary"
-      } else if (KPI_public_num() < 100){
+      } else if (KPI_public_num() < 100) {
         "warning"
       } else {
         "success"
@@ -301,7 +301,7 @@ observe({ # wait for button click
       icon = "fas fa-hand-holding-usd"
     )
   })
-  
+
   # Creating value box for private/public proportion
   output$KPI_box_proportion <- renderValueBox({
     valueBox(
@@ -415,8 +415,10 @@ observe({ # wait for button click
       ) |>
       ggplot(aes(Year, value, fill = Expenses)) +
       geom_col() +
-      scale_y_continuous(labels = label_dollar(prefix = "NOK "),
-                         limits = c(NA, maximum())) +
+      scale_y_continuous(
+        labels = label_dollar(prefix = "NOK "),
+        limits = c(NA, maximum())
+      ) +
       scale_fill_met_d("Hokusai2") +
       labs(x = "", y = "", title = "Expenses (in thousands)")
   })
@@ -424,29 +426,32 @@ observe({ # wait for button click
   output$expenses_plotly <- renderPlotly(
     ggplotly(expenses_plot())
   )
-  
+
   #----Revenue------------------------------------------
   revenue_plot <- reactive({
-    exceldata() |> 
+    exceldata() |>
       # Renaming for the purposes of the plot + dropping other variables
       transmute(
-        Year                    = as.factor(year),
+        Year = as.factor(year),
         `Private contributions` = revenue_private_contributions,
-        `Membership fees`       = revenue_membership_fees,
-        `Public grants`         = revenue_public_grants,
-        Investments             = revenue_investments,
-        `Operational activities`= revenue_operational_activities,
+        `Membership fees` = revenue_membership_fees,
+        `Public grants` = revenue_public_grants,
+        Investments = revenue_investments,
+        `Operational activities` = revenue_operational_activities,
         `Commercial activities` = revenue_commercial_activities,
-        Other                   = revenue_other
-      ) |> 
+        Other = revenue_other
+      ) |>
       # Pivoting to use fill
       pivot_longer(
-        c(`Private contributions`:Other), names_to = "Revenue source"
-      ) |> 
+        c(`Private contributions`:Other),
+        names_to = "Revenue source"
+      ) |>
       ggplot(aes(Year, value, fill = `Revenue source`)) +
       geom_col() +
-      scale_y_continuous(labels = label_dollar(prefix = "NOK "),
-                         limits = c(NA, maximum())) +
+      scale_y_continuous(
+        labels = label_dollar(prefix = "NOK "),
+        limits = c(NA, maximum())
+      ) +
       scale_fill_manual(values = met.brewer("Hokusai2", 7)) +
       labs(x = "", y = "", title = "Revenue (in thousands)")
   })
@@ -454,7 +459,7 @@ observe({ # wait for button click
   output$revenue_plotly <- renderPlotly(
     ggplotly(revenue_plot())
   )
-  
+
   #----Reactive functions-------------------------------
   # Reactive function to check for currency and use currency code or ?
   currency_scale <- reactive({
@@ -504,7 +509,7 @@ observe({ # wait for button click
       )
     )
   })
-  
+
   # Reactive function to create the maximum value for revenue and expenses plots
   maximum <- reactive({
     read_excel(input$excel$datapath) |>
@@ -642,8 +647,8 @@ read_proff8 <- function(file, start, end) {
     ) |>
     # bad test - REMOVE
     mutate(
-    valutakode = ifelse(year == 2019, "USD", valutakode)
-  ) |>
+      valutakode = ifelse(year == 2019, "USD", valutakode)
+    ) |>
     arrange(desc(year)) # arranging by year
 }
 
@@ -661,7 +666,7 @@ widen_excel <- function(file) {
 }
 
 # Function to turn KPI values into NA or percentage string
-KPI_to_string <- function(variable){
+KPI_to_string <- function(variable) {
   # Returning NA if the KPI is Inf (division by zero) or NA, to avoid
   # layout-breaking errors, otherwise formatting
   if (is.na(variable)) {
@@ -673,7 +678,5 @@ KPI_to_string <- function(variable){
     str_c(format(variable, digits = 3), "%")
   }
 }
-
-?observeEvent
 ```
 
