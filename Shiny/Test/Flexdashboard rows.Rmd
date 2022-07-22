@@ -410,7 +410,8 @@ observe({ # wait for button click
         )
     }
   })
-
+  
+  # Creating plotly output
   output$arsresultat_plotly <- renderPlotly(
     ggplotly(arsresultat_plot()) |>
       ## ggplot subtitles and captions are lost when using ggplotly(), a
@@ -443,6 +444,7 @@ observe({ # wait for button click
     }
   })
 
+  # Creating plotly output
   output$balance_plotly <- renderPlotly(
     ggplotly(balance_plot()) |>
       ## ggplot subtitles and captions are lost when using ggplotly(), a
@@ -495,6 +497,7 @@ observe({ # wait for button click
     }
   })
 
+  # Creating plotly output
   output$expenses_plotly <- renderPlotly(
     ggplotly(expenses_plot())
   )
@@ -540,6 +543,7 @@ observe({ # wait for button click
     }
   })
 
+  # Creating plotly output
   output$revenue_plotly <- renderPlotly(
     ggplotly(revenue_plot())
   )
@@ -548,6 +552,7 @@ observe({ # wait for button click
   
   # Reactive function to test for Excel data quality (basic)
   datatest <- reactive({
+    # let me know if anyone has a better idea for testing
     if (mean(unlist(lapply(exceldata(), is.character))) != 0) {
       TRUE
     } else {
@@ -568,24 +573,16 @@ observe({ # wait for button click
     )
   })
 
-  # Reactive function to create currency caption
-  currency_caption <- reactive({
-    # Checking for uniform currency code
-    if (length(unique(htmldata()$valutakode)) == 1) {
-      # Empty caption if uniform
-      ""
-      # Warning if multiple currencies
-    } else {
-      "Note: not all values are denominated in the same currency"
-    }
-  })
-
-  # Reactive function to create plotly caption
-  # (ggplot captions and subtitles are lost in the conversion)
-  # (shamelessly stolen from the Internet, with minor modifications)
+  # Reactive function to create plotly caption (ggplot captions and subtitles
+  # are lost in the conversion) (shamelessly stolen from the Internet, with
+  # minor modifications).
+  # Checks for uniform currency code and prints a warning
+  # if there are multiple currency codes.
   plotly_caption <- reactive({
     list(
-      x = 1, y = -0.1, text = currency_caption(),
+      x = 1, y = -0.1, text = ifelse(length(unique(htmldata()$valutakode)) == 1,
+        "", "Note: not all values are denominated in the same currency"
+      ),
       showarrow = F, xref = "paper", yref = "paper",
       xanchor = "right", yanchor = "auto", xshift = 0, yshift = 0,
       font = list(size = 11)
@@ -618,66 +615,6 @@ observe({ # wait for button click
 
 ```{r non-reactive functions, include=FALSE}
 # Function to read html file
-read_proff <- function(file, start, end) {
-  read_html(file, encoding = "UTF-8") |>
-    html_node("#inner-frame") |>
-    html_table() |>
-    select( # removing empty column
-      REGNSKAPSPERIODE:all_of(start)
-    ) |> # using all_of()
-    mutate( # removing whitespace
-      REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
-    ) |>
-    filter( # removing duplicate table - no idea why it's necessary
-      !row_number() > 176
-    ) |>
-    filter( # removing duplicate rows
-      !grepl("Lukk", REGNSKAPSPERIODE)
-    ) |>
-    pivot_longer( # tidying data
-      all_of(end):all_of(start),
-      names_to = "year"
-    ) |> # using all_of()
-    mutate( # changing to real NAs and turning years into numbers
-      value = na_if(value, "-"),
-      year = as.integer(year),
-      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
-    ) |>
-    fill( # filling the currency column
-      valutakode,
-      .direction = "updown"
-    ) |>
-    filter( # removing dates and redundant currency
-      REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
-        REGNSKAPSPERIODE != "Valutakode"
-    ) |>
-    mutate( # removing whitespace in numbers
-      value = str_replace_all(value, "\\s", ""),
-      value = as.numeric(value),
-      value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
-    ) |>
-    distinct() |> # removing any remaining duplicate rows
-    pivot_wider( # pivoting
-      names_from = REGNSKAPSPERIODE, values_from = value
-    ) |>
-    clean_names() |> # tidying names
-    select(
-      -lederlonn_i_hele_1000,
-      -resultatregnskap_i_hele_1000,
-      -balanseregnskap_i_hele_1000
-    ) |> # removing headings
-    rename( # making it clear what lonn refers to
-      lederlonn = lonn
-    ) |>
-    # Creating new variables for plots
-    mutate(
-      annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
-      balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
-    ) |>
-    arrange(desc(year)) # arranging by year
-}
-
-# Test version of function that creates multiple data problems
 # read_proff <- function(file, start, end) {
 #   read_html(file, encoding = "UTF-8") |>
 #     html_node("#inner-frame") |>
@@ -734,16 +671,78 @@ read_proff <- function(file, start, end) {
 #       annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
 #       balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
 #     ) |>
-#     # bad test - REMOVE
-#     mutate(
-#       valutakode = ifelse(year == 2019, "USD", valutakode),
+#     arrange(desc(year)) # arranging by year
+# }
+
+# Test version of function that creates multiple data problems
+read_proff <- function(file, start, end) {
+  read_html(file, encoding = "UTF-8") |>
+    html_node("#inner-frame") |>
+    html_table() |>
+    select( # removing empty column
+      REGNSKAPSPERIODE:all_of(start)
+    ) |> # using all_of()
+    mutate( # removing whitespace
+      REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+    ) |>
+    filter( # removing duplicate table - no idea why it's necessary
+      !row_number() > 176
+    ) |>
+    filter( # removing duplicate rows
+      !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |>
+    pivot_longer( # tidying data
+      all_of(end):all_of(start),
+      names_to = "year"
+    ) |> # using all_of()
+    mutate( # changing to real NAs and turning years into numbers
+      value = na_if(value, "-"),
+      year = as.integer(year),
+      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+    ) |>
+    fill( # filling the currency column
+      valutakode,
+      .direction = "updown"
+    ) |>
+    filter( # removing dates and redundant currency
+      REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+        REGNSKAPSPERIODE != "Valutakode"
+    ) |>
+    mutate( # removing whitespace in numbers
+      value = str_replace_all(value, "\\s", ""),
+      value = as.numeric(value),
+      value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+    ) |>
+    distinct() |> # removing any remaining duplicate rows
+    pivot_wider( # pivoting
+      names_from = REGNSKAPSPERIODE, values_from = value
+    ) |>
+    clean_names() |> # tidying names
+    select(
+      -lederlonn_i_hele_1000,
+      -resultatregnskap_i_hele_1000,
+      -balanseregnskap_i_hele_1000
+    ) |> # removing headings
+    rename( # making it clear what lonn refers to
+      lederlonn = lonn
+    ) |>
+    # Creating new variables for plots
+    mutate(
+      annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
+      balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
+    ) |>
+    # bad test - REMOVE
+    mutate(
+      valutakode = ifelse(year == 2019, "USD", valutakode)
+    ) |>
+    arrange(desc(year)) # arranging by year
+}
+
+# ,
 #       leder_annen_godtgjorelse = NA,
 #       lederlonn = NA,
 #       arsresultat = NA,
 #       sum_egenkapital_og_gjeld = NA
-#     ) |>
-#     arrange(desc(year)) # arranging by year
-# }
 
 # Function to read Excel file
 widen_excel <- function(file) {
