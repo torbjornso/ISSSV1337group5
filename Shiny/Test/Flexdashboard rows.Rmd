@@ -98,14 +98,14 @@ plotlyOutput("balance_plotly")
 Row 
 -----------------------------------------------------------------------
 
-### Expenses
-```{r}
-plotlyOutput("expenses_plotly")
-```
-
 ### Revenues
 ```{r}
 plotlyOutput("revenue_plotly")
+```
+
+### Expenses
+```{r}
+plotlyOutput("expenses_plotly")
 ```
 
 Row 
@@ -186,78 +186,6 @@ observe({ # wait for button click
     }
   })
 
-  # Creating OPX KPI
-  KPI_OPX_num <- reactive({
-    # testing for data quality, returning NA if bad
-    if (datatest() == TRUE) {
-      NA
-    } else {
-    exceldata() |>
-      # most recent year
-      filter(year == max(year)) |>
-      # Calculating the value as a %
-      transmute(
-        KPI_OPX = (revenue_private_contributions + revenue_investments +
-          assets_cash_in_bank_and_cash_equivalents) /
-          (liability_short_term_grants_payable +
-            liability_revocable_endowments +
-            liability_long_term_grants_payable) * 100
-      ) |>
-      # Just the single number
-      pull() |>
-      first()
-    }
-  })
-
-  # Creating private donations growth
-  KPI_private_num <- reactive({
-    # testing for data quality, returning NA if bad
-    if (datatest() == TRUE) {
-      NA
-    } else {
-    exceldata() |>
-      # Calculating the two most recent years as a %
-      transmute(
-        growth = revenue_private_contributions[1] / revenue_private_contributions[2] * 100
-      ) |>
-      # Pulling the first instance of the number
-      pull() |>
-      first()
-    }
-  })
-
-  # Creating public grants growth
-  KPI_public_num <- reactive({
-    # testing for data quality, returning NA if bad
-    if (datatest() == TRUE) {
-      NA
-    } else {
-    exceldata() |>
-      # Calculating the two most recent years as a %
-      transmute(
-        growth = revenue_public_grants[1] / revenue_public_grants[2] * 100
-      ) |>
-      # Pulling the first instance of the number
-      pull() |>
-      first()
-    }
-  })
-
-  # Creating public/private proportion
-  KPI_proportion <- reactive({
-    # testing for data quality, returning NA if bad
-    if (datatest() == TRUE) {
-      NA
-    } else {
-      exceldata() |>
-        transmute(
-          proportion = (revenue_private_contributions + revenue_membership_fees) / (revenue_public_grants + revenue_private_contributions + revenue_membership_fees) * 100
-        ) |>
-        pull() |>
-        first()
-    }
-  })
-
   # Creating value box for fundraising ROI
   # Unsure about colour levels
   output$KPI_box_fundraising <- renderValueBox({
@@ -278,7 +206,30 @@ observe({ # wait for button click
     )
   })
 
-  # KPI_OPX
+  # Creating OPX KPI
+  KPI_OPX_num <- reactive({
+    # testing for data quality, returning NA if bad
+    if (datatest() == TRUE) {
+      NA
+    } else {
+      exceldata() |>
+        # most recent year
+        filter(year == max(year)) |>
+        # Calculating the value as a %
+        transmute(
+          KPI_OPX = (revenue_private_contributions + revenue_investments +
+            assets_cash_in_bank_and_cash_equivalents) /
+            (liability_short_term_grants_payable +
+              liability_revocable_endowments +
+              liability_long_term_grants_payable) * 100
+        ) |>
+        # Just the single number
+        pull() |>
+        first()
+    }
+  })
+
+  # Creating value box for OPX KPI
   output$KPI_box_OPX <- renderValueBox({
     valueBox(
       value = KPI_to_string(KPI_OPX_num()),
@@ -294,6 +245,25 @@ observe({ # wait for button click
     )
   })
 
+  # Creating private donations growth
+  KPI_private_num <- reactive({
+    # testing for data quality, returning NA if bad
+    if (datatest() == TRUE) {
+      NA
+    } else {
+      exceldata() |>
+        # Calculating the two most recent years as a %
+        transmute(
+          growth = 
+            (revenue_private_contributions[1] - revenue_private_contributions[2]) /
+            revenue_private_contributions[2] * 100
+        ) |>
+        # Pulling the first instance of the number
+        pull() |>
+        first()
+    }
+  })
+
   # Creating value box for private donations growth
   output$KPI_box_private <- renderValueBox({
     valueBox(
@@ -301,13 +271,32 @@ observe({ # wait for button click
       caption = "Private donation growth",
       color = if (is.na(KPI_private_num())) {
         "primary"
-      } else if (KPI_private_num() < 100) {
+      } else if (KPI_private_num() < 0) {
         "warning"
       } else {
         "success"
       },
       icon = "fas fa-hands-helping"
     )
+  })
+
+  # Creating public grants growth
+  KPI_public_num <- reactive({
+    # testing for data quality, returning NA if bad
+    if (datatest() == TRUE) {
+      NA
+    } else {
+      exceldata() |>
+        # Calculating the two most recent years as a %
+        transmute(
+          growth =
+            (revenue_public_grants[1] - revenue_public_grants[2]) / 
+            revenue_public_grants[2] * 100
+        ) |>
+        # Pulling the first instance of the number
+        pull() |>
+        first()
+    }
   })
 
   # Creating value box for public grants growth
@@ -317,13 +306,28 @@ observe({ # wait for button click
       caption = "Public grants growth",
       color = if (is.na(KPI_public_num())) {
         "primary"
-      } else if (KPI_public_num() < 100) {
+      } else if (KPI_public_num() < 0) {
         "warning"
       } else {
         "success"
       },
       icon = "fas fa-hand-holding-usd"
     )
+  })
+
+  # Creating public/private proportion
+  KPI_proportion <- reactive({
+    # testing for data quality, returning NA if bad
+    if (datatest() == TRUE) {
+      NA
+    } else {
+      exceldata() |>
+        transmute(
+          proportion = (revenue_private_contributions + revenue_membership_fees) / (revenue_public_grants + revenue_private_contributions + revenue_membership_fees) * 100
+        ) |>
+        pull() |>
+        first()
+    }
   })
 
   # Creating value box for private/public proportion
@@ -337,58 +341,6 @@ observe({ # wait for button click
   })
 
   #---- Plots --------------------------------------------------------------------    
-  #----CEO compensation-----------------------------------------------------------
-  CEO_plot <- reactive({
-    # Testing for the presence of data
-    if (sum(!is.na(htmldata()$lederlonn)) == 0 &
-      sum(!is.na(htmldata()$leder_annen_godtgjorelse)) == 0) {
-      # Printing 'no information' plot if no data
-      no_information()
-    } else {
-      # Creating plot if any data exist
-      # Note that the plot will still look empty, but have a legend and scales,
-      # if all values are explicit zeroes
-      htmldata() |>
-        # preparing for pivoting
-        select(
-          year, lederlonn, leder_annen_godtgjorelse
-        ) |>
-        # Compensation in ordinary numbers
-        mutate(
-          lederlonn = lederlonn * 1000,
-          leder_annen_godtgjorelse = leder_annen_godtgjorelse * 1000
-        ) |>
-        # renaming for the purposes of the plot
-        rename(
-          Year = year,
-          Salary = lederlonn,
-          `Other compensation` = leder_annen_godtgjorelse
-        ) |>
-        # pivoting to join the two values to use fill
-        pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |>
-        ggplot(aes(Year, value, fill = Compensation)) +
-        geom_col() +
-        # using currency scale function to add correct currency code or ?
-        currency_scale() +
-        # pretty colours
-        scale_fill_met_d("Hokusai2", direction = -1) +
-        labs(
-          x = "", y = "Total compensation", title = "CEO compensation"
-        )
-    }
-  })
-
-  # Creating plotly output
-  output$CEO_plotly <- renderPlotly(
-    ggplotly(CEO_plot()) |>
-      ## ggplot subtitles and captions are lost when using ggplotly(), a
-      ## currency warning caption is therefore added in plotly, if needed, using
-      ## a separate function
-      layout(
-        annotations =
-          plotly_caption()
-      )
-  )
 
   #----Annual result---------------------------------------------
   arsresultat_plot <- reactive({
@@ -410,7 +362,7 @@ observe({ # wait for button click
         )
     }
   })
-  
+
   # Creating plotly output
   output$arsresultat_plotly <- renderPlotly(
     ggplotly(arsresultat_plot()) |>
@@ -463,37 +415,37 @@ observe({ # wait for button click
       # printing 'bad data' plot if data are bad
       bad_data()
     } else {
-    exceldata() |>
-      # Renaming for the purposes of the plot + dropping other variables
-      transmute(
-        Year = as.factor(year),
-        Other = expenses_other,
-        Administrative = expenses_administrative,
-        Fundraising = expenses_fundraising,
-        `Program services` = expenses_program_services
-      ) |>
-      # Pivoting to use fill
-      pivot_longer(c(Other:`Program services`), names_to = "Expenses") |>
-      # Ordering for the plot
-      mutate(
-        Expenses = ordered(Expenses,
-          levels =
-            c("Program services", "Other", "Fundraising", "Administrative")
-        )
-      ) |>
-      ggplot(aes(Year, value, fill = Expenses)) +
-      geom_col() +
-      scale_y_continuous(
-        # Excel data are assumed to be in NOK; if this changes, code based on
-        # the currency_code() function may be adapted
-        labels = label_dollar(prefix = "NOK "),
-        # Basing lower limit on the data (not suppressing erroneous negative
-        # numbers), and the upper limit on the maximum value in revenues and
-        # expenses, to match the two plots
-        limits = c(NA, maximum())
-      ) +
-      scale_fill_met_d("Hokusai2") +
-      labs(x = "", y = "", title = "Expenses (in thousands)")
+      exceldata() |>
+        # Renaming for the purposes of the plot + dropping other variables
+        transmute(
+          Year = as.factor(year),
+          Other = expenses_other,
+          Administrative = expenses_administrative,
+          Fundraising = expenses_fundraising,
+          `Program services` = expenses_program_services
+        ) |>
+        # Pivoting to use fill
+        pivot_longer(c(Other:`Program services`), names_to = "Expenses") |>
+        # Ordering for the plot
+        mutate(
+          Expenses = ordered(Expenses,
+            levels =
+              c("Program services", "Other", "Fundraising", "Administrative")
+          )
+        ) |>
+        ggplot(aes(Year, value, fill = Expenses)) +
+        geom_col() +
+        scale_y_continuous(
+          # Excel data are assumed to be in NOK; if this changes, code based on
+          # the currency_code() function may be adapted
+          labels = label_dollar(prefix = "NOK "),
+          # Basing lower limit on the data (not suppressing erroneous negative
+          # numbers), and the upper limit on the maximum value in revenues and
+          # expenses, to match the two plots
+          limits = c(NA, maximum())
+        ) +
+        scale_fill_met_d("Hokusai2") +
+        labs(x = "", y = "", title = "Expenses (in thousands)")
     }
   })
 
@@ -509,37 +461,45 @@ observe({ # wait for button click
       # printing 'bad data' plot if data are bad
       bad_data()
     } else {
-    exceldata() |>
-      # Renaming for the purposes of the plot + dropping other variables
-      transmute(
-        Year = as.factor(year),
-        `Private contributions` = revenue_private_contributions,
-        `Membership fees` = revenue_membership_fees,
-        `Public grants` = revenue_public_grants,
-        Investments = revenue_investments,
-        `Operational activities` = revenue_operational_activities,
-        `Commercial activities` = revenue_commercial_activities,
-        Other = revenue_other
-      ) |>
-      # Pivoting to use fill
-      pivot_longer(
-        c(`Private contributions`:Other),
-        names_to = "Revenue source"
-      ) |>
-      ggplot(aes(Year, value, fill = `Revenue source`)) +
-      geom_col() +
-      scale_y_continuous(
-        # Excel data are assumed to be in NOK; if this changes, code based on
-        # the currency_code() function may be adapted
-        labels = label_dollar(prefix = "NOK "),
-        # Basing lower limit on the data (not suppressing erroneous negative
-        # numbers), and the upper limit on the maximum value in revenues and
-        # expenses, to match the two plots
-        limits = c(NA, maximum())
-      ) +
-      # Specifying the number of values, as the base palette only includes 6
-      scale_fill_manual(values = met.brewer("Hokusai2", 7)) +
-      labs(x = "", y = "", title = "Revenue (in thousands)")
+      exceldata() |>
+        # Renaming for the purposes of the plot + dropping other variables
+        transmute(
+          Year = as.factor(year),
+          `Private contributions` = revenue_private_contributions,
+          `Membership fees` = revenue_membership_fees,
+          `Public grants` = revenue_public_grants,
+          Investments = revenue_investments,
+          `Operational activities` = revenue_operational_activities,
+          `Commercial activities` = revenue_commercial_activities,
+          Other = revenue_other
+        ) |>
+        # Pivoting to use fill
+        pivot_longer(
+          c(`Private contributions`:Other),
+          names_to = "Revenue source"
+        ) |>
+        mutate(
+          `Revenue source` =
+            ordered(`Revenue source`, levels =
+                      c("Other", "Commercial activities",
+                        "Operational activities", "Investments",
+                        "Membership fees", "Private contributions",
+                        "Public grants"))
+        ) |> 
+        ggplot(aes(Year, value, fill = `Revenue source`)) +
+        geom_col() +
+        scale_y_continuous(
+          # Excel data are assumed to be in NOK; if this changes, code based on
+          # the currency_code() function may be adapted
+          labels = label_dollar(prefix = "NOK "),
+          # Basing lower limit on the data (not suppressing erroneous negative
+          # numbers), and the upper limit on the maximum value in revenues and
+          # expenses, to match the two plots
+          limits = c(NA, maximum())
+        ) +
+        # Specifying the number of values, as the base palette only includes 6
+        scale_fill_manual(values = met.brewer("Hokusai2", 7)) +
+        labs(x = "", y = "", title = "Revenue (in thousands)")
     }
   })
 
@@ -548,8 +508,61 @@ observe({ # wait for button click
     ggplotly(revenue_plot())
   )
 
+  #----CEO compensation---------------------------------------------------------
+  CEO_plot <- reactive({
+    # Testing for the presence of data
+    if (sum(!is.na(htmldata()$lederlonn)) == 0 &
+      sum(!is.na(htmldata()$leder_annen_godtgjorelse)) == 0) {
+      # Printing 'no information' plot if no data
+      no_information()
+    } else {
+      # Creating plot if any data exist
+      # Note that the plot will still look empty, but have a legend and scales,
+      # if all values are explicit zeroes
+      htmldata() |>
+        # preparing for pivoting
+        select(
+          year, lederlonn, leder_annen_godtgjorelse
+        ) |>
+        # Compensation in ordinary numbers
+        mutate(
+          lederlonn = lederlonn * 1000,
+          leder_annen_godtgjorelse = leder_annen_godtgjorelse * 1000
+        ) |>
+        # renaming for the purposes of the plot
+        rename(
+          Year = year,
+          Salary = lederlonn,
+          `Other compensation` = leder_annen_godtgjorelse
+        ) |>
+        # pivoting to join the two values to use fill
+        pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |>
+        ggplot(aes(Year, value, fill = Compensation)) +
+        geom_col() +
+        # using currency scale function to add correct currency code or ?
+        currency_scale() +
+        # pretty colours
+        scale_fill_met_d("Hokusai2", direction = -1) +
+        labs(
+          x = "", y = "Total compensation", title = "CEO compensation"
+        )
+    }
+  })
+
+  # Creating plotly output
+  output$CEO_plotly <- renderPlotly(
+    ggplotly(CEO_plot()) |>
+      ## ggplot subtitles and captions are lost when using ggplotly(), a
+      ## currency warning caption is therefore added in plotly, if needed, using
+      ## a separate function
+      layout(
+        annotations =
+          plotly_caption()
+      )
+  )
+
   #----Reactive functions-------------------------------
-  
+
   # Reactive function to test for Excel data quality (basic)
   datatest <- reactive({
     # let me know if anyone has a better idea for testing
@@ -559,7 +572,7 @@ observe({ # wait for button click
       FALSE
     }
   })
-  
+
   # Reactive function to check for currency and use currency code or ?
   currency_scale <- reactive({
     scale_y_continuous(
@@ -609,7 +622,6 @@ observe({ # wait for button click
   })
   # Let the magic/disaster happen (i.e. execute when the user clicks the button)
 }) |> bindEvent(input$click)
-
 
 ```
 
