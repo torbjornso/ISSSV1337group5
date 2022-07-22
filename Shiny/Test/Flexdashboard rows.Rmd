@@ -123,7 +123,7 @@ Details
 Row 
 -----------------------------------------------------------------------
 
-### Information 1
+### Key Performance Indicators
 
 The KPIs are based on the following calculations:
 
@@ -138,7 +138,7 @@ The KPIs are based on the following calculations:
 Row 
 -----------------------------------------------------------------------
 
-### Information 2
+### Plots
 ```{r}
 
 ```
@@ -147,9 +147,9 @@ Row
 
 ```{r shiny, include=FALSE}
 # Shiny actions
-observeEvent(input$click, { # wait for button click
+observe({ # wait for button click
 
-  #---- Data frames --------------------------------------------------------------      
+  #---- Data frames ------------------------------------------------------------      
   # creating data frame from html file
   htmldata <- reactive({
     read_proff8(
@@ -163,7 +163,7 @@ observeEvent(input$click, { # wait for button click
     widen_excel(input$excel$datapath)
   })
 
-  #---- Value Boxes --------------------------------------------------------------    
+  #---- Value Boxes ------------------------------------------------------------    
   
   # Creating Fundraising ROI value
   KPI_fundraising_num <- reactive({
@@ -178,7 +178,8 @@ observeEvent(input$click, { # wait for button click
             expenses_fundraising * 100
       ) |>
       # just want the single number
-      pull()
+      pull() |> 
+      first()
   })
 
   # Creating OPX KPI
@@ -414,7 +415,8 @@ observeEvent(input$click, { # wait for button click
       ) |>
       ggplot(aes(Year, value, fill = Expenses)) +
       geom_col() +
-      scale_y_continuous(labels = label_dollar(prefix = "NOK ")) +
+      scale_y_continuous(labels = label_dollar(prefix = "NOK "),
+                         limits = c(NA, maximum())) +
       scale_fill_met_d("Hokusai2") +
       labs(x = "", y = "", title = "Expenses (in thousands)")
   })
@@ -443,7 +445,8 @@ observeEvent(input$click, { # wait for button click
       ) |> 
       ggplot(aes(Year, value, fill = `Revenue source`)) +
       geom_col() +
-      scale_y_continuous(labels = label_dollar(prefix = "NOK ")) +
+      scale_y_continuous(labels = label_dollar(prefix = "NOK "),
+                         limits = c(NA, maximum())) +
       scale_fill_manual(values = met.brewer("Hokusai2", 7)) +
       labs(x = "", y = "", title = "Revenue (in thousands)")
   })
@@ -501,7 +504,20 @@ observeEvent(input$click, { # wait for button click
       )
     )
   })
-})
+  
+  # Reactive function to create the maximum value for revenue and expenses plots
+  maximum <- reactive({
+    read_excel(input$excel$datapath) |>
+      select(-Firm, -`Sub-category`) |>
+      filter(Category == "Revenue" | Category == "Expenses") |>
+      group_by(Year, Category) |>
+      summarise(
+        sum = sum(Value, na.rm = TRUE)
+      ) |>
+      pull() |>
+      max()
+  })
+}) |> bindEvent(input$click)
 
 
 ```
@@ -657,5 +673,7 @@ KPI_to_string <- function(variable){
     str_c(format(variable, digits = 3), "%")
   }
 }
+
+?observeEvent
 ```
 
