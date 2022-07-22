@@ -166,23 +166,32 @@ observe({ # wait for button click
 
   # Creating Fundraising ROI value
   KPI_fundraising_num <- reactive({
-    exceldata() |>
-      # most recent year
-      filter(year == max(year)) |>
-      transmute(
-        # Calculating the value as a percentage; removing all other
-        KPI_fundraising_num =
-          (revenue_private_contributions +
-            revenue_membership_fees - expenses_fundraising) /
-            expenses_fundraising * 100
-      ) |>
-      # just want the single number
-      pull() |>
-      first()
+    # testing for data quality, returning NA if bad
+    if (datatest() == TRUE) {
+      NA
+    } else {
+      exceldata() |>
+        # most recent year
+        filter(year == max(year)) |>
+        transmute(
+          # Calculating the value as a percentage; removing all other
+          KPI_fundraising_num =
+            (revenue_private_contributions +
+              revenue_membership_fees - expenses_fundraising) /
+              expenses_fundraising * 100
+        ) |>
+        # just want the single number
+        pull() |>
+        first()
+    }
   })
 
   # Creating OPX KPI
   KPI_OPX_num <- reactive({
+    # testing for data quality, returning NA if bad
+    if (datatest() == TRUE) {
+      NA
+    } else {
     exceldata() |>
       # most recent year
       filter(year == max(year)) |>
@@ -197,10 +206,15 @@ observe({ # wait for button click
       # Just the single number
       pull() |>
       first()
+    }
   })
 
   # Creating private donations growth
   KPI_private_num <- reactive({
+    # testing for data quality, returning NA if bad
+    if (datatest() == TRUE) {
+      NA
+    } else {
     exceldata() |>
       # Calculating the two most recent years as a %
       transmute(
@@ -209,10 +223,15 @@ observe({ # wait for button click
       # Pulling the first instance of the number
       pull() |>
       first()
+    }
   })
 
   # Creating public grants growth
   KPI_public_num <- reactive({
+    # testing for data quality, returning NA if bad
+    if (datatest() == TRUE) {
+      NA
+    } else {
     exceldata() |>
       # Calculating the two most recent years as a %
       transmute(
@@ -221,16 +240,22 @@ observe({ # wait for button click
       # Pulling the first instance of the number
       pull() |>
       first()
+    }
   })
 
   # Creating public/private proportion
   KPI_proportion <- reactive({
-    exceldata() |>
-      transmute(
-        proportion = (revenue_private_contributions + revenue_membership_fees) / (revenue_public_grants + revenue_private_contributions + revenue_membership_fees) * 100
-      ) |>
-      pull() |>
-      first()
+    # testing for data quality, returning NA if bad
+    if (datatest() == TRUE) {
+      NA
+    } else {
+      exceldata() |>
+        transmute(
+          proportion = (revenue_private_contributions + revenue_membership_fees) / (revenue_public_grants + revenue_private_contributions + revenue_membership_fees) * 100
+        ) |>
+        pull() |>
+        first()
+    }
   })
 
   # Creating value box for fundraising ROI
@@ -399,7 +424,9 @@ observe({ # wait for button click
 
   #----Balance--------------------------------------------------------------------    
   balance_plot <- reactive({
+    # testing for the presence of data
     if (sum(!is.na(htmldata()$sum_egenkapital_og_gjeld)) == 0) {
+      # Printing 'no information' plot if no data
       no_information()
     } else {
       htmldata() |>
@@ -429,7 +456,11 @@ observe({ # wait for button click
 
   #----Expenses---------------------------------------
   expenses_plot <- reactive({
-    # No testing with user-supplied Excel data
+    # testing for data quality
+    if (datatest() == TRUE) {
+      # printing 'bad data' plot if data are bad
+      bad_data()
+    } else {
     exceldata() |>
       # Renaming for the purposes of the plot + dropping other variables
       transmute(
@@ -461,6 +492,7 @@ observe({ # wait for button click
       ) +
       scale_fill_met_d("Hokusai2") +
       labs(x = "", y = "", title = "Expenses (in thousands)")
+    }
   })
 
   output$expenses_plotly <- renderPlotly(
@@ -469,6 +501,11 @@ observe({ # wait for button click
 
   #----Revenue------------------------------------------
   revenue_plot <- reactive({
+    # testing for data quality
+    if (datatest() == TRUE) {
+      # printing 'bad data' plot if data are bad
+      bad_data()
+    } else {
     exceldata() |>
       # Renaming for the purposes of the plot + dropping other variables
       transmute(
@@ -500,6 +537,7 @@ observe({ # wait for button click
       # Specifying the number of values, as the base palette only includes 6
       scale_fill_manual(values = met.brewer("Hokusai2", 7)) +
       labs(x = "", y = "", title = "Revenue (in thousands)")
+    }
   })
 
   output$revenue_plotly <- renderPlotly(
@@ -507,6 +545,16 @@ observe({ # wait for button click
   )
 
   #----Reactive functions-------------------------------
+  
+  # Reactive function to test for Excel data quality (basic)
+  datatest <- reactive({
+    if (mean(unlist(lapply(exceldata(), is.character))) != 0) {
+      TRUE
+    } else {
+      FALSE
+    }
+  })
+  
   # Reactive function to check for currency and use currency code or ?
   currency_scale <- reactive({
     scale_y_continuous(
@@ -570,66 +618,6 @@ observe({ # wait for button click
 
 ```{r non-reactive functions, include=FALSE}
 # Function to read html file
-# read_proff <- function(file, start, end) {
-#   read_html(file, encoding = "UTF-8") |>
-#     html_node("#inner-frame") |>
-#     html_table() |>
-#     select( # removing empty column
-#       REGNSKAPSPERIODE:all_of(start)
-#     ) |> # using all_of()
-#     mutate( # removing whitespace
-#       REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
-#     ) |>
-#     filter( # removing duplicate table - no idea why it's necessary
-#       !row_number() > 176
-#     ) |>
-#     filter( # removing duplicate rows
-#       !grepl("Lukk", REGNSKAPSPERIODE)
-#     ) |>
-#     pivot_longer( # tidying data
-#       all_of(end):all_of(start),
-#       names_to = "year"
-#     ) |> # using all_of()
-#     mutate( # changing to real NAs and turning years into numbers
-#       value = na_if(value, "-"),
-#       year = as.integer(year),
-#       valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
-#     ) |>
-#     fill( # filling the currency column
-#       valutakode,
-#       .direction = "updown"
-#     ) |>
-#     filter( # removing dates and redundant currency
-#       REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
-#         REGNSKAPSPERIODE != "Valutakode"
-#     ) |>
-#     mutate( # removing whitespace in numbers
-#       value = str_replace_all(value, "\\s", ""),
-#       value = as.numeric(value),
-#       value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
-#     ) |>
-#     distinct() |> # removing any remaining duplicate rows
-#     pivot_wider( # pivoting
-#       names_from = REGNSKAPSPERIODE, values_from = value
-#     ) |>
-#     clean_names() |> # tidying names
-#     select(
-#       -lederlonn_i_hele_1000,
-#       -resultatregnskap_i_hele_1000,
-#       -balanseregnskap_i_hele_1000
-#     ) |> # removing headings
-#     rename( # making it clear what lonn refers to
-#       lederlonn = lonn
-#     ) |>
-#     # Creating new variables for plots
-#     mutate(
-#       annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
-#       balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
-#     ) |>
-#     arrange(desc(year)) # arranging by year
-# }
-
-# Test version of function - multiple currencies and no CEO compensation
 read_proff <- function(file, start, end) {
   read_html(file, encoding = "UTF-8") |>
     html_node("#inner-frame") |>
@@ -686,16 +674,76 @@ read_proff <- function(file, start, end) {
       annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
       balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
     ) |>
-    # bad test - REMOVE
-    mutate(
-      valutakode = ifelse(year == 2019, "USD", valutakode),
-      leder_annen_godtgjorelse = NA,
-      lederlonn = NA,
-      arsresultat = NA,
-      sum_egenkapital_og_gjeld = NA
-    ) |>
     arrange(desc(year)) # arranging by year
 }
+
+# Test version of function that creates multiple data problems
+# read_proff <- function(file, start, end) {
+#   read_html(file, encoding = "UTF-8") |>
+#     html_node("#inner-frame") |>
+#     html_table() |>
+#     select( # removing empty column
+#       REGNSKAPSPERIODE:all_of(start)
+#     ) |> # using all_of()
+#     mutate( # removing whitespace
+#       REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+#     ) |>
+#     filter( # removing duplicate table - no idea why it's necessary
+#       !row_number() > 176
+#     ) |>
+#     filter( # removing duplicate rows
+#       !grepl("Lukk", REGNSKAPSPERIODE)
+#     ) |>
+#     pivot_longer( # tidying data
+#       all_of(end):all_of(start),
+#       names_to = "year"
+#     ) |> # using all_of()
+#     mutate( # changing to real NAs and turning years into numbers
+#       value = na_if(value, "-"),
+#       year = as.integer(year),
+#       valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+#     ) |>
+#     fill( # filling the currency column
+#       valutakode,
+#       .direction = "updown"
+#     ) |>
+#     filter( # removing dates and redundant currency
+#       REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+#         REGNSKAPSPERIODE != "Valutakode"
+#     ) |>
+#     mutate( # removing whitespace in numbers
+#       value = str_replace_all(value, "\\s", ""),
+#       value = as.numeric(value),
+#       value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+#     ) |>
+#     distinct() |> # removing any remaining duplicate rows
+#     pivot_wider( # pivoting
+#       names_from = REGNSKAPSPERIODE, values_from = value
+#     ) |>
+#     clean_names() |> # tidying names
+#     select(
+#       -lederlonn_i_hele_1000,
+#       -resultatregnskap_i_hele_1000,
+#       -balanseregnskap_i_hele_1000
+#     ) |> # removing headings
+#     rename( # making it clear what lonn refers to
+#       lederlonn = lonn
+#     ) |>
+#     # Creating new variables for plots
+#     mutate(
+#       annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
+#       balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
+#     ) |>
+#     # bad test - REMOVE
+#     mutate(
+#       valutakode = ifelse(year == 2019, "USD", valutakode),
+#       leder_annen_godtgjorelse = NA,
+#       lederlonn = NA,
+#       arsresultat = NA,
+#       sum_egenkapital_og_gjeld = NA
+#     ) |>
+#     arrange(desc(year)) # arranging by year
+# }
 
 # Function to read Excel file
 widen_excel <- function(file) {
@@ -704,7 +752,7 @@ widen_excel <- function(file) {
       entry, c(Category, Name),
       sep = "_"
     ) |>
-    select(-`Sub-category`) |> # deleting Sub-category
+    select(-`Sub-category`, -Firm) |> # deleting Sub-category and Firm
     # pivoting
     pivot_wider(names_from = entry, values_from = Value) |>
     clean_names() # cleaning names
@@ -747,6 +795,21 @@ no_information <- function() {
     annotate(
       "text",
       label = "No information available",
+      # Using the same palette as the other non-profit/loss plots
+      x = 0, y = 0, size = 8, colour = met.brewer("Hokusai2", 1)
+    )
+}
+
+# Function to print a 'bad data' plot, if necessary
+bad_data <- function() {
+  ggplot() +
+    # text geom with a space to create the plot, but otherwise show nothing
+    geom_text(aes(0, 0, label = " ")) +
+    # as blank a slate as possible
+    theme_void() +
+    annotate(
+      "text",
+      label = "Something is wrong\nwith the Excel data.",
       # Using the same palette as the other non-profit/loss plots
       x = 0, y = 0, size = 8, colour = met.brewer("Hokusai2", 1)
     )
