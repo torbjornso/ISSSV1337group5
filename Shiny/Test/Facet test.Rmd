@@ -1,0 +1,30 @@
+---
+title: "Facet test"
+author: "Torbjørn Skinnemoen Ottersen"
+date: '2022-07-22'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+revenue <- kreft_excel |> 
+  # Renaming for the purposes of the plot + dropping other variables
+      transmute(
+        Year                    = as.factor(year),
+        `Private contributions` = revenue_private_contributions,
+        `Membership fees`       = revenue_membership_fees,
+        `Public grants`         = revenue_public_grants,
+        Investments             = revenue_investments,
+        `Operational activities`= revenue_operational_activities,
+        `Commercial activities` = revenue_commercial_activities,
+        Other                   = revenue_other
+      ) |> 
+      # Pivoting to use fill
+      pivot_longer(
+        c(`Private contributions`:Other), names_to = "Revenue source"
+      )
+```
+
