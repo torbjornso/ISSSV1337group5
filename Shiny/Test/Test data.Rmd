@@ -854,6 +854,18 @@ kreft_excel |>
   pull() |> 
   first()
 
+kreft_excel |> 
+      filter(year == max(year)) |>
+      transmute(
+        # Calculating the value as a percentage; removing all other
+        KPI_fundraising_num =
+          (revenue_private_contributions +
+            revenue_membership_fees - expenses_fundraising) /
+            expenses_fundraising * 100
+      ) |>
+      # just want the single number
+      pull()
+
 ?pull
 ```
 
@@ -871,10 +883,12 @@ kreft_excel |>
 ```{r}
 kreft_excel |> 
   transmute(
-    proportion = revenue_private_contributions / revenue_public_grants * 100
+    proportion = (revenue_private_contributions + revenue_membership_fees) / (revenue_public_grants + revenue_private_contributions + revenue_membership_fees) * 100
   ) |> 
   pull() |> 
   first()
+
+kreft_excel
 ```
 
 
@@ -901,7 +915,45 @@ kreft_excel |>
          liability_long_term_grants_payable) * 100
       ) |> 
       pull()
+kreft_excel |> 
+filter(year == max(year)) |>
+      # Calculating the value as a %
+      transmute(
+        KPI_OPX = (revenue_private_contributions + revenue_investments +
+          assets_cash_in_bank_and_cash_equivalents) /
+          (liability_short_term_grants_payable +
+            liability_revocable_endowments +
+            liability_long_term_grants_payable) * 100
+      ) |>
+      # Just the single number
+      pull()
 ```
+
+### Revenue plot
+```{r}
+kreft_excel |> 
+  transmute(
+        Year                    = as.factor(year),
+        `Private contributions` = revenue_private_contributions,
+        `Membership fees`       = revenue_membership_fees,
+        `Public grants`         = revenue_public_grants,
+        Investments             = revenue_investments,
+        `Operational activities`= revenue_operational_activities,
+        `Commercial activities` = revenue_commercial_activities,
+        Other                   = revenue_other
+      ) |> 
+      # Pivoting to use fill
+      pivot_longer(
+        c(`Private contributions`:Other), names_to = "Revenue source"
+      ) |> 
+      ggplot(aes(Year, value, fill = `Revenue source`)) +
+      geom_col() +
+      # Flipping, because the Excel file only contains two years atm
+      coord_flip() +
+      scale_fill_met_d("Hokusai2", direction = -1) +
+      labs(x = "", y = "", title = "Revenue (in thousands)")
+```
+
 
 ## More functions
 ```{r}

@@ -16,7 +16,7 @@ p_load(
   shiny, tidyverse, scales, rvest, janitor, plotly, readxl,
   flexdashboard, MetBrewer, fontawesome, htmltools
 )
-# Using fontawesome for more up-to-date fontawesome icons
+# Using fontawesome for more up-to-date (and currently supported) fontawesome icons
 htmltools::tagList(fontawesome::fa_html_dependency())
 
 # Considering lumen or cerulean theme
@@ -57,30 +57,31 @@ Dashboard
 Row 
 -----------------------------------------------------------------------
 
-### KPI 1
-```{r}
-valueBoxOutput("KPI_box_admin")
-```
-
-### KPI 2
+### KPI Fundraising
 ```{r}
 valueBoxOutput("KPI_box_fundraising")
 ```
 
-### KPI 3
+### KPI OPX
 ```{r}
 valueBoxOutput("KPI_box_OPX")
 ```
 
-### KPI 4
+### KPI Private growth
 ```{r}
 valueBoxOutput("KPI_box_private")
 ```
 
-### KPI 5
+### KPI Public growth
 ```{r}
 valueBoxOutput("KPI_box_public")
 ```
+
+### KPI Private/public proportion
+```{r}
+valueBoxOutput("KPI_box_proportion")
+```
+
 
 Row
 -----------------------------------------------------------------------
@@ -101,6 +102,11 @@ Row
 ### Expenses
 ```{r}
 plotlyOutput("expenses_plotly")
+```
+
+### Revenues
+```{r}
+plotlyOutput("revenue_plotly")
 ```
 
 Row 
@@ -158,22 +164,6 @@ observeEvent(input$click, { # wait for button click
   })
 
   #---- Value Boxes --------------------------------------------------------------    
-
-  # Creating KPI_admin value
-  KPI_admin_num <- reactive({
-    exceldata() |>
-      # most recent year
-      filter(year == max(year)) |>
-      # Calculating the value as a percentage; removing all other
-      transmute(
-        KPI_admin = expenses_administrative / (expenses_program_services +
-          expenses_administrative +
-          expenses_fundraising +
-          expenses_other) * 100
-      ) |>
-      # just want the single number
-      pull()
-  })
   
   # Creating Fundraising ROI value
   KPI_fundraising_num <- reactive({
@@ -194,7 +184,9 @@ observeEvent(input$click, { # wait for button click
   # Creating OPX KPI
   KPI_OPX_num <- reactive({
     exceldata() |>
+      # most recent year
       filter(year == max(year)) |>
+      # Calculating the value as a %
       transmute(
         KPI_OPX = (revenue_private_contributions + revenue_investments +
           assets_cash_in_bank_and_cash_equivalents) /
@@ -202,15 +194,19 @@ observeEvent(input$click, { # wait for button click
             liability_revocable_endowments +
             liability_long_term_grants_payable) * 100
       ) |>
-      pull()
+      # Just the single number
+      pull() |> 
+      first()
   })
   
   # Creating private donations growth
   KPI_private_num <- reactive({
     exceldata() |>
+      # Calculating the two most recent years as a %
       transmute(
         growth = revenue_private_contributions[1] / revenue_private_contributions[2] * 100
       ) |>
+      # Pulling the first instance of the number
       pull() |>
       first()
   })
@@ -218,21 +214,23 @@ observeEvent(input$click, { # wait for button click
   # Creating public grants growth
   KPI_public_num <- reactive({
     exceldata() |>
+      # Calculating the two most recent years as a %
       transmute(
         growth = revenue_public_grants[1] / revenue_public_grants[2] * 100
       ) |>
+      # Pulling the first instance of the number
       pull() |>
       first()
   })
-
-  # Creating the value box for administrative expenses
-  output$KPI_box_admin <- renderValueBox({
-    valueBox(
-      value = KPI_to_string(KPI_admin_num()),
-      caption = "Administration as a % of total expenses",
-      color = "primary",
-      icon = "fa-random"
-    )
+  
+  # Creating public/private proportion
+  KPI_proportion <- reactive({
+    exceldata() |> 
+    transmute(
+    proportion = (revenue_private_contributions + revenue_membership_fees) / (revenue_public_grants + revenue_private_contributions + revenue_membership_fees) * 100
+  ) |> 
+  pull() |> 
+  first()
   })
 
   # Creating value box for fundraising ROI
@@ -241,9 +239,10 @@ observeEvent(input$click, { # wait for button click
     valueBox(
       value = KPI_to_string(KPI_fundraising_num()),
       caption = "Fundraising ROI",
-
       # Colour depends on value
-      color = if (KPI_fundraising_num() < 100) {
+      color = if (is.na(KPI_fundraising_num())) {
+        "primary"
+      } else if (KPI_fundraising_num() < 100) {
         "danger"
       } else if (KPI_fundraising_num() < 200) {
         "warning"
@@ -257,32 +256,60 @@ observeEvent(input$click, { # wait for button click
   # KPI_OPX
   output$KPI_box_OPX <- renderValueBox({
     valueBox(
-      value = str_c(format(KPI_OPX_num(), digits = 3), "%"),
+      value = KPI_to_string(KPI_OPX_num()),
       caption = "Liquid assets / obligations",
-      color = ifelse(KPI_OPX_num() <= 100, "success", "danger"),
+      color = if (is.na(KPI_OPX_num())) {
+        "primary"
+      } else if (KPI_OPX_num() < 100) {
+        "warning"
+      } else {
+        "success"
+      },
       icon = "fas fa-seedling"
     )
   })
   
-  # Creating value box for public grants growth
+  # Creating value box for private donations growth
   output$KPI_box_private <- renderValueBox({
     valueBox(
       value = KPI_to_string(KPI_private_num()),
       caption = "Private donation growth",
-      color = ifelse(KPI_private_num() < 100, "warning", "success"),
+      color = if (is.na(KPI_private_num())){
+        "primary"
+      } else if (KPI_private_num() < 100){
+        "warning"
+      } else {
+        "success"
+      },
       icon = "fas fa-hands-helping"
     )
   })
-
+  
+  # Creating value box for public grants growth
   output$KPI_box_public <- renderValueBox({
     valueBox(
       value = KPI_to_string(KPI_public_num()),
       caption = "Public grants growth",
-      color = ifelse(KPI_public_num() < 100, "warning", "success"),
+      color = if (is.na(KPI_public_num())){
+        "primary"
+      } else if (KPI_public_num() < 100){
+        "warning"
+      } else {
+        "success"
+      },
       icon = "fas fa-hand-holding-usd"
     )
   })
-
+  
+  # Creating value box for private/public proportion
+  output$KPI_box_proportion <- renderValueBox({
+    valueBox(
+      value = KPI_to_string(KPI_proportion()),
+      caption = "Private donations",
+      color = "info",
+      icon = "fas fa-percentage"
+    )
+  })
 
   #---- Plots --------------------------------------------------------------------    
   #----CEO compensation-----------------------------------------------------------
@@ -387,21 +414,44 @@ observeEvent(input$click, { # wait for button click
       ) |>
       ggplot(aes(Year, value, fill = Expenses)) +
       geom_col() +
-      # Flipping, because the Excel file only contains two years atm
-      coord_flip() +
-      currency_scale() +
-      scale_fill_met_d("Hokusai2", direction = -1) +
+      scale_y_continuous(labels = label_dollar(prefix = "NOK ")) +
+      scale_fill_met_d("Hokusai2") +
       labs(x = "", y = "", title = "Expenses (in thousands)")
   })
 
   output$expenses_plotly <- renderPlotly(
-    ggplotly(expenses_plot()) |>
-      layout(
-        annotations =
-          plotly_caption()
-      )
+    ggplotly(expenses_plot())
   )
+  
+  #----Revenue------------------------------------------
+  revenue_plot <- reactive({
+    exceldata() |> 
+      # Renaming for the purposes of the plot + dropping other variables
+      transmute(
+        Year                    = as.factor(year),
+        `Private contributions` = revenue_private_contributions,
+        `Membership fees`       = revenue_membership_fees,
+        `Public grants`         = revenue_public_grants,
+        Investments             = revenue_investments,
+        `Operational activities`= revenue_operational_activities,
+        `Commercial activities` = revenue_commercial_activities,
+        Other                   = revenue_other
+      ) |> 
+      # Pivoting to use fill
+      pivot_longer(
+        c(`Private contributions`:Other), names_to = "Revenue source"
+      ) |> 
+      ggplot(aes(Year, value, fill = `Revenue source`)) +
+      geom_col() +
+      scale_y_continuous(labels = label_dollar(prefix = "NOK ")) +
+      scale_fill_manual(values = met.brewer("Hokusai2", 7)) +
+      labs(x = "", y = "", title = "Revenue (in thousands)")
+  })
 
+  output$revenue_plotly <- renderPlotly(
+    ggplotly(revenue_plot())
+  )
+  
   #----Reactive functions-------------------------------
   # Reactive function to check for currency and use currency code or ?
   currency_scale <- reactive({
@@ -598,16 +648,14 @@ widen_excel <- function(file) {
 KPI_to_string <- function(variable){
   # Returning NA if the KPI is Inf (division by zero) or NA, to avoid
   # layout-breaking errors, otherwise formatting
-  if (is.na(variable)){
+  if (is.na(variable)) {
     NA
-  } else if (variable == Inf){
+  } else if (variable == Inf) {
     NA
   } else {
     # Shortening (lengthening) the value, adding %
     str_c(format(variable, digits = 3), "%")
   }
 }
-
-
 ```
 
