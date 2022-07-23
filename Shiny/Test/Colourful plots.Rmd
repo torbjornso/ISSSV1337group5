@@ -6,17 +6,17 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
-## R Markdown
+
 ```{r}
 if (!require("pacman")) install.packages("pacman"); library(pacman)
 p_load(shiny,tidyverse, scales, rvest, janitor, plotly, readxl, MetBrewer)
 ```
 
 
-```{r data, echo=FALSE}
+```{r data}
 
 read_proff8 <- function(file, start, end){
     read_html(file, encoding = "UTF-8") |> 
@@ -104,7 +104,7 @@ kreft_html <- read_proff8("Data/Kreftforeningen.html", "2002", "2021")
 
 ```
 
-
+## Four colours
 ```{r}
 palettes <- colorblind_palettes
 
@@ -132,6 +132,7 @@ for (i in 1:length(palettes)) {
 }
 ```
 
+## Two colours
 ```{r}
 for (i in 1:length(palettes)) {
   print(kreft_html |> 
