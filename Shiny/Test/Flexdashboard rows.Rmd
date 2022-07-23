@@ -154,12 +154,15 @@ The dashboard includes five plots, three based on data from [Proff.no](https://w
 # Shiny actions
 observe({ # wait for button click
 
-  #---- Data frames ------------------------------------------------------------      
+  # Data frames ================================================================
+
   # creating data frame from html file
   htmldata <- reactive({
     # validating file
-    validate(need(tools::file_ext(input$html$datapath) == "html",
-                  "Please upload an html file."))
+    validate(need(
+      tools::file_ext(input$html$datapath) == "html",
+      "Please upload an html file."
+    ))
     read_proff(
       input$html$datapath,
       as.character(input$start), as.character(input$end)
@@ -169,13 +172,16 @@ observe({ # wait for button click
   # Creating data frame from Excel file
   exceldata <- reactive({
     # validating file
-    validate(need(tools::file_ext(input$excel$datapath) == "xlsx",
-                  "Please upload an Excel file."))
+    validate(need(
+      tools::file_ext(input$excel$datapath) == "xlsx",
+      "Please upload an Excel file."
+    ))
     widen_excel(input$excel$datapath)
   })
 
-  #---- Value Boxes ------------------------------------------------------------    
+  # Value Boxes ================================================================
 
+  ## Fundraising ROI------------------------------------------------------------
   # Creating Fundraising ROI value
   KPI_fundraising_num <- reactive({
     # testing for data quality, returning NA if bad
@@ -201,28 +207,25 @@ observe({ # wait for button click
   # Creating value box for fundraising ROI
   # Unsure about colour levels
   # testing for data quality, returning NA if bad
-  if (datatest() == TRUE) {
-    NA
-  } else {
-    output$KPI_box_fundraising <- renderValueBox({
-      valueBox(
-        value = KPI_to_string(KPI_fundraising_num()),
-        caption = "Fundraising ROI",
-        # Colour depends on value
-        color = if (is.na(KPI_fundraising_num())) {
-          "primary"
-        } else if (KPI_fundraising_num() < 100) {
-          "danger"
-        } else if (KPI_fundraising_num() < 200) {
-          "warning"
-        } else {
-          "success"
-        },
-        icon = "fas fa-donate"
-      )
-    })
-  }
+  output$KPI_box_fundraising <- renderValueBox({
+    valueBox(
+      value = KPI_to_string(KPI_fundraising_num()),
+      caption = "Fundraising ROI",
+      # Colour depends on value
+      color = if (is.na(KPI_fundraising_num())) {
+        "primary"
+      } else if (KPI_fundraising_num() < 100) {
+        "danger"
+      } else if (KPI_fundraising_num() < 200) {
+        "warning"
+      } else {
+        "success"
+      },
+      icon = "fas fa-donate"
+    )
+  })
 
+  ## OPX KPI--------------------------------------------------------------------
   # Creating OPX KPI
   KPI_OPX_num <- reactive({
     # testing for data quality, returning NA if bad
@@ -262,6 +265,7 @@ observe({ # wait for button click
     )
   })
 
+  ## Private donations growth---------------------------------------------------
   # Creating private donations growth
   KPI_private_num <- reactive({
     # testing for data quality, returning NA if bad
@@ -271,9 +275,9 @@ observe({ # wait for button click
       exceldata() |>
         # Calculating the two most recent years as a %
         transmute(
-          growth = 
+          growth =
             (revenue_private_contributions[1] - revenue_private_contributions[2]) /
-            revenue_private_contributions[2] * 100
+              revenue_private_contributions[2] * 100
         ) |>
         # Pulling the first instance of the number
         pull() |>
@@ -297,6 +301,7 @@ observe({ # wait for button click
     )
   })
 
+  ## Public grants growth-------------------------------------------------------
   # Creating public grants growth
   KPI_public_num <- reactive({
     # testing for data quality, returning NA if bad
@@ -307,8 +312,8 @@ observe({ # wait for button click
         # Calculating the two most recent years as a %
         transmute(
           growth =
-            (revenue_public_grants[1] - revenue_public_grants[2]) / 
-            revenue_public_grants[2] * 100
+            (revenue_public_grants[1] - revenue_public_grants[2]) /
+              revenue_public_grants[2] * 100
         ) |>
         # Pulling the first instance of the number
         pull() |>
@@ -332,6 +337,7 @@ observe({ # wait for button click
     )
   })
 
+  ## Public/private proportion--------------------------------------------------
   # Creating public/private proportion
   KPI_proportion <- reactive({
     # testing for data quality, returning NA if bad
@@ -357,9 +363,9 @@ observe({ # wait for button click
     )
   })
 
-  #---- Plots --------------------------------------------------------------------    
+  # Plots ======================================================================
 
-  #----Annual result---------------------------------------------
+  ## Annual result--------------------------------------------------------------
   arsresultat_plot <- reactive({
     # testing for the presence of data
     if (sum(!is.na(htmldata()$arsresultat)) == 0) {
@@ -392,7 +398,7 @@ observe({ # wait for button click
       )
   )
 
-  #----Balance--------------------------------------------------------------------    
+  ## Balance--------------------------------------------------------------------
   balance_plot <- reactive({
     # testing for the presence of data
     if (sum(!is.na(htmldata()$sum_egenkapital_og_gjeld)) == 0) {
@@ -425,7 +431,7 @@ observe({ # wait for button click
       )
   )
 
-  #----Expenses---------------------------------------
+  ## Expenses-------------------------------------------------------------------
   expenses_plot <- reactive({
     # testing for data quality
     if (datatest() == TRUE) {
@@ -471,7 +477,7 @@ observe({ # wait for button click
     ggplotly(expenses_plot())
   )
 
-  #----Revenue------------------------------------------
+  ## Revenue--------------------------------------------------------------------
   revenue_plot <- reactive({
     # testing for data quality
     if (datatest() == TRUE) {
@@ -498,12 +504,16 @@ observe({ # wait for button click
         # Ordering for the plot
         mutate(
           `Revenue source` =
-            ordered(`Revenue source`, levels =
-                      c("Other", "Commercial activities",
-                        "Operational activities", "Investments",
-                        "Membership fees", "Private contributions",
-                        "Public grants"))
-        ) |> 
+            ordered(`Revenue source`,
+              levels =
+                c(
+                  "Other", "Commercial activities",
+                  "Operational activities", "Investments",
+                  "Membership fees", "Private contributions",
+                  "Public grants"
+                )
+            )
+        ) |>
         ggplot(aes(Year, value, fill = `Revenue source`)) +
         geom_col() +
         scale_y_continuous(
@@ -526,7 +536,7 @@ observe({ # wait for button click
     ggplotly(revenue_plot())
   )
 
-  #----CEO compensation---------------------------------------------------------
+  ## CEO compensation-----------------------------------------------------------
   CEO_plot <- reactive({
     # Testing for the presence of data
     if (sum(!is.na(htmldata()$lederlonn)) == 0 &
@@ -579,8 +589,9 @@ observe({ # wait for button click
       )
   )
 
-  #----Reactive functions-------------------------------
+  # Reactive functions =========================================================
 
+  ## Excel data test------------------------------------------------------------
   # Reactive function to test for Excel data quality (basic)
   datatest <- reactive({
     # let me know if anyone has a better idea for testing
@@ -591,6 +602,7 @@ observe({ # wait for button click
     }
   })
 
+  ## Currency scale-------------------------------------------------------------
   # Reactive function to check for currency and use currency code or ?
   currency_scale <- reactive({
     scale_y_continuous(
@@ -604,6 +616,7 @@ observe({ # wait for button click
     )
   })
 
+  ## Plotly caption-------------------------------------------------------------
   # Reactive function to create plotly caption (ggplot captions and subtitles
   # are lost in the conversion) (shamelessly stolen from the Internet, with
   # minor modifications).
@@ -620,6 +633,7 @@ observe({ # wait for button click
     )
   })
 
+  ## scale maximum--------------------------------------------------------------
   # Reactive function to create the maximum value for revenue and expenses plots
   maximum <- reactive({
     # reading the Excel sheet anew
@@ -644,7 +658,9 @@ observe({ # wait for button click
 ```
 
 ```{r non-reactive functions, include=FALSE}
-# Function to read html file
+# Data reading functions =======================================================
+
+## Function to read html file --------------------------------------------------
 # read_proff <- function(file, start, end) {
 #   read_html(file, encoding = "UTF-8") |>
 #     html_node("#inner-frame") |>
@@ -704,7 +720,7 @@ observe({ # wait for button click
 #     arrange(desc(year)) # arranging by year
 # }
 
-# Test version of function that creates multiple data problems
+### Test version of function that creates multiple data problems----------------
 read_proff <- function(file, start, end) {
   read_html(file, encoding = "UTF-8") |>
     html_node("#inner-frame") |>
@@ -774,7 +790,7 @@ read_proff <- function(file, start, end) {
 #       arsresultat = NA,
 #       sum_egenkapital_og_gjeld = NA
 
-# Function to read Excel file
+## Function to read Excel file -------------------------------------------------
 widen_excel <- function(file) {
   read_excel(file) |>
     unite( # uniting Category and Name to deal with multiple 'Other'
@@ -787,6 +803,9 @@ widen_excel <- function(file) {
     clean_names() # cleaning names
 }
 
+# Support functions ============================================================
+
+## KPI_to_string ---------------------------------------------------------------
 # Function to turn KPI values into NA or percentage string
 KPI_to_string <- function(variable) {
   # Returning NA if the KPI is Inf (division by zero) or NA, to avoid
@@ -801,19 +820,21 @@ KPI_to_string <- function(variable) {
   }
 }
 
+## scale_fill_green ------------------------------------------------------------
 # Function with slightly nicer colours than default; ensuring uniformity; +
 # ensuring positive values are always green through a test for the presence of
 # FALSE values
 scale_fill_green <- function(variable) {
-    scale_fill_met_d("Tsimshian",
-      direction = ifelse(
-        mean(variable,
-          na.rm = TRUE
-        ) == 1, -1, 1
-      )
+  scale_fill_met_d("Tsimshian",
+    direction = ifelse(
+      mean(variable,
+        na.rm = TRUE
+      ) == 1, -1, 1
     )
-  }
+  )
+}
 
+## no_information plot ---------------------------------------------------------
 # Function to print a 'no information' plot, if necessary
 no_information <- function() {
   ggplot() +
@@ -829,6 +850,7 @@ no_information <- function() {
     )
 }
 
+## bad_data plot ---------------------------------------------------------------
 # Function to print a 'bad data' plot, if necessary
 bad_data <- function() {
   ggplot() +
