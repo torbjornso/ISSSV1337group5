@@ -35,7 +35,7 @@ Legg merke til at ingen av koden, unntatt setup-chunken kjøres når man knitter
 
 ### Key Performance Indicators
 
->Her har jeg brukt enkle LaTeX mattefunsksjoner for å vise utregningene.
+>Her har jeg brukt enkle LaTeX mattefunksjoner for å vise utregningene.
 
 The KPIs are based on the following calculations, using data derived from the Excel sheet:
 
@@ -579,7 +579,8 @@ exeldata <- widen_excel("Data/OPXfinans_final.xlsx")
 # Function to turn KPI values into NA or percentage string
 KPI_to_string <- function(variable) {
   # Returning NA if the KPI is Inf (division by zero) or NA, to avoid
-  # layout-breaking errors, otherwise formatting
+  # layout-breaking errors, otherwise formatting. (The check for NA is needed to
+  # avoid passing an NA to subsequent operations.)
   if (is.na(variable)) {
     NA
   } else if (variable == Inf) {
