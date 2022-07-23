@@ -124,23 +124,19 @@ Row
 
 ### Key Performance Indicators
 
-The KPIs are based on the following calculations:
+The KPIs are based on the following calculations, using data derived from the Excel sheet:
 
-- **admin** is based on dividing - expenses_administrative / expenses_program_services *100
-- **Fundraising ROI** - (revenue_private_contributions +
-                 revenue_membership_fees - expenses_fundraising) /
-              expenses_fundraising * 100
-```{r}
-
-```
+- **Fundraising ROI**: $$\frac{\text{private contributions} + \text{membership fees} - \text{fundraising expenses}}{\text{fundraising expenses}} \times 100$$
+- **Liquid assets/obligations**: $$\frac{\text{private contributions} + \text{investment income} + \text{cash in bank and cash equivalents}}{\text{short term grants payable} + \text{revocable endowments} + \text{long term grants payable}} \times 100$$
+- **Private donations growth**: $$\frac{\text{private contributions}_2 - \text{private contributions}_1}{\text{private contributions}_1}\times 100$$
+- **Public grants growth**: $$\frac{\text{public grants}_2 - \text{public grants}_1}{\text{public grants}_1} \times 100$$
+- **Private/public proportion**: $$\frac{\text{private contributions} + \text{membership fees}}{\text{public grants} + \text{private contributions} + \text{membership fees}} \times 100$$
 
 Row 
 -----------------------------------------------------------------------
 
 ### Plots
-```{r}
 
-```
 
 
 
@@ -151,6 +147,8 @@ observe({ # wait for button click
   #---- Data frames ------------------------------------------------------------      
   # creating data frame from html file
   htmldata <- reactive({
+    validate(need(tools::file_ext(input$html$datapath) == "html",
+                  "Please upload an html file."))
     read_proff(
       input$html$datapath,
       as.character(input$start), as.character(input$end)
@@ -159,6 +157,8 @@ observe({ # wait for button click
 
   # Creating data frame from Excel file
   exceldata <- reactive({
+    validate(need(tools::file_ext(input$excel$datapath) == "xlsx",
+                  "Please upload an Excel file."))
     widen_excel(input$excel$datapath)
   })
 
@@ -478,6 +478,7 @@ observe({ # wait for button click
           c(`Private contributions`:Other),
           names_to = "Revenue source"
         ) |>
+        # Ordering for the plot
         mutate(
           `Revenue source` =
             ordered(`Revenue source`, levels =
