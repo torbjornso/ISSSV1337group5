@@ -46,8 +46,6 @@ fileInput("excel", "Upload Excel file", accept = ".xlsx")
 
 # Button
 actionButton("click", "Analyse")
-
-
 ```
 
 Dashboard
@@ -159,6 +157,7 @@ observe({ # wait for button click
   #---- Data frames ------------------------------------------------------------      
   # creating data frame from html file
   htmldata <- reactive({
+    # validating file
     validate(need(tools::file_ext(input$html$datapath) == "html",
                   "Please upload an html file."))
     read_proff(
@@ -169,6 +168,7 @@ observe({ # wait for button click
 
   # Creating data frame from Excel file
   exceldata <- reactive({
+    # validating file
     validate(need(tools::file_ext(input$excel$datapath) == "xlsx",
                   "Please upload an Excel file."))
     widen_excel(input$excel$datapath)
@@ -200,23 +200,28 @@ observe({ # wait for button click
 
   # Creating value box for fundraising ROI
   # Unsure about colour levels
-  output$KPI_box_fundraising <- renderValueBox({
-    valueBox(
-      value = KPI_to_string(KPI_fundraising_num()),
-      caption = "Fundraising ROI",
-      # Colour depends on value
-      color = if (is.na(KPI_fundraising_num())) {
-        "primary"
-      } else if (KPI_fundraising_num() < 100) {
-        "danger"
-      } else if (KPI_fundraising_num() < 200) {
-        "warning"
-      } else {
-        "success"
-      },
-      icon = "fas fa-donate"
-    )
-  })
+  # testing for data quality, returning NA if bad
+  if (datatest() == TRUE) {
+    NA
+  } else {
+    output$KPI_box_fundraising <- renderValueBox({
+      valueBox(
+        value = KPI_to_string(KPI_fundraising_num()),
+        caption = "Fundraising ROI",
+        # Colour depends on value
+        color = if (is.na(KPI_fundraising_num())) {
+          "primary"
+        } else if (KPI_fundraising_num() < 100) {
+          "danger"
+        } else if (KPI_fundraising_num() < 200) {
+          "warning"
+        } else {
+          "success"
+        },
+        icon = "fas fa-donate"
+      )
+    })
+  }
 
   # Creating OPX KPI
   KPI_OPX_num <- reactive({

@@ -1,0 +1,312 @@
+---
+title: "Dashboard section"
+author: "Torbjørn Skinnemoen Ottersen"
+date: '2022-07-23'
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+
+>Ca. 6 sider.
+
+# The Dashboard
+
+One of the outputs we have created is an example dashboard that calculates some KPIs and creates a few visualisations based on user-uploaded data from Proff.no and the Excel template we developed. The basic layout and structure of the dashboard were created using Flexdashboard, whilst most of the logic 'uner the hood' was created using Shiny.
+
+The dashboard consists of three main parts: a sidebar, the dashboard proper, and a 'Details' tab that provides basic information about the KPIs and plots.
+
+## The Sidebar
+
+The sidebar includes file upload boxes for Excel and html files, numeric input boxes in which the user can input the years covered by the Proff.no data, and an 'Analyse' button which is connected to a Shiny `observe() |> bindEvent()` structure, ensuring that most of the code is not executed until the user has finished entering data.
+```{r dashboard_sidebar, eval=FALSE}
+# HTML
+fileInput("html", label = "Upload html file", accept = ".html")
+
+# Year inputs
+numericInput("start", label = "Start", value = 2002)
+numericInput("end", label = "End", value = 2021)
+
+# Excel
+fileInput("excel", "Upload Excel file", accept = ".xlsx")
+
+# Button
+actionButton("click", "Analyse")
+```
+
+Flexdashboard and Shiny do not fail particularly gracefully, so in addition to the information to user and the information about file types provided to the browser, the Shiny logic executed on the button press includes some basic validations using `validate()` and `tools::file_ext()` which output error messages if the wrong file has been uploaded:
+```{r dashboard_file_validation, eval=FALSE}
+validate(need(tools::file_ext(input$html$datapath) == "html",
+                  "Please upload an html file."))
+validate(need(tools::file_ext(input$excel$datapath) == "xlsx",
+                  "Please upload an Excel file."))
+```
+
+If the validation is successful the files are read using the functions developed for this purpose.
+
+## The dashboard proper
+
+### Key Performance Indicators
+
+The main section of the dashboard has a row-based layout, with a top row containing five 'value boxes' displaying KPIs derived from data in the Excel sheet, calculated and formatted in separate reactive functions. As Flexdashboard fails particularly gracelessly when errors occur with the value boxes, each function relies on some basic checks carried out by separate functions created for this purpose. In the case of both this is a simple function that checks if any of the numeric columns contain characters:
+```{r dashboard_datatest, eval=FALSE}
+datatest <- reactive({
+    if (mean(unlist(lapply(exceldata(), is.character))) != 0) {
+      TRUE
+    } else {
+      FALSE
+    }
+  })
+```
+
+If there are any characters, the calculation outputs `NA`, otherwise it carries out the calculation. One example:
+```{r dashboard_KPI_calculation}
+# Creating Fundraising ROI value
+KPI_fundraising_num <- reactive({
+  # testing for data quality, returning NA if bad
+  if (datatest() == TRUE) {
+    NA
+  } else {
+    exceldata() |>
+      # most recent year
+      filter(year == max(year)) |>
+      transmute(
+        # Calculating the value as a percentage; removing all other
+        KPI_fundraising_num =
+          (revenue_private_contributions +
+            revenue_membership_fees - expenses_fundraising) /
+            expenses_fundraising * 100
+      ) |>
+      # just want the single number
+      pull() |>
+      first()
+  }
+})
+```
+
+The value box then also relies on a function that converts the number into a percentage string, checking into process if the number is `NA` or `Inf` (indicating a division by zero, and thus either a data problem or data not suited to this calculation).
+```{r}
+# Function to turn KPI values into NA or percentage string
+KPI_to_string <- function(variable) {
+  # Returning NA if the KPI is Inf (division by zero) or NA, to avoid
+  # layout-breaking errors, otherwise formatting
+  if (is.na(variable)) {
+    NA
+  } else if (variable == Inf) {
+    NA
+  } else {
+    # Shortening (lengthening) the value, adding %
+    str_c(format(variable, digits = 3), "%")
+  }
+}
+```
+
+In the case of some value boxes, such as the Fundraising ROI one, the function includes logic that changes the colour of the box based on the calculated number. The levels are based on some cursory examination of expected levels of Fundraising ROI, but may of course be changed if the dashboard is developed further.
+```{r}
+# Creating value box for fundraising ROI
+# Unsure about colour levels
+# testing for data quality, returning NA if bad
+if (datatest() == TRUE) {
+    NA
+  } else {
+    output$KPI_box_fundraising <- renderValueBox({
+      valueBox(
+        value = KPI_to_string(KPI_fundraising_num()),
+        caption = "Fundraising ROI",
+        # Colour depends on value
+        color = if (is.na(KPI_fundraising_num())) {
+          "primary"
+        } else if (KPI_fundraising_num() < 100) {
+          "danger"
+        } else if (KPI_fundraising_num() < 200) {
+          "warning"
+        } else {
+          "success"
+        },
+        icon = "fas fa-donate"
+      )
+    })
+  }
+```
+
+All the boxes also include a Fontawesome icon, fetched using the fontawesome package, as Flexdashboard relies on the unsupported version 3 of Fontawesome, whilst fontawesome used the still-supported version 5 when coding began, and has just been updated to use version 6.1.1.
+
+### Plots
+
+Below the row of KPI boxes, the dashboard contains three more rows containing five plots, three based on Proff.no data, and two based on Excel data. The html-based plots include a basic test of whether the necessary data are available, as some or all may sometimes be missing, printing a 'no information' plot using a separate function if the data is missing.
+```{r}
+# testing for the presence of data
+if (sum(!is.na(htmldata()$arsresultat)) == 0) {
+  # Printing 'no information' plot if no data
+  no_information()
+} else {
+  ggplot() # create plot
+}
+```
+
+The 'no information' plot is an essentially empty plot displaying a notice to the user:
+```{r}
+# Function to print a 'no information' plot, if necessary
+no_information <- function() {
+  ggplot() +
+    # text geom with a space to create the plot, but otherwise show nothing
+    geom_text(aes(0, 0, label = " ")) +
+    # as blank a slate as possible
+    theme_void() +
+    annotate(
+      "text",
+      label = "No information available",
+      # Using the same palette as the other non-profit/loss plots
+      x = 0, y = 0, size = 8, colour = met.brewer("Hokusai2", 1)
+    )
+}
+```
+
+
+The top row contains two plots showing the annual result and balance data for the years covered by Proff.no. These are fairly simple bar plots, including a `fill` parameter colouring the bars depending on whether the numbers are positive or negative. They do, however, rely on two simple additional function, one which checks whether the currency code is uniform across the years, and, if so, using it for the y scale, using `scales::label_dollar()`, or, otherwise, uses a question mark instead of a currency code.
+```{r}
+# Reactive function to check for currency and use currency code or ?
+currency_scale <- reactive({
+  scale_y_continuous(
+    # Checking for uniform currency code
+    labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
+      # Using the currency code if uniform
+      label_dollar(prefix = str_c(htmldata()$valutakode[1], " ")),
+      # alternative prefix if multiple currencies in the data
+      label_dollar(prefix = "? ")
+    )
+  )
+})
+```
+
+A second function is used for the `fill` parameter in order to (1) ensure that positive numbers are always green, irrespective of the presence of negative numbers, and vice versa, and (2) to use slightly nicer colours than the default ggplot2 ones, making use of the 'Tsimshian' palette from Blake R. Mills' creative [MetBrewer](https://github.com/BlakeRMills/MetBrewer) package.
+
+The plots are converted to plotly using `ggplotly()`. As subtitles and captions do not survive the conversion, a separate function outputs a plotly annotation if the data contains multiple currency codes:
+```{r}
+# Creating plotly output
+output$arsresultat_plotly <- renderPlotly(
+  ggplotly(arsresultat_plot()) |>
+    ## ggplot subtitles and captions are lost when using ggplotly(), a
+    ## currency warning caption is therefore added in plotly, if needed, using
+    ## a separate function
+    layout(
+      annotations =
+        plotly_caption()
+    )
+)
+
+# Reactive function to create plotly caption (ggplot captions and subtitles
+# are lost in the conversion) (shamelessly stolen from the Internet, with
+# minor modifications).
+# Checks for uniform currency code and prints a warning
+# if there are multiple currency codes.
+plotly_caption <- reactive({
+  list(
+    x = 1, y = -0.1, text = ifelse(length(unique(htmldata()$valutakode)) == 1,
+      "", "Note: not all values are denominated in the same currency"
+    ),
+    showarrow = F, xref = "paper", yref = "paper",
+    xanchor = "right", yanchor = "auto", xshift = 0, yshift = 0,
+    font = list(size = 11)
+  )
+})
+```
+
+Below these plots are two plots based on Excel data. These both use the same check for data quality as the value box, outputting a 'bad data' plot if the data are bad using a separate function:
+```{r}
+# Function to print a 'bad data' plot, if necessary
+bad_data <- function() {
+  ggplot() +
+    # text geom with a space to create the plot, but otherwise show nothing
+    geom_text(aes(0, 0, label = " ")) +
+    # as blank a slate as possible
+    theme_void() +
+    annotate(
+      "text",
+      label = "Something is wrong\nwith the Excel data.",
+      # Using the same palette as the other non-profit/loss plots
+      x = 0, y = 0, size = 8, colour = met.brewer("Hokusai2", 1)
+    )
+}
+```
+
+Both plots feature a certain amount of data transformation, including renaming the variables, so that the legend includes appropriate information; pivoting - in order to use the `fill` aesthetic; and ordering of the categories, so that they occur in an appropriate order. Excel data are presumed to be supplied in NOK.
+```{r}
+exceldata() |>
+  # Renaming for the purposes of the plot + dropping other variables
+  transmute(
+    Year = as.factor(year),
+    `Private contributions` = revenue_private_contributions,
+    `Membership fees` = revenue_membership_fees,
+    `Public grants` = revenue_public_grants,
+    Investments = revenue_investments,
+    `Operational activities` = revenue_operational_activities,
+    `Commercial activities` = revenue_commercial_activities,
+    Other = revenue_other
+  ) |>
+  # Pivoting to use fill
+  pivot_longer(
+    c(`Private contributions`:Other),
+    names_to = "Revenue source"
+  ) |>
+  # Ordering for the plot
+  mutate(
+    `Revenue source` =
+      ordered(`Revenue source`,
+        levels =
+          c(
+            "Other", "Commercial activities",
+            "Operational activities", "Investments",
+            "Membership fees", "Private contributions",
+            "Public grants"
+          )
+      )
+  ) |>
+  ggplot(aes(Year, value, fill = `Revenue source`)) +
+  geom_col() +
+  scale_y_continuous(
+    # Excel data are assumed to be in NOK; if this changes, code based on
+    # the currency_code() function may be adapted
+    labels = label_dollar(prefix = "NOK "),
+    # Basing lower limit on the data (not suppressing erroneous negative
+    # numbers), and the upper limit on the maximum value in revenues and
+    # expenses, to match the two plots
+    limits = c(NA, maximum())
+  ) +
+  # Specifying the number of values, as the base palette only includes 6
+  scale_fill_manual(values = met.brewer("Hokusai2", 7)) +
+  labs(x = "", y = "", title = "Revenue (in thousands)")
+```
+
+The revenue and expenses plots rely on a separate 'maximum' function to create to y scales; this is used so that both are on the same scale, and to derive the upper limit of the scale from the supplied data. The lower limit is derived from the supplied data in each plot in order not to suppress any erroneous totals. (This is not a complete data integrity test, but should convey a slight warning if the expenses have been entered as negative numbers.) This function reads the Excel sheet anew in order to make use of the Category column:
+```{r}
+# Reactive function to create the maximum value for revenue and expenses plots
+maximum <- reactive({
+  # reading the Excel sheet anew
+  read_excel(input$excel$datapath) |>
+    # removing the firm and sub-category columns
+    select(-Firm, -`Sub-category`) |>
+    # filtering to retain only revenue and expenses entries
+    filter(Category == "Revenue" | Category == "Expenses") |>
+    # grouping and summarising to calculate maximum value
+    group_by(Year, Category) |>
+    summarise(
+      sum = sum(Value, na.rm = TRUE)
+    ) |>
+    # Creating list of sums
+    pull() |>
+    # selecting the highest value
+    max()
+})
+```
+
+All the plots based on the Excel data make use of the "Hokusai2" palette from the MetBrewer package; in the case of the revenues plot this is not done using the convenience `scale_fill_met_d()` function but rather the `met.brewer()` function in conjunction with `scale_fill_manual()`, as the base palette only contains six colours, but the plot has seven. The same function is used to generate the text colour in the 'no information' and 'bad data' plots.
+
+Below these two plots is a plot showing the total reported CEO compensation in the years covered by the html data, where this information is available.
+
+## Details tab
+
+Finally, the dashboard contains a separate tab with some basic details about the KPIs and plots.
