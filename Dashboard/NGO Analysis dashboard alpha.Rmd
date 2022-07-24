@@ -238,8 +238,12 @@ observe({ # wait for button click
         # Calculating the value as a %
         transmute(
           KPI_OPX =
-            sum(revenue_private_contributions, revenue_investments, assets_cash_in_bank_and_cash_equivalents, na.rm = TRUE) /
-              sum(liability_short_term_grants_payable, liability_revocable_endowments, liability_long_term_grants_payable, na.rm = TRUE) * 100
+            sum(revenue_private_contributions,
+                revenue_investments, assets_cash_in_bank_and_cash_equivalents,
+                na.rm = TRUE) /
+              sum(liability_short_term_grants_payable,
+                  liability_revocable_endowments,
+                  liability_long_term_grants_payable, na.rm = TRUE) * 100
         ) |>
         # Just the single number
         pull() |>
