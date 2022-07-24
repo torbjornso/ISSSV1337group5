@@ -398,9 +398,15 @@ The KPIs are based on the following calculations, using data derived from the Ex
   
 ### Fundraising ROI: `r fundraising`
 
+# Plots
 
+### Plots
 
-```{r plots, echo=FALSE, message=FALSE, warning=FALSE}
+The dashboard includes five plots, three based on data from [Proff.no](https://www.proff.no) and two based on data from the Excel sheet.
+
+- **Net income/loss**: Based on the entry *Årsresultat* in the Proff.no data.
+
+```{r arsresultat_plot, echo=FALSE, message=FALSE, warning=FALSE}
 # Plots ======================================================================
 
 ## Annual result--------------------------------------------------------------
@@ -408,7 +414,7 @@ arsresultat_plot <-
   # testing for the presence of data
   if (sum(!is.na(htmldata$arsresultat)) == 0) {
     # Printing 'no information' plot if no data
-    no_information()
+    NA
   } else {
     htmldata |>
       # renaming for plotly hover
@@ -429,15 +435,20 @@ arsresultat_plot <-
         caption = currency_caption
       )
   }
+if (sum(!is.na(htmldata$arsresultat)) != 0) {
+  arsresultat_plot
+}
+```
 
-arsresultat_plot
+- **Total equity/liabilities**: Based on the entry *Sum egenkapital og gjeld* in the Proff.no data.
 
+```{r balance_plot, echo=FALSE, message=FALSE, warning=FALSE}
 ## Balance--------------------------------------------------------------------
 balance_plot <- 
   # testing for the presence of data
   if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0) {
     # Printing 'no information' plot if no data
-    no_information()
+    NA
   } else {
     htmldata |>
       # rename for plotly hover
@@ -458,9 +469,9 @@ balance_plot <-
         caption = currency_caption
       )
   }
-
-balance_plot
-
+if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) != 0) {
+  balance_plot
+}
 # Creating plotly output
 #ggplotly(balance_plot) |>
   ## ggplot subtitles and captions are lost when using ggplotly(), a
@@ -470,13 +481,17 @@ balance_plot
   #   annotations =
   #     plotly_caption
   # )
+```
 
+- **Expenses**: Based on the category *Expenses* in the Excel sheet.
+
+```{r expenses_plot, echo=FALSE, message=FALSE, warning=FALSE}
 ## Expenses-------------------------------------------------------------------
 expenses_plot <- 
     # testing for data quality
     if (datatest == TRUE) {
       # printing 'bad data' plot if data are bad
-      bad_data()
+      NA
     } else {
       exceldata |>
         # Renaming for the purposes of the plot + dropping other variables
@@ -510,18 +525,22 @@ expenses_plot <-
         scale_fill_met_d("Hokusai2") +
         labs(x = "", y = "", title = "Expenses (in thousands)")
     }
-
-expenses_plot
-
+ if (datatest == FALSE) {
+   expenses_plot
+ }
 # Creating plotly output
 # ggplotly(expenses_plot)
+```
 
+- **Revenues**: Based on the category *Revenue* in the Excel sheet.
+
+```{r revenue_plot, echo=FALSE, message=FALSE, warning=FALSE}
 ## Revenue--------------------------------------------------------------------
 revenue_plot <-
   # testing for data quality
   if (datatest == TRUE) {
     # printing 'bad data' plot if data are bad
-    bad_data()
+    NA
   } else {
     exceldata |>
       # Renaming for the purposes of the plot + dropping other variables
@@ -568,19 +587,24 @@ revenue_plot <-
       scale_fill_manual(values = met.brewer("Hokusai2", 7)) +
       labs(x = "", y = "", title = "Revenue (in thousands)")
   }
-
-revenue_plot
-
+if (datatest == FALSE) {
+  revenue_plot
+}
 # Creating plotly output
 # ggplotly(revenue_plot)
+```
 
+- **CEO compensation**: Based on the category *Lederlønn* in the Proff.no data. Not in thousands. Includes the entries *Lønn* and *Leder annen godtgjørelse*.
+  - A common measure of transparency, but should normally be evaluated in context.
+
+```{r compensation_plot, echo=FALSE, message=FALSE, warning=FALSE}
 ## CEO compensation-----------------------------------------------------------
 CEO_plot <-
   # Testing for the presence of data
   if (sum(!is.na(htmldata$lederlonn)) == 0 &
     sum(!is.na(htmldata$leder_annen_godtgjorelse)) == 0) {
-    # Printing 'no information' plot if no data
-    no_information()
+    # Returning NA if no data
+    NA
   } else {
     # Creating plot if any data exist
     # Note that the plot will still look empty, but have a legend and scales,
@@ -613,8 +637,10 @@ CEO_plot <-
         x = "", y = "Total compensation", title = "CEO compensation"
       )
   }
-
-CEO_plot
+if (sum(!is.na(htmldata$lederlonn)) != 0 &
+  sum(!is.na(htmldata$leder_annen_godtgjorelse)) != 0) {
+  CEO_plot
+}
 
 # Creating plotly output
 # ggplotly(CEO_plot) |>
