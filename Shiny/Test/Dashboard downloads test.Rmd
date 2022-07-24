@@ -29,7 +29,7 @@ Sidebar {.sidebar}
 
 Please upload an html copy of annual accounts from [Proff.no](https://www.proff.no) and enter the start and end years from that table.
 
-Then upload an Excel file in the set format.
+Then upload an Excel file in the set format (available [here](https://github.com/amaliehc/ISSSV1337/blob/5c0a8a2beae499b3d2524a3965ceebf3b3ebad0e/Dashboard/Data/NGO_template.xltx)).
 
 Click 'Analyse' to analyse the data.
 
@@ -159,28 +159,32 @@ The dashboard includes five plots, three based on data from [Proff.no](https://w
 ```{r value_boxes, include=FALSE}
 # Shiny actions
 
-  # Report Output ==============================================================
-  
-  output$downloadUI <- renderUI( {
+# Report Output ==============================================================
+
+output$downloadUI <- renderUI({
   downloadButton("report", "Generate report")
 })
 
-  output$report <- downloadHandler(
-    filename = "report.html",
-    content = function(file) {
-      tempReport <- file.path(tempdir(), "report.Rmd")
-      file.copy("report.Rmd", tempReport, overwrite = TRUE)
-      
-      params <- list(htmlfile = input$html$datapath,
-                     excelfile = input$excel$datapath,
-                     start = input$start,
-                     end = input$end)
-      
-      rmarkdown::render(tempReport, output_file = file,
-                        params = params,
-                        envir = new.env(parent = globalenv()))
-    }
-  )
+output$report <- downloadHandler(
+  filename = "report.html",
+  content = function(file) {
+    tempReport <- file.path(tempdir(), "report.Rmd")
+    file.copy("report.Rmd", tempReport, overwrite = TRUE)
+
+    params <- list(
+      htmlfile = input$html$datapath,
+      excelfile = input$excel$datapath,
+      start = input$start,
+      end = input$end
+    )
+
+    rmarkdown::render(tempReport,
+      output_file = file,
+      params = params,
+      envir = new.env(parent = globalenv())
+    )
+  }
+)
 
 observe({ # wait for button click
 
