@@ -47,7 +47,7 @@ fileInput("excel", "Upload Excel file", accept = ".xlsx")
 actionButton("click", "Analyse")
 ```
 
-Flexdashboard and Shiny do not fail particularly gracefully, so in addition to the information to user and the information about file types provided to the browser, the Shiny logic executed on the button press includes some basic validations using `validate()` and `tools::file_ext()` which output error messages if the wrong file has been uploaded:
+Flexdashboard and Shiny do not fail particularly gracefully, so in addition to the information to the user and the information about file types provided to the browser, the Shiny logic executed on the button press includes some basic validations using `validate()` and `tools::file_ext()` which output error messages if the wrong file has been uploaded:
 ```{r dashboard_file_validation, eval=FALSE}
 validate(need(tools::file_ext(input$html$datapath) == "html",
                   "Please upload an html file."))
@@ -152,7 +152,7 @@ htmltools::tagList(fontawesome::fa_html_dependency())
 
 ### Plots
 
-Below the row of KPI boxes, the dashboard contains three more rows containing five plots, three based on Proff.no data, and two based on Excel data. The html-based plots include a basic test of whether the necessary data are available, as some or all may sometimes be missing, printing a 'no information' plot using a separate function if the data is missing.
+Below the row of KPI boxes, the dashboard contains three more rows containing five plots, three based on Proff.no data and two based on Excel data. The html-based plots include a basic test of whether the necessary data are available, as some or all may sometimes be missing, printing a 'no information' plot using a separate function if the data is missing.
 ```{r html_datatest, eval=FALSE}
 # testing for the presence of data
 if (sum(!is.na(htmldata()$arsresultat)) == 0) {
@@ -181,7 +181,7 @@ no_information <- function() {
 }
 ```
 
-The top row contains two plots showing the annual result and balance data for the years covered by Proff.no. These are fairly simple bar plots, including a `fill` parameter colouring the bars depending on whether the numbers are positive or negative. They do, however, rely on two simple additional function, one which checks whether the currency code is uniform across the years, and, if so, using it for the y scale, using `scales::label_dollar()`, or, otherwise, uses a question mark instead of a currency code.
+The top row contains two plots showing the annual result and balance data for the years covered by Proff.no. These are fairly simple bar plots, including a `fill` parameter colouring the bars depending on whether the numbers are positive or negative. They do, however, rely on two simple additional functions, one which checks whether the currency code is uniform across the years, and, if so, using it for the y scale, or, otherwise, uses a question mark instead of a currency code, both using `scales::label_dollar()`.
 ```{r dashboard_currency, eval=FALSE}
 # Reactive function to check for currency and use currency code or ?
 currency_scale <- reactive({
