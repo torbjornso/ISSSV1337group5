@@ -293,7 +293,7 @@ exceldata() |>
   labs(x = "", y = "", title = "Revenue (in thousands)")
 ```
 
-The revenue and expenses plots rely on a separate 'maximum' function to create to y scales; this is used so that both are on the same scale, and to derive the upper limit of the scale from the supplied data. The lower limit is derived from the supplied data in each plot in order not to suppress any erroneous totals. (This is not a complete data integrity test, but should convey a slight warning if the expenses have been entered as negative numbers.) This function reads the Excel sheet anew in order to make use of the Category column:
+The revenue and expenses plots rely on a separate 'maximum' function to create the y scales; this is used so that both are on the same scale, and to derive the upper limit of the scale from the supplied data. The lower limit is derived from the supplied data in each plot in order not to suppress any erroneous totals. (This is not a complete data integrity test, but should convey a slight warning if the expenses have been entered as negative numbers.) This function reads the Excel sheet anew in order to make use of the Category column:
 ```{r dashboard_maximum, eval=FALSE}
 # Reactive function to create the maximum value for revenue and expenses plots
 maximum <- reactive({
@@ -315,7 +315,7 @@ maximum <- reactive({
 })
 ```
 
-All the plots based on the Excel data make use of the "Hokusai2" palette from the MetBrewer package; in the case of the revenues plot this is not done using the convenience `scale_fill_met_d()` function but rather the `met.brewer()` function in conjunction with `scale_fill_manual()`, as the base palette only contains six colours, but the plot has seven. The same function is used to generate the text colour in the 'no information' and 'bad data' plots.
+All the plots based on the Excel data make use of the "Hokusai2" palette from the MetBrewer package; in the case of the revenues plot this is not done using the convenience `scale_fill_met_d()` function but rather the `met.brewer()` function in conjunction with `scale_fill_manual()` as the base palette only contains six colours, but the plot has seven categories. The same function is used to generate the text colour in the 'no information' and 'bad data' plots.
 
 Below these two plots is a plot showing the total reported CEO compensation in the years covered by the html data, where this information is available.
 
