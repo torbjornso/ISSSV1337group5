@@ -66,8 +66,10 @@ KPI_fundraising_num <- reactive({
       transmute(
         # Calculating the value as a percentage; removing all other
         KPI_fundraising_num =
-          (revenue_private_contributions +
-            revenue_membership_fees - expenses_fundraising) /
+          (sum(revenue_private_contributions,
+            revenue_membership_fees,
+            na.rm = TRUE
+          ) - expenses_fundraising) /
             expenses_fundraising * 100
       ) |>
       # just want the single number
@@ -90,11 +92,9 @@ KPI_OPX_num <- reactive({
       filter(year == max(year)) |>
       # Calculating the value as a %
       transmute(
-        KPI_OPX = (revenue_private_contributions + revenue_investments +
-          assets_cash_in_bank_and_cash_equivalents) /
-          (liability_short_term_grants_payable +
-            liability_revocable_endowments +
-            liability_long_term_grants_payable) * 100
+        KPI_OPX =
+          sum(revenue_private_contributions, revenue_investments, assets_cash_in_bank_and_cash_equivalents, na.rm = TRUE) /
+            sum(liability_short_term_grants_payable, liability_revocable_endowments, liability_long_term_grants_payable, na.rm = TRUE) * 100
       ) |>
       # Just the single number
       pull() |>
@@ -157,7 +157,7 @@ KPI_proportion <- reactive({
   } else {
     exceldata() |>
       transmute(
-        proportion = (revenue_private_contributions + revenue_membership_fees) / (revenue_public_grants + revenue_private_contributions + revenue_membership_fees) * 100
+        proportion = sum(revenue_private_contributions, revenue_membership_fees, na.rm = TRUE) / sum(revenue_public_grants, revenue_private_contributions, revenue_membership_fees, na.rm = TRUE) * 100
       ) |>
       pull() |>
       first()
@@ -580,17 +580,20 @@ read_proff <- function(file, start, end) {
 # Creating data frame
 htmldata <- read_proff("Data/Kreftforeningen.html", "2002", "2021")
 
-# Function to read Excel file
+## Function to read Excel file -------------------------------------------------
 widen_excel <- function(file) {
   read_excel(file) |>
-    unite( # uniting Category and Name to deal with multiple 'Other'
+    # uniting Category and Name to deal with multiple 'Other'
+    unite(
       entry, c(Category, Name),
       sep = "_"
     ) |>
-    select(-`Sub-category`, -Firm) |> # deleting Sub-category and Firm
-    # pivoting
+    # deleting Sub-category and Firm
+    select(-`Sub-category`, -Firm) |> 
+    # pivoting to create 'tidy' variables
     pivot_wider(names_from = entry, values_from = Value) |>
-    clean_names() # cleaning names
+    # cleaning names
+    clean_names() 
 }
 
 # Creating data frame
@@ -633,8 +636,27 @@ scale_fill_green <- function(variable) {
 
 ##### no_information
 ```{r}
+## no_information plot ---------------------------------------------------------
 # Function to print a 'no information' plot, if necessary
 no_information <- function() {
+  empty_plot("No information available")
+}
+```
+
+##### bad_data
+```{r}
+## bad_data plot ---------------------------------------------------------------
+# Function to print a 'bad data' plot, if necessary
+bad_data <- function() {
+  empty_plot("Something is wrong\nwith the Excel data.")
+}
+```
+
+#### empty_plot
+```{r}
+## empty_plot-------------------------------------------------------------------
+# Function to print an empty plot with a supplied message
+empty_plot <- function(warning) {
   ggplot() +
     # text geom with a space to create the plot, but otherwise show nothing
     geom_text(aes(0, 0, label = " ")) +
@@ -642,27 +664,10 @@ no_information <- function() {
     theme_void() +
     annotate(
       "text",
-      label = "No information available",
+      label = warning,
       # Using the same palette as the other non-profit/loss plots
       x = 0, y = 0, size = 8, colour = met.brewer("Hokusai2", 1)
     )
 }
 ```
 
-##### bad_data
-```{r}
-# Function to print a 'bad data' plot, if necessary
-bad_data <- function() {
-  ggplot() +
-    # text geom with a space to create the plot, but otherwise show nothing
-    geom_text(aes(0, 0, label = " ")) +
-    # as blank a slate as possible
-    theme_void() +
-    annotate(
-      "text",
-      label = "Something is wrong\nwith the Excel data.",
-      # Using the same palette as the other non-profit/loss plots
-      x = 0, y = 0, size = 8, colour = met.brewer("Hokusai2", 1)
-    )
-}
-```
