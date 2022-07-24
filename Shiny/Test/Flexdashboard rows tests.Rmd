@@ -150,7 +150,7 @@ The dashboard includes five plots, three based on data from [Proff.no](https://w
   - A common measure of transparency, but should normally be evaluated in context.
 
 
-```{r shiny, include=FALSE}
+```{r value_boxes, include=FALSE}
 # Shiny actions
 observe({ # wait for button click
 
@@ -195,7 +195,9 @@ observe({ # wait for button click
           # Calculating the value as a percentage; removing all other
           KPI_fundraising_num =
             (sum(revenue_private_contributions,
-              revenue_membership_fees, na.rm = TRUE) - expenses_fundraising) /
+              revenue_membership_fees,
+              na.rm = TRUE
+            ) - expenses_fundraising) /
               expenses_fundraising * 100
         ) |>
         # just want the single number
@@ -227,10 +229,7 @@ observe({ # wait for button click
 
   ## OPX KPI--------------------------------------------------------------------
   # Creating OPX KPI
-  
-  # For some bizarre reason I cannot do na.rm = TRUE in these sum
-  
-  OPX_num <- reactive({
+  KPI_OPX_num <- reactive({
     # testing for data quality, returning NA if bad
     if (datatest() == TRUE) {
       NA
@@ -241,23 +240,23 @@ observe({ # wait for button click
         # Calculating the value as a %
         transmute(
           KPI_OPX =
-            sum(revenue_private_contributions, revenue_investments, assets_cash_in_bank_and_cash_equivalents) /
-            sum(liability_short_term_grants_payable, liability_revocable_endowments, liability_long_term_grants_payable) * 100
+            sum(revenue_private_contributions, revenue_investments, assets_cash_in_bank_and_cash_equivalents, na.rm = TRUE) /
+              sum(liability_short_term_grants_payable, liability_revocable_endowments, liability_long_term_grants_payable, na.rm = TRUE) * 100
         ) |>
         # Just the single number
         pull() |>
         first()
     }
   })
-  
+
   # Creating value box for OPX KPI
   output$KPI_box_OPX <- renderValueBox({
     valueBox(
-      value = KPI_to_string(OPX_num()),
+      value = KPI_to_string(KPI_OPX_num()),
       caption = "Liquid assets / obligations",
-      color = if (is.na(OPX_num())) {
+      color = if (is.na(KPI_OPX_num())) {
         "primary"
-      } else if (OPX_num() < 100) {
+      } else if (KPI_OPX_num() < 100) {
         "warning"
       } else {
         "success"
@@ -364,7 +363,52 @@ observe({ # wait for button click
     )
   })
 
+  ## Excel data test------------------------------------------------------------
+  # Reactive function to test for Excel data quality (basic)
+  datatest <- reactive({
+    # let me know if anyone has a better idea for testing
+    if (mean(unlist(lapply(exceldata(), is.character))) != 0) {
+      TRUE
+    } else {
+      FALSE
+    }
+  })
+}) |> bindEvent(input$click)
+```
+
+
+```{r plots, include=FALSE}
+# It's necessary to split the observers into separate parts, with all necessary
+# code duplicated.
+
+observe({
+
   # Plots ======================================================================
+
+  # Data frames ================================================================
+
+  # creating data frame from html file
+  htmldata <- reactive({
+    # validating file
+    validate(need(
+      tools::file_ext(input$html$datapath) == "html",
+      "Please upload an html file."
+    ))
+    read_proff(
+      input$html$datapath,
+      as.character(input$start), as.character(input$end)
+    )
+  })
+
+  # Creating data frame from Excel file
+  exceldata <- reactive({
+    # validating file
+    validate(need(
+      tools::file_ext(input$excel$datapath) == "xlsx",
+      "Please upload an Excel file."
+    ))
+    widen_excel(input$excel$datapath)
+  })
 
   ## Annual result--------------------------------------------------------------
   arsresultat_plot <- reactive({
@@ -592,17 +636,6 @@ observe({ # wait for button click
 
   # Reactive functions =========================================================
 
-  ## Excel data test------------------------------------------------------------
-  # Reactive function to test for Excel data quality (basic)
-  datatest <- reactive({
-    # let me know if anyone has a better idea for testing
-    if (mean(unlist(lapply(exceldata(), is.character))) != 0) {
-      TRUE
-    } else {
-      FALSE
-    }
-  })
-
   ## Currency scale-------------------------------------------------------------
   # Reactive function to check for currency and use currency code or ?
   currency_scale <- reactive({
@@ -652,6 +685,17 @@ observe({ # wait for button click
       pull() |>
       # selecting the highest value
       max()
+  })
+
+  ## Excel data test------------------------------------------------------------
+  # Reactive function to test for Excel data quality (basic)
+  datatest <- reactive({
+    # let me know if anyone has a better idea for testing
+    if (mean(unlist(lapply(exceldata(), is.character))) != 0) {
+      TRUE
+    } else {
+      FALSE
+    }
   })
   # Let the magic/disaster happen (i.e. execute when the user clicks the button)
 }) |> bindEvent(input$click)
@@ -837,23 +881,49 @@ scale_fill_green <- function(variable) {
 
 ## no_information plot ---------------------------------------------------------
 # Function to print a 'no information' plot, if necessary
+# no_information <- function() {
+#   ggplot() +
+#     # text geom with a space to create the plot, but otherwise show nothing
+#     geom_text(aes(0, 0, label = " ")) +
+#     # as blank a slate as possible
+#     theme_void() +
+#     annotate(
+#       "text",
+#       label = "No information available",
+#       # Using the same palette as the other non-profit/loss plots
+#       x = 0, y = 0, size = 8, colour = met.brewer("Hokusai2", 1)
+#     )
+# }
+
+## bad_data plot ---------------------------------------------------------------
+# Function to print a 'bad data' plot, if necessary
+# bad_data <- function() {
+#   ggplot() +
+#     # text geom with a space to create the plot, but otherwise show nothing
+#     geom_text(aes(0, 0, label = " ")) +
+#     # as blank a slate as possible
+#     theme_void() +
+#     annotate(
+#       "text",
+#       label = "Something is wrong\nwith the Excel data.",
+#       # Using the same palette as the other non-profit/loss plots
+#       x = 0, y = 0, size = 8, colour = met.brewer("Hokusai2", 1)
+#     )
+# }
+
+## no_information plot ---------------------------------------------------------
+# Function to print a 'no information' plot, if necessary
 no_information <- function() {
-  ggplot() +
-    # text geom with a space to create the plot, but otherwise show nothing
-    geom_text(aes(0, 0, label = " ")) +
-    # as blank a slate as possible
-    theme_void() +
-    annotate(
-      "text",
-      label = "No information available",
-      # Using the same palette as the other non-profit/loss plots
-      x = 0, y = 0, size = 8, colour = met.brewer("Hokusai2", 1)
-    )
+  empty_plot("No information available")
 }
 
 ## bad_data plot ---------------------------------------------------------------
 # Function to print a 'bad data' plot, if necessary
 bad_data <- function() {
+  empty_plot("Something is wrong\nwith the Excel data.")
+}
+
+empty_plot <- function(warning) {
   ggplot() +
     # text geom with a space to create the plot, but otherwise show nothing
     geom_text(aes(0, 0, label = " ")) +
@@ -861,7 +931,7 @@ bad_data <- function() {
     theme_void() +
     annotate(
       "text",
-      label = "Something is wrong\nwith the Excel data.",
+      label = warning,
       # Using the same palette as the other non-profit/loss plots
       x = 0, y = 0, size = 8, colour = met.brewer("Hokusai2", 1)
     )
