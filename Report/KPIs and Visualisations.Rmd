@@ -19,7 +19,9 @@ p_load(
 )
 ```
 
->Sannsynligvis mest oversiktlig hvis man kjører "Knit".
+> Sannsynligvis mest oversiktlig hvis man kjører "Knit". (Et annet lite triks er å klikke på "Visual" øverst til venstre, eller "Outline" øverst til høyre.)
+
+<!--# I "Visual" kan man også lett finne koden for å legge til en kommentar som ikke blir del av det ferdige dokumentet. -->
 
 Laster opp dette dokumentet som informasjon om KPIer og visualiseringer -- samt muligens som inspirasjon for visualiseringer og utregninger i rapporten.
 
@@ -35,24 +37,25 @@ Legg merke til at ingen av koden, unntatt setup-chunken kjøres når man knitter
 
 ### Key Performance Indicators
 
->Her har jeg brukt enkle LaTeX mattefunksjoner for å vise utregningene.
+> Her har jeg brukt enkle LaTeX mattefunksjoner for å vise utregningene.
 
 The KPIs are based on the following calculations, using data derived from the Excel sheet:
 
-- **Fundraising ROI**: $$\frac{\text{private contributions} + \text{membership fees} - \text{fundraising expenses}}{\text{fundraising expenses}} \times 100$$
-  - A basic measure of the ROI of direct fundraising expenses.
-- **Liquid assets/obligations**: $$\frac{\text{private contributions} + \text{investment income} + \text{cash in bank and cash equivalents}}{\text{short term grants payable} + \text{revocable endowments} + \text{long term grants payable}} \times 100$$
-  - A measure of the relationship between the organisation's liquid assets and its obligations.
-- **Private donations growth**: $$\frac{\text{private contributions}_2 - \text{private contributions}_1}{\text{private contributions}_1}\times 100$$
-  - A calculation of the percentage change in private contributions based on the two most recent years.
-- **Public grants growth**: $$\frac{\text{public grants}_2 - \text{public grants}_1}{\text{public grants}_1} \times 100$$
-  - A calculation of the percentage change in public grants received based on the two most recent years.
-- **Private/public proportion**: $$\frac{\text{private contributions} + \text{membership fees}}{\text{public grants} + \text{private contributions} + \text{membership fees}} \times 100$$
-  - Calculates the percentage of non-commercial or activity-based income that is derived from private contributions and membership fees as opposed to public grants.
+-   **Fundraising ROI**: $$\frac{\text{private contributions} + \text{membership fees} - \text{fundraising expenses}}{\text{fundraising expenses}} \times 100$$
+    -   A basic measure of the ROI of direct fundraising expenses.
+-   **Liquid assets/obligations**: $$\frac{\text{private contributions} + \text{investment income} + \text{cash in bank and cash equivalents}}{\text{short term grants payable} + \text{revocable endowments} + \text{long term grants payable}} \times 100$$
+    -   A measure of the relationship between the organisation's liquid assets and its obligations.
+-   **Private donations growth**: $$\frac{\text{private contributions}_2 - \text{private contributions}_1}{\text{private contributions}_1}\times 100$$
+    -   A calculation of the percentage change in private contributions based on the two most recent years.
+-   **Public grants growth**: $$\frac{\text{public grants}_2 - \text{public grants}_1}{\text{public grants}_1} \times 100$$
+    -   A calculation of the percentage change in public grants received based on the two most recent years.
+-   **Private/public proportion**: $$\frac{\text{private contributions} + \text{membership fees}}{\text{public grants} + \text{private contributions} + \text{membership fees}} \times 100$$
+    -   Calculates the percentage of non-commercial or activity-based income that is derived from private contributions and membership fees as opposed to public grants.
 
 ### Code
 
 #### Fundraising ROI
+
 ```{r}
 # Creating Fundraising ROI value
 KPI_fundraising_num <- reactive({
@@ -80,6 +83,7 @@ KPI_fundraising_num <- reactive({
 ```
 
 #### OPX KPI
+
 ```{r}
 # Creating OPX KPI
 KPI_OPX_num <- reactive({
@@ -104,6 +108,7 @@ KPI_OPX_num <- reactive({
 ```
 
 #### private donations growth
+
 ```{r}
 # Creating private donations growth
 KPI_private_num <- reactive({
@@ -126,6 +131,7 @@ KPI_private_num <- reactive({
 ```
 
 #### public grants growth
+
 ```{r}
 # Creating public grants growth
 KPI_public_num <- reactive({
@@ -148,6 +154,7 @@ KPI_public_num <- reactive({
 ```
 
 #### public/private proportion
+
 ```{r}
 # Creating public/private proportion
 KPI_proportion <- reactive({
@@ -169,16 +176,17 @@ KPI_proportion <- reactive({
 
 The dashboard includes five plots, three based on data from [Proff.no](https://www.proff.no) and two based on data from the Excel sheet.
 
-- **Annual result**: Based on the entry *Årsresultat* in the Proff.no data.
-- **Balance**: Based on the entry *Sum egenkapital og gjeld* in the Proff.no data.
-- **Revenues**: Based on the category *Revenue* in the Excel sheet.
-- **Expenses**: Based on the category *Expenses* in the Excel sheet.
-- **CEO compensation**: Based on the category *Lederlønn* in the Proff.no data. Not in thousands. Includes the entries *Lønn* and *Leder annen godtgjørelse*.
-  - A common measure of transparency, but should normally be evaluated in context.
-  
+-   **Annual result**: Based on the entry *Årsresultat* in the Proff.no data.
+-   **Balance**: Based on the entry *Sum egenkapital og gjeld* in the Proff.no data.
+-   **Revenues**: Based on the category *Revenue* in the Excel sheet.
+-   **Expenses**: Based on the category *Expenses* in the Excel sheet.
+-   **CEO compensation**: Based on the category *Lederlønn* in the Proff.no data. Not in thousands. Includes the entries *Lønn* and *Leder annen godtgjørelse*.
+    -   A common measure of transparency, but should normally be evaluated in context.
+
 ### Code
 
 #### Årsresultat
+
 ```{r}
 arsresultat_plot <- reactive({
   # testing for the presence of data
@@ -214,6 +222,7 @@ output$arsresultat_plotly <- renderPlotly(
 ```
 
 #### Balance
+
 ```{r}
 #----Balance--------------------------------------------------------------------
 balance_plot <- reactive({
@@ -250,6 +259,7 @@ output$balance_plotly <- renderPlotly(
 ```
 
 #### Expenses
+
 ```{r}
 expenses_plot <- reactive({
   # testing for data quality
@@ -298,6 +308,7 @@ output$expenses_plotly <- renderPlotly(
 ```
 
 #### Revenue
+
 ```{r}
 revenue_plot <- reactive({
   # testing for data quality
@@ -359,6 +370,7 @@ output$revenue_plotly <- renderPlotly(
 ```
 
 #### CEO compensation
+
 ```{r}
 #----CEO compensation---------------------------------------------------------
 CEO_plot <- reactive({
@@ -421,6 +433,7 @@ output$CEO_plotly <- renderPlotly(
 #### Reactive functions
 
 ##### datatest
+
 ```{r}
 # Reactive function to test for Excel data quality (basic)
 datatest <- reactive({
@@ -434,6 +447,7 @@ datatest <- reactive({
 ```
 
 ##### currency_scale
+
 ```{r}
 # Reactive function to check for currency and use currency code or ?
 currency_scale <- reactive({
@@ -450,6 +464,7 @@ currency_scale <- reactive({
 ```
 
 ##### plotly_caption
+
 ```{r}
 # Reactive function to create plotly caption (ggplot captions and subtitles
 # are lost in the conversion) (shamelessly stolen from the Internet, with
@@ -469,6 +484,7 @@ plotly_caption <- reactive({
 ```
 
 ##### maximum
+
 ```{r}
 # Reactive function to create the maximum value for revenue and expenses plots
 maximum <- reactive({
@@ -493,6 +509,7 @@ maximum <- reactive({
 #### Static functions
 
 ##### Creating the necessary data
+
 ```{r data}
 ## Function to read html file --------------------------------------------------
 read_proff <- function(file, start, end) {
@@ -601,6 +618,7 @@ exeldata <- widen_excel("Data/OPXfinans_final.xlsx")
 ```
 
 ##### KPI_to_string
+
 ```{r}
 # Function to turn KPI values into NA or percentage string
 KPI_to_string <- function(variable) {
@@ -619,6 +637,7 @@ KPI_to_string <- function(variable) {
 ```
 
 ##### scale_fill_green
+
 ```{r}
 # Function with slightly nicer colours than default; ensuring uniformity; +
 # ensuring positive values are always green through a test for the presence of
@@ -635,6 +654,7 @@ scale_fill_green <- function(variable) {
 ```
 
 ##### no_information
+
 ```{r}
 ## no_information plot ---------------------------------------------------------
 # Function to print a 'no information' plot, if necessary
@@ -644,6 +664,7 @@ no_information <- function() {
 ```
 
 ##### bad_data
+
 ```{r}
 ## bad_data plot ---------------------------------------------------------------
 # Function to print a 'bad data' plot, if necessary
@@ -653,6 +674,7 @@ bad_data <- function() {
 ```
 
 #### empty_plot
+
 ```{r}
 ## empty_plot-------------------------------------------------------------------
 # Function to print an empty plot with a supplied message
@@ -670,4 +692,3 @@ empty_plot <- function(warning) {
     )
 }
 ```
-
