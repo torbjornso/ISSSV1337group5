@@ -48,9 +48,12 @@ fileInput("excel", "Upload Excel file", accept = ".xlsx")
 actionButton("click", "Analyse")
 ```
 
-If desired, a copy of the analysis in html format may then be downloaded.
+If desired, a copy of the analysis in PDF format may then be downloaded.
+
+Enter the name of the NGO in the text box to include it in the report.
 
 ```{r sidebar_button}
+textInput("name", "NGO name", value = "NGO name")
 # download
 uiOutput("downloadUI")
 ```
@@ -162,11 +165,11 @@ The dashboard includes five plots, three based on data from [Proff.no](https://w
 # Report Output ==============================================================
 
 output$downloadUI <- renderUI({
-  downloadButton("report", "Generate report")
+  downloadButton("report", "Download report")
 })
 
 output$report <- downloadHandler(
-  filename = "report.html",
+  filename = "report.pdf",
   content = function(file) {
     tempReport <- file.path(tempdir(), "report.Rmd")
     file.copy("report.Rmd", tempReport, overwrite = TRUE)
@@ -175,7 +178,8 @@ output$report <- downloadHandler(
       htmlfile = input$html$datapath,
       excelfile = input$excel$datapath,
       start = input$start,
-      end = input$end
+      end = input$end,
+      title = input$name
     )
 
     rmarkdown::render(tempReport,
