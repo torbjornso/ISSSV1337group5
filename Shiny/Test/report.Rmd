@@ -1,0 +1,258 @@
+---
+title: "Report"
+author: "Torbjørn Skinnemoen Ottersen"
+date: '2022-07-24'
+output: html_document
+params:
+  htmlfile: NA
+  excelfile: NA
+  start: NA
+  end: NA
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+if (!require("pacman")) install.packages("pacman")
+library(pacman)
+p_load(
+  shiny, tidyverse, scales, rvest, janitor, plotly, readxl,
+  flexdashboard, MetBrewer, fontawesome, htmltools
+)
+# Using the fontawesome package for more up-to-date (and currently supported)
+# Fontawesome icons
+htmltools::tagList(fontawesome::fa_html_dependency())
+```
+
+
+# Functions
+```{r}
+# Data reading functions =======================================================
+
+## Function to read html file --------------------------------------------------
+read_proff <- function(file, start, end) {
+  # Specifying encoding to deal with occasional errors
+  read_html(file, encoding = "UTF-8") |>
+    html_node("#inner-frame") |>
+    html_table() |>
+    # removing empty column, using all_of(argument)
+    select(
+      REGNSKAPSPERIODE:all_of(start)
+    ) |>
+    # removing white space
+    mutate(
+      REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+    ) |>
+    # removing duplicate table sometimes created by read_html()
+    filter(
+      !row_number() > 176
+    ) |>
+    # removing duplicate rows
+    filter(
+      !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |>
+    # tidying data using pivot_longer() and all_of(argument)
+    pivot_longer(
+      all_of(end):all_of(start),
+      names_to = "year"
+    ) |>
+    # creating a currency code column and turning current currency codes into
+    # NAs
+    mutate(
+      # changing to real NAs
+      value = na_if(value, "-"),
+      # turning years into numbers
+      year = as.integer(year),
+      # creating a currency code column and turning current currency codes into
+      # NAs
+      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+    ) |>
+    # filling the currency column
+    fill(
+      valutakode,
+      .direction = "updown"
+    ) |>
+    # removing dates and redundant currency
+    filter(
+      REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+        REGNSKAPSPERIODE != "Valutakode"
+    ) |>
+    mutate(
+      # removing white space in numbers
+      value = str_replace_all(value, "\\s", ""),
+      # turning numbers into true numbers
+      value = as.numeric(value),
+      # removing values that are years
+      value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+    ) |>
+    # removing any remaining duplicate rows
+    distinct() |>
+    # pivoting to create 'tidy' variables
+    pivot_wider(
+      names_from = REGNSKAPSPERIODE, values_from = value
+    ) |>
+    # tidying names
+    clean_names() |>
+    # removing headings from the table
+    select(
+      -lederlonn_i_hele_1000,
+      -resultatregnskap_i_hele_1000,
+      -balanseregnskap_i_hele_1000
+    ) |>
+    # making it clear what lonn refers to
+    rename(
+      lederlonn = lonn
+    ) |>
+    # Creating new variables for plots
+    mutate(
+      annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
+      balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
+    ) |>
+    # arranging by year for practical display
+    arrange(desc(year))
+}
+
+## Function to read Excel file -------------------------------------------------
+widen_excel <- function(file) {
+  read_excel(file) |>
+    # uniting Category and Name to deal with multiple 'Other'
+    unite(
+      entry, c(Category, Name),
+      sep = "_"
+    ) |>
+    # deleting Sub-category and Firm
+    select(-`Sub-category`, -Firm) |>
+    # pivoting to create 'tidy' variables
+    pivot_wider(names_from = entry, values_from = Value) |>
+    # cleaning names
+    clean_names()
+}
+
+htmldata <- read_proff(
+      params$htmlfile,
+      as.character(params$start), as.character(params$end)
+    )
+
+exceldata <- widen_excel(params$excelfile)
+
+  ## Excel data test------------------------------------------------------------
+  # Reactive function to test for Excel data quality (basic)
+datatest <- 
+    # let me know if anyone has a better idea for testing
+    if (mean(unlist(lapply(exceldata, is.character))) != 0) {
+      TRUE
+    } else {
+      FALSE
+    }
+
+# Support functions ============================================================
+
+## KPI_to_string ---------------------------------------------------------------
+# Function to turn KPI values into NA or percentage string
+KPI_to_string <- function(variable) {
+  # Returning NA if the KPI is Inf (division by zero) or NA, to avoid
+  # layout-breaking errors, otherwise formatting. (The check for NA is needed to
+  # avoid passing an NA to subsequent operations.)
+  if (is.na(variable)) {
+    NA
+  } else if (variable == Inf) {
+    NA
+  } else {
+    # Shortening (lengthening) the value, adding %
+    str_c(format(variable, digits = 3), "%")
+  }
+}
+
+## scale_fill_green ------------------------------------------------------------
+# Function with slightly nicer colours than default; ensuring uniformity; +
+# ensuring positive values are always green through a test for the presence of
+# FALSE values
+scale_fill_green <- function(variable) {
+  scale_fill_met_d("Tsimshian",
+    direction = ifelse(
+      mean(variable,
+        na.rm = TRUE
+      ) == 1, -1, 1
+    )
+  )
+}
+
+## no_information plot ---------------------------------------------------------
+# Function to print a 'no information' plot, if necessary
+no_information <- function() {
+  empty_plot("No information available")
+}
+
+## bad_data plot ---------------------------------------------------------------
+# Function to print a 'bad data' plot, if necessary
+bad_data <- function() {
+  empty_plot("Something is wrong\nwith the Excel data.")
+}
+
+## empty_plot-------------------------------------------------------------------
+# Function to print an empty plot with a supplied message
+empty_plot <- function(warning) {
+  ggplot() +
+    # text geom with a space to create the plot, but otherwise show nothing
+    geom_text(aes(0, 0, label = " ")) +
+    # as blank a slate as possible
+    theme_void() +
+    annotate(
+      "text",
+      label = warning,
+      # Using the same palette as the other non-profit/loss plots
+      x = 0, y = 0, size = 8, colour = met.brewer("Hokusai2", 1)
+    )
+}
+
+
+## Fundraising ROI------------------------------------------------------------
+  # Creating Fundraising ROI value
+    # testing for data quality, returning NA if bad
+fundraising <- if (datatest == TRUE) {
+      NA
+    } else {
+      exceldata |>
+        # most recent year
+        filter(year == max(year)) |>
+        transmute(
+          # Calculating the value as a percentage; removing all other
+          KPI_fundraising_num =
+            (sum(revenue_private_contributions,
+              revenue_membership_fees,
+              na.rm = TRUE
+            ) - expenses_fundraising) /
+              expenses_fundraising * 100
+        ) |>
+        # just want the single number
+        pull() |>
+        first()
+    } |> KPI_to_string()
+
+```
+
+```
+
+
+
+```{r data, include=FALSE}
+
+```
+
+# Key Performance Indicators
+
+The KPIs are based on the following calculations, using data derived from the Excel sheet:
+
+- **Fundraising ROI**: $$\frac{\text{private contributions} + \text{membership fees} - \text{fundraising expenses}}{\text{fundraising expenses}} \times 100$$
+  - A basic measure of the ROI of direct fundraising expenses.
+- **Liquid assets/obligations**: $$\frac{\text{private contributions} + \text{investment income} + \text{cash in bank and cash equivalents}}{\text{short term grants payable} + \text{revocable endowments} + \text{long term grants payable}} \times 100$$
+  - A measure of the relationship between the organisation's liquid assets and its obligations.
+- **Private donations growth**: $$\frac{\text{private contributions}_2 - \text{private contributions}_1}{\text{private contributions}_1}\times 100$$
+  - A calculation of the percentage change in private contributions based on the two most recent years.
+- **Public grants growth**: $$\frac{\text{public grants}_2 - \text{public grants}_1}{\text{public grants}_1} \times 100$$
+  - A calculation of the percentage change in public grants received based on the two most recent years.
+- **Private/public proportion**: $$\frac{\text{private contributions} + \text{membership fees}}{\text{public grants} + \text{private contributions} + \text{membership fees}} \times 100$$
+  - Calculates the percentage of non-commercial or activity-based income that is derived from private contributions and membership fees as opposed to public grants.
+  
+### Fundraising ROI: `r fundraising`
+
