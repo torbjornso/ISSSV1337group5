@@ -1,29 +1,32 @@
 ---
-title: "NGO Analysis: `r params$title`"
 date: "`r Sys.Date()`"
-output: pdf_document
+output: 
+  pdf_document:
+    fig_crop: false
 params:
   htmlfile: NA
   excelfile: NA
   start: NA
   end: NA
-  title: NA
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.asp=0.618, out.width="70%", fig.align='center')
 
+# Repeating loading the libraries, in case the information isn't passed on from
+# the dashboard
 if (!require("pacman")) install.packages("pacman")
 library(pacman)
 p_load(
   shiny, tidyverse, scales, rvest, janitor, plotly, readxl,
-  flexdashboard, MetBrewer, fontawesome, htmltools
+  flexdashboard, MetBrewer, fontawesome, htmltools, purrr
 )
 ```
 
+<!--# The title element of the YAML block is further down, as it relies on data from the Excel sheet. -->
 
-```{r data, echo=FALSE, message=FALSE, warning=FALSE}
-# Data reading functions =======================================================
+```{r data}
+# Data reading =================================================================
 
 ## Function to read html file --------------------------------------------------
 read_proff <- function(file, start, end) {
@@ -123,44 +126,94 @@ widen_excel <- function(file) {
     # cleaning names
     clean_names()
 }
-
+### Reading html ---------------------
 htmldata <- read_proff(
   params$htmlfile,
   as.character(params$start), as.character(params$end)
 )
 
+### Reading excel ---------------------
 exceldata <- widen_excel(params$excelfile)
+
+# NGO title ==================================================================
+
+NGO <- read_excel(params$excelfile) |>
+  # Turning the needed column into a list
+  pull(Firm) |>
+  # discarding all NAs in case the name is somewhere
+  purrr::discard(is.na) |>
+  # choosing the first available name
+  first()
+
+title <- # testing if NGO() is NA
+  if (is.na(NGO)) {
+    # Printing warning if NA
+    "Name of NGO missing"
+    # Printing name of NGO
+  } else {
+    NGO
+  }
 ```
 
-```{r static_functions, echo=FALSE, message=FALSE, warning=FALSE}
-## empty_plot-------------------------------------------------------------------
-# Function to print an empty plot with a supplied message
-empty_plot <- function(warning) {
-  ggplot() +
-    # text geom with a space to create the plot, but otherwise show nothing
-    geom_text(aes(0, 0, label = " ")) +
-    # as blank a slate as possible
-    theme_void() +
-    annotate(
-      "text",
-      label = warning,
-      # Using the same palette as the other non-profit/loss plots
-      x = 0, y = 0, size = 8, colour = met.brewer("Hokusai2", 1)
-    )
+<!--# Report title-->
+
+---
+title: "NGO Analysis: `r title`"
+---
+
+```{r data_warnings}
+# Excel data test =============================================================
+# Function to test for Excel data quality (basic)
+datatest <-
+  # let me know if anyone has a better idea for testing
+  if (mean(unlist(lapply(exceldata, is.character))) != 0) {
+    TRUE
+  } else {
+    FALSE
+  }
+
+## Creating the Excel warning text --------------------------------------------
+excel_warning <- if (datatest == TRUE) {
+  "**    Warning: something is wrong with the Excel data.**"
+} else {
+  ""
 }
 
-## no_information plot ---------------------------------------------------------
-# Function to print a 'no information' plot, if necessary
-no_information <- function() {
-  empty_plot("No information available")
+# HTML warnings ===============================================================
+# Creating the arsresultat warning text
+arsresultat_plot_warning <- if (sum(!is.na(htmldata$arsresultat)) == 0) {
+  "*    No information about net income/loss is available.*"
+} else {
+  ""
 }
 
-## bad_data plot ---------------------------------------------------------------
-# Function to print a 'bad data' plot, if necessary
-bad_data <- function() {
-  empty_plot("Something is wrong\nwith the Excel data.")
+# Creating the balance warning text
+balance_plot_warning <-  if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0) {
+  "*    No information about total equity/liabilities is available.*"
+} else {
+  ""
 }
 
+# Creating the CEO_plot warning text
+CEO_plot_warning <- if (sum(!is.na(htmldata$lederlonn)) == 0 &
+    sum(!is.na(htmldata$leder_annen_godtgjorelse)) == 0) {
+  "*    No information about CEO compensation is available.*"
+} else {
+  ""
+}
+
+# Creating general warning
+general_warning <- if (datatest == TRUE | sum(!is.na(htmldata$arsresultat)) == 0 | sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0 | (sum(!is.na(htmldata$lederlonn)) == 0 &
+    sum(!is.na(htmldata$leder_annen_godtgjorelse)) == 0)) {
+  "## Note:"
+} else {
+  ""
+}
+```
+
+<!--# Functions that don't rely on any of the parameters passed from the dashboard -->
+
+```{r static_functions}
 ## KPI_to_string ---------------------------------------------------------------
 # Function to turn KPI values into NA or percentage string
 KPI_to_string <- function(variable) {
@@ -192,10 +245,12 @@ scale_fill_green <- function(variable) {
 }
 ```
 
+<!--# Functions that rely on parameters from the dashboard -->
 
-```{r functions_reliant, echo=FALSE, message=FALSE, warning=FALSE}
+```{r functions_reliant}
+
 ## scale maximum--------------------------------------------------------------
-# Reactive function to create the maximum value for revenue and expenses plots
+# Function to create the maximum value for revenue and expenses plots
 maximum <- if (datatest == TRUE) {
   NA
 } else {
@@ -216,18 +271,8 @@ maximum <- if (datatest == TRUE) {
       max()
   }
 
-## Excel data test------------------------------------------------------------
-# Reactive function to test for Excel data quality (basic)
-datatest <-
-  # let me know if anyone has a better idea for testing
-  if (mean(unlist(lapply(exceldata, is.character))) != 0) {
-    TRUE
-  } else {
-    FALSE
-  }
-
 ## Currency scale-------------------------------------------------------------
-# Reactive function to check for currency and use currency code or ?
+# Function to check for currency and use currency code or ?
 currency_scale <-
   scale_y_continuous(
     # Checking for uniform currency code
@@ -239,29 +284,17 @@ currency_scale <-
     )
   )
 
-## Plotly caption-------------------------------------------------------------
-# Reactive function to create plotly caption (ggplot captions and subtitles
-# are lost in the conversion) (shamelessly stolen from the Internet, with
-# minor modifications).
-# Checks for uniform currency code and prints a warning
-# if there are multiple currency codes.
-# plotly_caption <-
-#   list(
-#     x = 1, y = -0.1, text = ifelse(length(unique(htmldata$valutakode)) == 1,
-#       "", "Note: not all values are denominated in the same currency"
-#     ),
-#     showarrow = F, xref = "paper", yref = "paper",
-#     xanchor = "right", yanchor = "auto", xshift = 0, yshift = 0,
-#     font = list(size = 11)
-#   )
-
 currency_caption <- ifelse(length(unique(htmldata$valutakode)) == 1,
-      "", "Note: not all values are denominated in the same currency"
+      "Note: not all values are denominated in the same currency.", ""
     )
+# currency_caption <- ifelse(length(unique(htmldata$valutakode)) == 1,
+#       "", "Note: not all values are denominated in the same currency.\n"
+#     )
 ```
 
+<!--# Creating KPIs -->
 
-```{r KPIs, echo=FALSE, message=FALSE, warning=FALSE}
+```{r KPIs}
 ## Fundraising ROI------------------------------------------------------------
 # Creating Fundraising ROI value
 # testing for data quality, returning NA if bad
@@ -289,7 +322,7 @@ fundraising <- if (datatest == TRUE) {
 
 ## OPX KPI--------------------------------------------------------------------
 # Creating OPX KPI
-KPI_OPX_num <-
+KPI_OPX <-
   # testing for data quality, returning NA if bad
   if (datatest == TRUE) {
     NA
@@ -316,9 +349,9 @@ KPI_OPX_num <-
       KPI_to_string()
   }
 
-
+## Private donations ---------------------------------------------------------
 # Creating private donations growth
-KPI_private_num <-
+KPI_private <-
   # testing for data quality, returning NA if bad
   if (datatest == TRUE) {
     NA
@@ -339,7 +372,7 @@ KPI_private_num <-
 
 ## Public grants growth-------------------------------------------------------
 # Creating public grants growth
-KPI_public_num <-
+KPI_public <-
   # testing for data quality, returning NA if bad
   if (datatest == TRUE) {
     NA
@@ -380,38 +413,67 @@ KPI_proportion <-
       first() |>
       KPI_to_string()
   }
+
+# Testing for the presence of NAs; printing warning if there are any
+KPI_warning <- if (is.na(fundraising) | is.na(KPI_OPX) | is.na(KPI_private) |
+  is.na(KPI_public) | is.na(KPI_proportion)) {
+  "*A value of 'NA' indicates that there is something wrong with the Excel data, that the necessary data are not available, or that the data are unsuited to an automatic calculation of the KPI.*"
+} else {
+  ""
+}
 ```
-
-
 
 # Key Performance Indicators
 
 The KPIs are based on the following calculations, using data derived from the Excel sheet:
 
-- **Fundraising ROI**: $$\frac{\text{private contributions} + \text{membership fees} - \text{fundraising expenses}}{\text{fundraising expenses}} \times 100$$
-  - A basic measure of the ROI of direct fundraising expenses.
-- **Liquid assets/obligations**: $$\frac{\text{private contributions} + \text{investment income} + \text{cash in bank and cash equivalents}}{\text{short term grants payable} + \text{revocable endowments} + \text{long term grants payable}} \times 100$$
-  - A measure of the relationship between the organisation's liquid assets and its obligations.
-- **Private donations growth**: $$\frac{\text{private contributions}_2 - \text{private contributions}_1}{\text{private contributions}_1}\times 100$$
-  - A calculation of the percentage change in private contributions based on the two most recent years.
-- **Public grants growth**: $$\frac{\text{public grants}_2 - \text{public grants}_1}{\text{public grants}_1} \times 100$$
-  - A calculation of the percentage change in public grants received based on the two most recent years.
-- **Private/public proportion**: $$\frac{\text{private contributions} + \text{membership fees}}{\text{public grants} + \text{private contributions} + \text{membership fees}} \times 100$$
-  - Calculates the percentage of non-commercial or activity-based income that is derived from private contributions and membership fees as opposed to public grants.
-  
-### Fundraising ROI: `r fundraising`
+<!--# Need to decide whether to underline the KPIs, as in the first one -->
+
+- **Fundraising ROI**: [`r fundraising`]{.underline}
+  - A basic measure of the return on investment of direct fundraising expenses:
+  $$\frac{\text{private contributions} + \text{membership fees} - \text{fundraising expenses}}{\text{fundraising expenses}} \times 100$$
+
+- **Liquid assets/obligations**: `r KPI_OPX`
+  - A measure of the relationship between the organisation's liquid assets and its obligations:
+  $$\frac{\text{private contributions} + \text{investment income} + \text{cash in bank and cash equivalents}}{\text{short term grants payable} + \text{revocable endowments} + \text{long term grants payable}} \times 100$$
+
+- **Private donations growth**: `r KPI_private`
+  - A calculation of the percentage change in private contributions based on the two most recent years:
+  $$\frac{\text{private contributions}_2 - \text{private contributions}_1}{\text{private contributions}_1}\times 100$$
+
+- **Public grants growth**: `r KPI_public`
+  - A calculation of the percentage change in public grants received based on the two most recent years:
+  $$\frac{\text{public grants}_2 - \text{public grants}_1}{\text{public grants}_1} \times 100$$
+
+- **Private/public proportion**: `r KPI_proportion`
+  - Calculates the percentage of non-commercial or activity-based income that is derived from private contributions and membership fees as opposed to public grants:
+  $$\frac{\text{private contributions} + \text{membership fees}}{\text{public grants} + \text{private contributions} + \text{membership fees}} \times 100$$
+
+`r KPI_warning`
+
+<!--# Latex command to force new page - ensures the plot heading doesn't move up to the first page-->
+
+\newpage
 
 # Plots
 
-### Plots
+<!--# Warning header, if necessary -->
 
-The dashboard includes five plots, three based on data from [Proff.no](https://www.proff.no) and two based on data from the Excel sheet.
+`r general_warning`
 
-- **Net income/loss**: Based on the entry *Årsresultat* in the Proff.no data.
+<!--# specific alerts -->
 
-```{r arsresultat_plot, echo=FALSE, message=FALSE, warning=FALSE}
-# Plots ======================================================================
+`r excel_warning`
 
+`r arsresultat_plot_warning`
+
+`r balance_plot_warning`
+
+`r CEO_plot_warning`
+
+<!-- But of course a bit of raw LaTeX is necessary to print a left quotation mark-->
+
+```{r arsresultat_plot, fig.cap="Based on the entry \`Årsresultat' in the Proff.no data."}
 ## Annual result--------------------------------------------------------------
 arsresultat_plot <-
   # testing for the presence of data
@@ -433,22 +495,17 @@ arsresultat_plot <-
       scale_fill_green(htmldata$annual_profit) +
       theme(legend.position = "none") +
       labs(
-        x = "", y = "", title = "Net income (in thousands)",
-        caption = currency_caption
+        x = "", y = "", caption = currency_caption
       )
   }
+# Printing plot if the data are available
 if (sum(!is.na(htmldata$arsresultat)) != 0) {
   arsresultat_plot
 }
 
-
 ```
 
-`r ifelse(!is.na(arsresultat_plot), "", "Data are bad")`
-
-- **Total equity/liabilities**: Based on the entry *Sum egenkapital og gjeld* in the Proff.no data.
-
-```{r balance_plot, echo=FALSE, message=FALSE, warning=FALSE}
+```{r balance_plot, fig.cap="Based on the entry \`Sum egenkapital og gjeld' in the Proff.no data."}
 ## Balance--------------------------------------------------------------------
 balance_plot <- 
   # testing for the presence of data
@@ -471,76 +528,19 @@ balance_plot <-
       scale_fill_green(htmldata$balance_positive) +
       theme(legend.position = "none") +
       labs(
-        x = "", y = "", title = "Total equity/liabilities (in thousands)",
+        x = "", y = "",
         caption = currency_caption
       )
   }
+
+# Printing the plot if the data are available
 if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) != 0) {
   balance_plot
 }
-# Creating plotly output
-#ggplotly(balance_plot) |>
-  ## ggplot subtitles and captions are lost when using ggplotly(), a
-  ## currency warning caption is therefore added in plotly, if needed, using
-  ## a separate function
-  # layout(
-  #   annotations =
-  #     plotly_caption
-  # )
 ```
 
-- **Expenses**: Based on the category *Expenses* in the Excel sheet.
 
-```{r expenses_plot, echo=FALSE, message=FALSE, warning=FALSE}
-## Expenses-------------------------------------------------------------------
-expenses_plot <- 
-    # testing for data quality
-    if (datatest == TRUE) {
-      # printing 'bad data' plot if data are bad
-      NA
-    } else {
-      exceldata |>
-        # Renaming for the purposes of the plot + dropping other variables
-        transmute(
-          Year = as.factor(year),
-          Other = expenses_other,
-          Administrative = expenses_administrative,
-          Fundraising = expenses_fundraising,
-          `Program services` = expenses_program_services
-        ) |>
-        # Pivoting to use fill
-        pivot_longer(c(Other:`Program services`), names_to = "Expenses") |>
-        # Ordering for the plot
-        mutate(
-          Expenses = ordered(Expenses,
-            levels =
-              c("Program services", "Other", "Fundraising", "Administrative")
-          )
-        ) |>
-        ggplot(aes(Year, value, fill = Expenses)) +
-        geom_col() +
-        scale_y_continuous(
-          # Excel data are assumed to be in NOK; if this changes, code based on
-          # the currency_code() function may be adapted
-          labels = label_dollar(prefix = "NOK "),
-          # Basing lower limit on the data (not suppressing erroneous negative
-          # numbers), and the upper limit on the maximum value in revenues and
-          # expenses, to match the two plots
-          limits = c(NA, maximum)
-        ) +
-        scale_fill_met_d("Hokusai2") +
-        labs(x = "", y = "", title = "Expenses (in thousands)")
-    }
- if (datatest == FALSE) {
-   expenses_plot
- }
-# Creating plotly output
-# ggplotly(expenses_plot)
-```
-
-- **Revenues**: Based on the category *Revenue* in the Excel sheet.
-
-```{r revenue_plot, echo=FALSE, message=FALSE, warning=FALSE}
+```{r revenue_plot, fig.cap="Based on the category \`Revenue' in the Excel sheet."}
 ## Revenue--------------------------------------------------------------------
 revenue_plot <-
   # testing for data quality
@@ -591,19 +591,62 @@ revenue_plot <-
       ) +
       # Specifying the number of values, as the base palette only includes 6
       scale_fill_manual(values = met.brewer("Hokusai2", 7)) +
-      labs(x = "", y = "", title = "Revenue (in thousands)")
+      labs(x = "", y = "")
   }
+
+# Printing the plot if the data are OK
 if (datatest == FALSE) {
   revenue_plot
 }
-# Creating plotly output
-# ggplotly(revenue_plot)
 ```
 
-- **CEO compensation**: Based on the category *Lederlønn* in the Proff.no data. Not in thousands. Includes the entries *Lønn* and *Leder annen godtgjørelse*.
-  - A common measure of transparency, but should normally be evaluated in context.
+```{r expenses_plot, fig.cap="Based on the category \`Expenses' in the Excel sheet."}
+expenses_plot <- 
+    # testing for data quality
+    if (datatest == TRUE) {
+      # printing 'bad data' plot if data are bad
+      NA
+    } else {
+      exceldata |>
+        # Renaming for the purposes of the plot + dropping other variables
+        transmute(
+          Year = as.factor(year),
+          Other = expenses_other,
+          Administrative = expenses_administrative,
+          Fundraising = expenses_fundraising,
+          `Program services` = expenses_program_services
+        ) |>
+        # Pivoting to use fill
+        pivot_longer(c(Other:`Program services`), names_to = "Expenses") |>
+        # Ordering for the plot
+        mutate(
+          Expenses = ordered(Expenses,
+            levels =
+              c("Program services", "Other", "Fundraising", "Administrative")
+          )
+        ) |>
+        ggplot(aes(Year, value, fill = Expenses)) +
+        geom_col() +
+        scale_y_continuous(
+          # Excel data are assumed to be in NOK; if this changes, code based on
+          # the currency_code() function may be adapted
+          labels = label_dollar(prefix = "NOK "),
+          # Basing lower limit on the data (not suppressing erroneous negative
+          # numbers), and the upper limit on the maximum value in revenues and
+          # expenses, to match the two plots
+          limits = c(NA, maximum)
+        ) +
+        scale_fill_met_d("Hokusai2") +
+        labs(x = "", y = "")
+    }
 
-```{r compensation_plot, echo=FALSE, message=FALSE, warning=FALSE}
+# Printing the plot if the data are OK
+ if (datatest == FALSE) {
+   expenses_plot
+ }
+```
+
+```{r compensation_plot, out.width="100%", fig.cap="Based on the category \`Lederlønn' in the Proff.no data. Not in thousands. Includes the entries \`Lønn' and \`Leder annen godtgjørelse'. A common measure of transparency, but should normally be evaluated in context."}
 ## CEO compensation-----------------------------------------------------------
 CEO_plot <-
   # Testing for the presence of data
@@ -640,12 +683,14 @@ CEO_plot <-
       # pretty colours
       scale_fill_met_d("Hokusai2", direction = -1) +
       labs(
-        x = "", y = "Total compensation", title = "CEO compensation"
-      )
+        x = "", y = "Total compensation"
+      ) +
+      theme(legend.position = "bottom")
   }
-if (sum(!is.na(htmldata$lederlonn)) != 0 &
-  sum(!is.na(htmldata$leder_annen_godtgjorelse)) != 0) {
-  CEO_plot
-}
 
+# Printing the plot if the data are available
+if (sum(!is.na(htmldata$lederlonn)) != 0 |
+    sum(!is.na(htmldata$leder_annen_godtgjorelse)) != 0) {
+  CEO_plot
+} 
 ```
