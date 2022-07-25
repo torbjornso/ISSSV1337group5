@@ -983,13 +983,26 @@ NGO <- read_excel("Data/OPXfinans_final.xlsx") |>
   pull(Firm) |>
   first()
 
-title <- if (length(NGO) == 0) {
+title <- if (is.na(NGO)) {
   "Name of NGO missing"
 } else {
   NGO
 }
 
 title
+
+NGO_blank <- read_excel("Data/Bad_data_no_name.xlsx") |> 
+  pull(Firm) |>
+  first()
+
+NGO_blank <- read_excel("Data/Bad_data_no_name.xlsx") |> 
+  pull(Firm) |> 
+  purrr::discard(is.na) |> 
+  first()
+
+length(NGO_blank)
+
+
 ```
 
 ```{r}
