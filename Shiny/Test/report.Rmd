@@ -9,7 +9,7 @@ params:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.asp=0.618, out.width="70%", fig.align='center')
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width = 6, fig.asp = 0.618, out.width = "70%", fig.align = "center")
 
 # Repeating loading the libraries, in case the information isn't passed on from
 # the dashboard
@@ -22,6 +22,8 @@ p_load(
 ```
 
 <!--# The title element of the YAML block is further down, as it relies on data from the Excel sheet. -->
+
+<!-- # Need plot titles -->
 
 ```{r data}
 # Data reading =================================================================
@@ -246,28 +248,27 @@ scale_fill_green <- function(variable) {
 <!--# Functions that rely on parameters from the dashboard -->
 
 ```{r functions_reliant}
-
 ## scale maximum--------------------------------------------------------------
 # Function to create the maximum value for revenue and expenses plots
 maximum <- if (datatest == TRUE) {
   NA
 } else {
-    # reading the Excel sheet anew
-    read_excel(params$excelfile) |>
-      # removing the firm and sub-category columns
-      select(-Firm, -`Sub-category`) |>
-      # filtering to retain only revenue and expenses entries
-      filter(Category == "Revenue" | Category == "Expenses") |>
-      # grouping and summarising to calculate maximum value
-      group_by(Year, Category) |>
-      summarise(
-        sum = sum(Value, na.rm = TRUE)
-      ) |>
-      # Creating list of sums
-      pull() |>
-      # selecting the highest value
-      max()
-  }
+  # reading the Excel sheet anew
+  read_excel(params$excelfile) |>
+    # removing the firm and sub-category columns
+    select(-Firm, -`Sub-category`) |>
+    # filtering to retain only revenue and expenses entries
+    filter(Category == "Revenue" | Category == "Expenses") |>
+    # grouping and summarising to calculate maximum value
+    group_by(Year, Category) |>
+    summarise(
+      sum = sum(Value, na.rm = TRUE)
+    ) |>
+    # Creating list of sums
+    pull() |>
+    # selecting the highest value
+    max()
+}
 
 ## Currency scale-------------------------------------------------------------
 # Function to check for currency and use currency code or ?
@@ -282,9 +283,12 @@ currency_scale <-
     )
   )
 
+## Currency caption-----------------------------------------------------------s
+# Fake currency caption
 currency_caption <- ifelse(length(unique(htmldata$valutakode)) == 1,
-      "Note: not all values are denominated in the same currency.", ""
-    )
+  "Note: not all values are denominated in the same currency.", ""
+)
+# Real currency caption
 # currency_caption <- ifelse(length(unique(htmldata$valutakode)) == 1,
 #       "", "Note: not all values are denominated in the same currency.\n"
 #     )
@@ -364,7 +368,7 @@ KPI_private <-
       ) |>
       # Pulling the first instance of the number
       pull() |>
-      first() |> 
+      first() |>
       KPI_to_string()
   }
 
@@ -384,7 +388,7 @@ KPI_public <-
       ) |>
       # Pulling the first instance of the number
       pull() |>
-      first() |> 
+      first() |>
       KPI_to_string()
   }
 
@@ -412,6 +416,7 @@ KPI_proportion <-
       KPI_to_string()
   }
 
+### NA warning-----------------------------------------------------------------
 # Testing for the presence of NAs; printing warning if there are any
 KPI_warning <- if (is.na(fundraising) | is.na(KPI_OPX) | is.na(KPI_private) |
   is.na(KPI_public) | is.na(KPI_proportion)) {
@@ -469,7 +474,9 @@ The KPIs are based on the following calculations, using data derived from the Ex
 
 `r CEO_plot_warning`
 
-<!-- But of course a bit of raw LaTeX is necessary to print a left quotation mark-->
+<!--# Creating plots -->
+
+<!-- But of course a bit of raw LaTeX is necessary to print a left quotation mark -->
 
 ```{r arsresultat_plot, fig.cap="Based on the entry \`Årsresultat' in the Proff.no data."}
 ## Annual result--------------------------------------------------------------
@@ -500,12 +507,11 @@ arsresultat_plot <-
 if (sum(!is.na(htmldata$arsresultat)) != 0) {
   arsresultat_plot
 }
-
 ```
 
 ```{r balance_plot, fig.cap="Based on the entry \`Sum egenkapital og gjeld' in the Proff.no data."}
 ## Balance--------------------------------------------------------------------
-balance_plot <- 
+balance_plot <-
   # testing for the presence of data
   if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0) {
     # Printing 'no information' plot if no data
@@ -599,49 +605,50 @@ if (datatest == FALSE) {
 ```
 
 ```{r expenses_plot, fig.cap="Based on the category \`Expenses' in the Excel sheet."}
-expenses_plot <- 
-    # testing for data quality
-    if (datatest == TRUE) {
-      # printing 'bad data' plot if data are bad
-      NA
-    } else {
-      exceldata |>
-        # Renaming for the purposes of the plot + dropping other variables
-        transmute(
-          Year = as.factor(year),
-          Other = expenses_other,
-          Administrative = expenses_administrative,
-          Fundraising = expenses_fundraising,
-          `Program services` = expenses_program_services
-        ) |>
-        # Pivoting to use fill
-        pivot_longer(c(Other:`Program services`), names_to = "Expenses") |>
-        # Ordering for the plot
-        mutate(
-          Expenses = ordered(Expenses,
-            levels =
-              c("Program services", "Other", "Fundraising", "Administrative")
-          )
-        ) |>
-        ggplot(aes(Year, value, fill = Expenses)) +
-        geom_col() +
-        scale_y_continuous(
-          # Excel data are assumed to be in NOK; if this changes, code based on
-          # the currency_code() function may be adapted
-          labels = label_dollar(prefix = "NOK "),
-          # Basing lower limit on the data (not suppressing erroneous negative
-          # numbers), and the upper limit on the maximum value in revenues and
-          # expenses, to match the two plots
-          limits = c(NA, maximum)
-        ) +
-        scale_fill_met_d("Hokusai2") +
-        labs(x = "", y = "")
-    }
+## Expenses -------------------------------------------------------------------
+expenses_plot <-
+  # testing for data quality
+  if (datatest == TRUE) {
+    # printing 'bad data' plot if data are bad
+    NA
+  } else {
+    exceldata |>
+      # Renaming for the purposes of the plot + dropping other variables
+      transmute(
+        Year = as.factor(year),
+        Other = expenses_other,
+        Administrative = expenses_administrative,
+        Fundraising = expenses_fundraising,
+        `Program services` = expenses_program_services
+      ) |>
+      # Pivoting to use fill
+      pivot_longer(c(Other:`Program services`), names_to = "Expenses") |>
+      # Ordering for the plot
+      mutate(
+        Expenses = ordered(Expenses,
+          levels =
+            c("Program services", "Other", "Fundraising", "Administrative")
+        )
+      ) |>
+      ggplot(aes(Year, value, fill = Expenses)) +
+      geom_col() +
+      scale_y_continuous(
+        # Excel data are assumed to be in NOK; if this changes, code based on
+        # the currency_code() function may be adapted
+        labels = label_dollar(prefix = "NOK "),
+        # Basing lower limit on the data (not suppressing erroneous negative
+        # numbers), and the upper limit on the maximum value in revenues and
+        # expenses, to match the two plots
+        limits = c(NA, maximum)
+      ) +
+      scale_fill_met_d("Hokusai2") +
+      labs(x = "", y = "")
+  }
 
 # Printing the plot if the data are OK
- if (datatest == FALSE) {
-   expenses_plot
- }
+if (datatest == FALSE) {
+  expenses_plot
+}
 ```
 
 ```{r compensation_plot, out.width="100%", fig.cap="Based on the category \`Lederlønn' in the Proff.no data. Not in thousands. Includes the entries \`Lønn' and \`Leder annen godtgjørelse'. A common measure of transparency, but should normally be evaluated in context."}
@@ -688,7 +695,7 @@ CEO_plot <-
 
 # Printing the plot if the data are available
 if (sum(!is.na(htmldata$lederlonn)) != 0 |
-    sum(!is.na(htmldata$leder_annen_godtgjorelse)) != 0) {
+  sum(!is.na(htmldata$leder_annen_godtgjorelse)) != 0) {
   CEO_plot
-} 
+}
 ```
