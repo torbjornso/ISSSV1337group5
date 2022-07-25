@@ -196,7 +196,9 @@ scale_fill_green <- function(variable) {
 ```{r functions_reliant, echo=FALSE, message=FALSE, warning=FALSE}
 ## scale maximum--------------------------------------------------------------
 # Reactive function to create the maximum value for revenue and expenses plots
-maximum <- 
+maximum <- if (datatest == TRUE) {
+  NA
+} else {
     # reading the Excel sheet anew
     read_excel(params$excelfile) |>
       # removing the firm and sub-category columns
@@ -212,6 +214,7 @@ maximum <-
       pull() |>
       # selecting the highest value
       max()
+  }
 
 ## Excel data test------------------------------------------------------------
 # Reactive function to test for Excel data quality (basic)
@@ -413,7 +416,6 @@ The dashboard includes five plots, three based on data from [Proff.no](https://w
 arsresultat_plot <-
   # testing for the presence of data
   if (sum(!is.na(htmldata$arsresultat)) == 0) {
-    # Printing 'no information' plot if no data
     NA
   } else {
     htmldata |>
@@ -438,7 +440,11 @@ arsresultat_plot <-
 if (sum(!is.na(htmldata$arsresultat)) != 0) {
   arsresultat_plot
 }
+
+
 ```
+
+`r ifelse(!is.na(arsresultat_plot), "", "Data are bad")`
 
 - **Total equity/liabilities**: Based on the entry *Sum egenkapital og gjeld* in the Proff.no data.
 
@@ -642,13 +648,4 @@ if (sum(!is.na(htmldata$lederlonn)) != 0 &
   CEO_plot
 }
 
-# Creating plotly output
-# ggplotly(CEO_plot) |>
-  ## ggplot subtitles and captions are lost when using ggplotly(), a
-  ## currency warning caption is therefore added in plotly, if needed, using
-  ## a separate function
-  # layout(
-  #   annotations =
-  #     plotly_caption
-  # )
 ```

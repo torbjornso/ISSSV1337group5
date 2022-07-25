@@ -978,4 +978,23 @@ kreft_excel2 |>
   str_flatten()
 ```
 
+```{r}
+NGO <- read_excel("Data/OPXfinans_final.xlsx") |> 
+  pull(Firm) |>
+  first()
 
+title <- if (length(NGO) == 0) {
+  "Name of NGO missing"
+} else {
+  NGO
+}
+
+title
+```
+
+```{r}
+summary(kreft_excel)
+```
+{.tabset-fade}
+
+{.no-title}

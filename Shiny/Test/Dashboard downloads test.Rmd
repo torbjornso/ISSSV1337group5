@@ -130,6 +130,13 @@ Details
 Row 
 -----------------------------------------------------------------------
 
+### NGO analysed  
+
+<b><font face="Georgia" size="3em" color="#000000">Chart B</font></b>
+
+Row 
+-----------------------------------------------------------------------
+
 ### Key Performance Indicators
 
 The KPIs are based on the following calculations, using data derived from the Excel sheet:
@@ -161,6 +168,8 @@ The dashboard includes five plots, three based on data from [Proff.no](https://w
 
 ```{r value_boxes, include=FALSE}
 # Shiny actions
+
+title <- "title"
 
 # Report Output ==============================================================
 

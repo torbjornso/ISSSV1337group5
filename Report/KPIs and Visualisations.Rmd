@@ -192,12 +192,12 @@ KPI_proportion <- reactive({
 
 The dashboard includes five plots, three based on data from [Proff.no](https://www.proff.no) and two based on data from the Excel sheet.
 
-- **Net income/loss**: Based on the entry *Årsresultat* in the Proff.no data.
-- **Total equity/liabilities**: Based on the entry *Sum egenkapital og gjeld* in the Proff.no data.
-- **Revenues**: Based on the category *Revenue* in the Excel sheet.
-- **Expenses**: Based on the category *Expenses* in the Excel sheet.
-- **CEO compensation**: Based on the category *Lederlønn* in the Proff.no data. Not in thousands. Includes the entries *Lønn* and *Leder annen godtgjørelse*.
-  - A common measure of transparency, but should normally be evaluated in context.
+-   **Net income/loss**: Based on the entry *Årsresultat* in the Proff.no data.
+-   **Total equity/liabilities**: Based on the entry *Sum egenkapital og gjeld* in the Proff.no data.
+-   **Revenues**: Based on the category *Revenue* in the Excel sheet.
+-   **Expenses**: Based on the category *Expenses* in the Excel sheet.
+-   **CEO compensation**: Based on the category *Lederlønn* in the Proff.no data. Not in thousands. Includes the entries *Lønn* and *Leder annen godtgjørelse*.
+    -   A common measure of transparency, but should normally be evaluated in context.
 
 ### Code
 
