@@ -83,12 +83,12 @@ valueBoxOutput("KPI_box_proportion")
 Row
 -----------------------------------------------------------------------
 
-### Annual result
+### Net income
 ```{r}
 plotlyOutput("arsresultat_plotly")
 ```
 
-### Balance
+### Total equity/liabilities
 ```{r}
 plotlyOutput("balance_plotly")
 ```
@@ -221,7 +221,11 @@ observe({ # wait for button click
       } else {
         "success"
       },
-      icon = "fas fa-donate"
+      icon = if (is.na(KPI_fundraising_num())) {
+        "fa-solid fa-circle-xmark"
+      } else {
+        "fas fa-donate"
+      }
     )
   })
 
@@ -263,7 +267,13 @@ observe({ # wait for button click
       } else {
         "success"
       },
-      icon = "fas fa-seedling"
+      icon = if (is.na(KPI_OPX_num())) {
+        "fa-solid fa-circle-xmark"
+      } else if (KPI_OPX_num() < 100) {
+        "fa-solid fa-scale-unbalanced"
+      } else {
+        "fa-solid fa-scale-balanced"
+      }
     )
   })
 
@@ -300,7 +310,11 @@ observe({ # wait for button click
       } else {
         "success"
       },
-      icon = "fas fa-hands-helping"
+      icon = if (is.na(KPI_private_num())) {
+        "fa-solid fa-circle-xmark"
+      } else {
+        "fas fa-hands-helping"
+      }
     )
   })
 
@@ -336,7 +350,11 @@ observe({ # wait for button click
       } else {
         "success"
       },
-      icon = "fas fa-hand-holding-usd"
+      icon = if (is.na(KPI_public_num())) {
+        "fa-solid fa-circle-xmark"
+      } else {
+        "fa-solid fa-building-columns"
+      }
     )
   })
 
@@ -375,11 +393,15 @@ observe({ # wait for button click
       } else {
         "info"
       },
-      icon = "fas fa-percentage"
+      icon = if (is.na(KPI_proportion())) {
+        "fa-solid fa-circle-xmark"
+      } else {
+        "fa-solid fa-chart-pie"
+      }
     )
   })
 
-  ## Excel data test------------------------------------------------------------
+  ## Excel data test (also below)-----------------------------------------------
   # Reactive function to test for Excel data quality (basic)
   datatest <- reactive({
     # let me know if anyone has a better idea for testing
@@ -698,6 +720,9 @@ observe({
   ## scale maximum--------------------------------------------------------------
   # Reactive function to create the maximum value for revenue and expenses plots
   maximum <- reactive({
+    if (datatest() == TRUE) {
+      NA
+    } else {
     # reading the Excel sheet anew
     read_excel(input$excel$datapath) |>
       # removing the firm and sub-category columns
@@ -713,9 +738,10 @@ observe({
       pull() |>
       # selecting the highest value
       max()
+    }
   })
 
-  ## Excel data test------------------------------------------------------------
+  ## Excel data test (also above)-----------------------------------------------
   # Reactive function to test for Excel data quality (basic)
   datatest <- reactive({
     # let me know if anyone has a better idea for testing
