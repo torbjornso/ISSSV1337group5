@@ -11,7 +11,7 @@ if (!require("pacman")) install.packages("pacman"); library(pacman)
 p_load(fontawesome, tidyverse)
 ```
 
-Fontawesome er nå oppdatert til v6.1.1.
+**Fontawesome er nå oppdatert til v6.1.1.**
 
 [Fontawesome v5](https://fontawesome.com/v5/search?m=free)
 
