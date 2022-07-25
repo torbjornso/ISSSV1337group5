@@ -43,17 +43,35 @@ df$icon_names_full |> str_view_all("hands-helping", match = TRUE)
 ### Ideas
 
 new icons
-private donations:  https://fontawesome.com/icons/wallet?s=solid 
+
+[private donations](https://fontawesome.com/icons/wallet?s=solid)
 
 På feks liquid assets/obligations:
-Scale balanced når det er grønt: https://fontawesome.com/icons/scale-balanced?s=solid
-Scale unbalanced når det er rødt: https://fontawesome.com/icons/scale-unbalanced?s=solid
 
-På private donations: https://fontawesome.com/icons/chart-line?s=solid
+    [Scale balanced når det er grønt](https://fontawesome.com/icons/scale-balanced?s=solid): fa-solid fa-scale-balanced
+
+    [Scale unbalanced når det er rødt](https://fontawesome.com/icons/scale-unbalanced?s=solid)
+
+[På private donations](https://fontawesome.com/icons/chart-line?s=solid)
 
 Andre forslag generelt:
-Globe: https://fontawesome.com/icons/globe?s=solid
-Magnifying glass + chart: https://fontawesome.com/icons/magnifying-glass-chart?s=solid
+
+[Globe](https://fontawesome.com/icons/globe?s=solid)
+
+[Magnifying glass + chart](https://fontawesome.com/icons/magnifying-glass-chart?s=solid)
+
+
+https://fontawesome.com/icons/arrow-up-right-dots?s=solid
+
+https://fontawesome.com/icons/chart-pie?s=solid
+
+https://fontawesome.com/icons/landmark?s=solid
+
+https://fontawesome.com/icons/building-columns?s=solid
+
+https://fontawesome.com/icons/money-bill-trend-up?s=solid
+
+https://fontawesome.com/icons/circle-xmark?s=solid
 
 
 #### Checked
