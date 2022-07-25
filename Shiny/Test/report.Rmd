@@ -1,8 +1,6 @@
 ---
 date: "`r Sys.Date()`"
-output: 
-  pdf_document:
-    fig_crop: false
+output: pdf_document
 params:
   htmlfile: NA
   excelfile: NA
