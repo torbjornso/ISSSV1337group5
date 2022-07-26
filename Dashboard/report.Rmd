@@ -282,14 +282,15 @@ currency_scale <-
   )
 
 ## Currency caption-----------------------------------------------------------
-# Fake currency caption
-currency_caption <- ifelse(length(unique(htmldata$valutakode)) == 1,
-  "Note: not all values are denominated in the same currency.", ""
-)
 # Real currency caption
+currency_caption <- ifelse(length(unique(htmldata$valutakode)) == 1,
+      "", "Note: not all values are denominated in the same currency.\n"
+    )
+
+# Fake currency caption - turns the values around
 # currency_caption <- ifelse(length(unique(htmldata$valutakode)) == 1,
-#       "", "Note: not all values are denominated in the same currency.\n"
-#     )
+#   "Note: not all values are denominated in the same currency.", ""
+# )
 ```
 
 <!--# Creating KPIs -->
@@ -496,10 +497,11 @@ arsresultat_plot <-
       currency_scale +
       # using a function to ensure uniform colours irrespective of data
       scale_fill_green(htmldata$annual_profit) +
-      theme(legend.position = "none") +
       labs(
         x = "", y = "", caption = currency_caption, title = "Net income (in thousands)"
-      )
+      ) +
+      theme_light() +
+      theme(legend.position = "none")
   }
 # Printing plot if the data are available
 if (sum(!is.na(htmldata$arsresultat)) != 0) {
@@ -528,11 +530,12 @@ balance_plot <-
       currency_scale +
       # using a function to ensure uniform colours irrespective of data
       scale_fill_green(htmldata$balance_positive) +
-      theme(legend.position = "none") +
       labs(
         x = "", y = "",
         caption = currency_caption, title = "Total equity/liabilities (in thousands)"
-      )
+      ) +
+      theme_light() +
+      theme(legend.position = "none")
   }
 
 # Printing the plot if the data are available
@@ -542,7 +545,7 @@ if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) != 0) {
 ```
 
 
-```{r revenue_plot, fig.cap="Based on the category \`Revenue' in the Excel sheet."}
+```{r revenue_expenses_plot, fig.asp=1, fig.show="hold", out.width="45%", fig.cap="Based on the categories \`Revenue' and \`Expenses' in the Excel sheet."}
 ## Revenue--------------------------------------------------------------------
 revenue_plot <-
   # testing for data quality
@@ -593,16 +596,16 @@ revenue_plot <-
       ) +
       # Specifying the number of values, as the base palette only includes 6
       scale_fill_manual(values = met.brewer("Hokusai2", 7)) +
-      labs(x = "", y = "", title = "Revenue (in thousands)")
+      labs(x = "", y = "", title = "Revenue (in thousands)") +
+      theme_light() +
+      theme(title = element_text(size = 14))
   }
 
 # Printing the plot if the data are OK
 if (datatest == FALSE) {
   revenue_plot
 }
-```
 
-```{r expenses_plot, fig.cap="Based on the category \`Expenses' in the Excel sheet."}
 ## Expenses -------------------------------------------------------------------
 expenses_plot <-
   # testing for data quality
@@ -640,7 +643,9 @@ expenses_plot <-
         limits = c(NA, maximum)
       ) +
       scale_fill_met_d("Hokusai2") +
-      labs(x = "", y = "", title = "Expenses (in thousands)")
+      labs(x = "", y = "", title = "Expenses (in thousands)") +
+      theme_light() +
+      theme(title = element_text(size = 14))
   }
 
 # Printing the plot if the data are OK
@@ -686,9 +691,10 @@ CEO_plot <-
       # pretty colours
       scale_fill_met_d("Hokusai2", direction = -1) +
       labs(
-        x = "", y = "Total compensation", title = "CEO compensation"
+        x = "", y = "", title = "CEO compensation"
       ) +
-      theme(legend.position = "bottom")
+      theme(legend.position = "bottom") +
+      theme_light()
   }
 
 # Printing the plot if the data are available
