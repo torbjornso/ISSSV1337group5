@@ -186,7 +186,7 @@ arsresultat_plot_warning <- if (sum(!is.na(htmldata$arsresultat)) == 0) {
 }
 
 # Creating the balance warning text
-balance_plot_warning <-  if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0) {
+balance_plot_warning <- if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0) {
   "*    No information about total equity/liabilities is available.*"
 } else {
   ""
@@ -194,14 +194,17 @@ balance_plot_warning <-  if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0
 
 # Creating the CEO_plot warning text
 CEO_plot_warning <- if (sum(!is.na(htmldata$lederlonn)) == 0 &&
-    sum(!is.na(htmldata$leder_annen_godtgjorelse)) == 0) {
+  sum(!is.na(htmldata$leder_annen_godtgjorelse)) == 0) {
   "*    No information about CEO compensation is available.*"
 } else {
   ""
 }
 
 # Creating general warning
-general_warning <- if (datatest == TRUE || sum(!is.na(htmldata$arsresultat)) == 0 || sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0 || (sum(!is.na(htmldata$lederlonn)) == 0 &&
+general_warning <- if (datatest == TRUE ||
+  sum(!is.na(htmldata$arsresultat)) == 0 || 
+  sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0 ||
+  (sum(!is.na(htmldata$lederlonn)) == 0 &&
     sum(!is.na(htmldata$leder_annen_godtgjorelse)) == 0)) {
   "## Note:"
 } else {
