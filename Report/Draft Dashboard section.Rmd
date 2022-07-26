@@ -11,11 +11,11 @@ output:
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 ```
 
->Ca. 6,5 sider.
+>Ca. 8 sider.
 
 # The Dashboard
 
-One of the outputs we have created is an example dashboard that calculates some KPIs and creates a few visualisations based on user-uploaded data from Proff.no and the Excel template we developed. The basic layout and structure of the dashboard were created using Flexdashboard, whilst most of the logic 'under the hood' was created using Shiny.
+One of the outputs we have created is an example dashboard that calculates some KPIs and creates a few visualisations based on user-uploaded data from Proff.no and the Excel template we developed. The basic layout and structure of the dashboard were created using Flexdashboard, whilst most of the logic 'under the hood' was created using Shiny. Additionally, the dashboard provides the user with the option of downloading a pdf version of the analysis, using a parameterised R Markdown document.
 
 As the dashboard uses a fair number of packages, it uses the pacman package to ensure they are installed:
 ```{r dashboard_packages, eval=FALSE}
@@ -86,8 +86,10 @@ KPI_fundraising_num <- reactive({
       transmute(
         # Calculating the value as a percentage; removing all other
         KPI_fundraising_num =
-          (revenue_private_contributions +
-            revenue_membership_fees - expenses_fundraising) /
+          (sum(revenue_private_contributions,
+            revenue_membership_fees,
+            na.rm = TRUE
+          ) - expenses_fundraising) /
             expenses_fundraising * 100
       ) |>
       # just want the single number
@@ -115,34 +117,34 @@ KPI_to_string <- function(variable) {
 }
 ```
 
-In the case of some value boxes, such as the Fundraising ROI one, the function includes logic that changes the colour of the box based on the calculated number. The levels are based on some cursory examination of expected levels of Fundraising ROI, but may of course be changed if the dashboard is developed further.
+In the case of some value boxes, such as the Fundraising ROI one, the function includes logic that changes the colour and icon of the box based on the calculated number. The levels are based on some cursory examination of expected levels of Fundraising ROI, but may of course be changed if the dashboard is developed further.
 ```{r dashboard_valuebox, eval=FALSE}
-# Creating Fundraising ROI value
-KPI_fundraising_num <- reactive({
-  # testing for data quality, returning NA if bad
-  if (datatest() == TRUE) {
-    NA
-  } else {
-    exceldata() |>
-      # most recent year
-      filter(year == max(year)) |>
-      transmute(
-        # Calculating the value as a percentage; removing all other
-        KPI_fundraising_num =
-          (sum(revenue_private_contributions,
-            revenue_membership_fees,
-            na.rm = TRUE
-          ) - expenses_fundraising) /
-            expenses_fundraising * 100
-      ) |>
-      # just want the single number
-      pull() |>
-      first()
-  }
+# Creating value box for fundraising ROI
+output$KPI_box_fundraising <- renderValueBox({
+  valueBox(
+    value = KPI_to_string(KPI_fundraising_num()),
+    caption = "Fundraising ROI",
+    # Colour depends on value
+    color = if (is.na(KPI_fundraising_num())) {
+      "primary"
+    } else if (KPI_fundraising_num() < 100) {
+      "danger"
+    } else if (KPI_fundraising_num() < 200) {
+      "warning"
+    } else {
+      "success"
+    },
+    # icon depends on whether or not the value is NA
+    icon = if (is.na(KPI_fundraising_num())) {
+      "fa-solid fa-circle-xmark"
+    } else {
+      "fas fa-donate"
+    }
+  )
 })
 ```
 
-All the boxes also include a Fontawesome icon, fetched using the fontawesome package, as Flexdashboard relies on the unsupported version 3 of Fontawesome, whilst fontawesome used the still-supported version 5 when coding began, and has just been updated to use version 6.1.1.
+All the boxes also include, as mentioned, a Fontawesome icon, fetched using the fontawesome package, as Flexdashboard relies on the unsupported version 3 of Fontawesome, whilst fontawesome used the still-supported version 5 when coding began, and has just been updated to use version 6.1.1. All boxes use the theme colour 'primary' and the icon 'fa-solid fa-circle-xmark' if the value is NA.
 ```{r dashboard_fontawesome, eval=FALSE}
 # Using fontawesome for more up-to-date (and currently supported) fontawesome
 # icons
@@ -321,4 +323,85 @@ Below these two plots is a plot showing the total reported CEO compensation in t
 
 ## Details tab
 
-Finally, the dashboard contains a separate tab with some basic details about the KPIs and plots.
+Finally, the dashboard contains a separate tab with some basic details about the KPIs and plots. At the top it includes a heading containing the name of the NGO as written in the Excel file:
+```{r dashboard_title_creation, eval=FALSE}
+# NGO title ==================================================================
+NGO <- reactive({
+  # validating the file again
+  validate(need(
+    tools::file_ext(input$excel$datapath) == "xlsx",
+    "Please upload an Excel file."
+  ))
+  # fetching the name
+  read_excel(input$excel$datapath) |>
+    # Turning the needed column into a list
+    pull(Firm) |>
+    # discarding all NAs in case the name is somewhere
+    purrr::discard(is.na) |>
+    # choosing the first available name
+    first()
+})
+
+title <- reactive({
+  # testing if NGO() is NA
+  if (is.na(NGO())) {
+    # Printing warning if NA
+    "Name of NGO missing"
+    # Printing name of NGO
+  } else {
+    NGO()
+  }
+})
+```
+
+The title is output using `htmlOutput()` to use some basic html styling:
+```{r dashboard_title, eval=FALSE}
+# Creating NGO title using html formatting (colour based on MetBrewer
+# "Hokusai2")
+output$title <- renderText({
+  paste('<b><font size="5em" color="#2f70a1">', title(), "</font></b>")
+})
+```
+
+## The parameterised R Markdown report
+
+The dashboard also allows the user to download a pdf version of the analysis through clicking on a button. A `downloadHandler()` function passes the necessary parameters to the R Markdown document and displays a temporary notification while the file is being created. The function includes temporary file creation arguments that should enable it to function on e.g. shinyapps.io and similar server contexts, but this has not been tested.
+```{r}
+## Download and parameters -----------------------------------------------------
+output$report <- downloadHandler(
+
+  # Based on code in Mastering Shiny
+  filename = "report.pdf",
+  content = function(file) {
+    tempReport <- file.path(tempdir(), "report.Rmd")
+    file.copy("report.Rmd", tempReport, overwrite = TRUE)
+
+    # parameters
+    params <- list(
+      htmlfile = input$html$datapath,
+      excelfile = input$excel$datapath,
+      start = input$start,
+      end = input$end
+    )
+
+    # notification
+    id <- showNotification(
+      "Generating report...",
+      duration = NULL,
+      closeButton = FALSE
+    )
+    on.exit(removeNotification(id), add = TRUE)
+
+    # R Markdown render
+    rmarkdown::render(tempReport,
+      output_file = file,
+      params = params,
+      envir = new.env(parent = globalenv())
+    )
+  }
+)
+```
+
+The code in the R Markdown document is very similar to that of the dashboard, but structured in a more conventional way. Data warnings are here text rather than blank plots, and the KPIs are integrated into the text instead of being presented in value boxes.
+
+
