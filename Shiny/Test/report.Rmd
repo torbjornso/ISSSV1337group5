@@ -9,7 +9,7 @@ params:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width = 6, fig.asp = 0.618, out.width = "70%", fig.align = "center")
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width = 6, fig.asp = 0.618, out.width = "75%", fig.align = "center")
 
 # Repeating loading the libraries, in case the information isn't passed on from
 # the dashboard
@@ -432,23 +432,23 @@ The KPIs are based on the following calculations, using data derived from the Ex
 
 <!--# Need to decide whether to underline the KPIs, as in the first one -->
 
-- **Fundraising ROI**: [`r fundraising`]{.underline}
+- **Fundraising ROI: `r fundraising`**
   - A basic measure of the return on investment of direct fundraising expenses:
   $$\frac{\text{private contributions} + \text{membership fees} - \text{fundraising expenses}}{\text{fundraising expenses}} \times 100$$
 
-- **Liquid assets/obligations**: `r KPI_OPX`
+- **Liquid assets/obligations: `r KPI_OPX`**
   - A measure of the relationship between the organisation's liquid assets and its obligations:
   $$\frac{\text{private contributions} + \text{investment income} + \text{cash in bank and cash equivalents}}{\text{short term grants payable} + \text{revocable endowments} + \text{long term grants payable}} \times 100$$
 
-- **Private donations growth**: `r KPI_private`
+- **Private donations growth: `r KPI_private`**
   - A calculation of the percentage change in private contributions based on the two most recent years:
   $$\frac{\text{private contributions}_2 - \text{private contributions}_1}{\text{private contributions}_1}\times 100$$
 
-- **Public grants growth**: `r KPI_public`
+- **Public grants growth: `r KPI_public`**
   - A calculation of the percentage change in public grants received based on the two most recent years:
   $$\frac{\text{public grants}_2 - \text{public grants}_1}{\text{public grants}_1} \times 100$$
 
-- **Private/public proportion**: `r KPI_proportion`
+- **Private/public proportion: `r KPI_proportion`**
   - Calculates the percentage of non-commercial or activity-based income that is derived from private contributions and membership fees as opposed to public grants:
   $$\frac{\text{private contributions} + \text{membership fees}}{\text{public grants} + \text{private contributions} + \text{membership fees}} \times 100$$
 
@@ -458,7 +458,7 @@ The KPIs are based on the following calculations, using data derived from the Ex
 
 \newpage
 
-# Plots
+# Graphs
 
 <!--# Warning header, if necessary -->
 
@@ -500,7 +500,7 @@ arsresultat_plot <-
       scale_fill_green(htmldata$annual_profit) +
       theme(legend.position = "none") +
       labs(
-        x = "", y = "", caption = currency_caption
+        x = "", y = "", caption = currency_caption, title = "Net income (in thousands)"
       )
   }
 # Printing plot if the data are available
@@ -533,7 +533,7 @@ balance_plot <-
       theme(legend.position = "none") +
       labs(
         x = "", y = "",
-        caption = currency_caption
+        caption = currency_caption, title = "Total equity/liabilities (in thousands)"
       )
   }
 
@@ -595,7 +595,7 @@ revenue_plot <-
       ) +
       # Specifying the number of values, as the base palette only includes 6
       scale_fill_manual(values = met.brewer("Hokusai2", 7)) +
-      labs(x = "", y = "")
+      labs(x = "", y = "", title = "Revenue (in thousands)")
   }
 
 # Printing the plot if the data are OK
@@ -642,7 +642,7 @@ expenses_plot <-
         limits = c(NA, maximum)
       ) +
       scale_fill_met_d("Hokusai2") +
-      labs(x = "", y = "")
+      labs(x = "", y = "", title = "Expenses (in thousands)")
   }
 
 # Printing the plot if the data are OK
@@ -688,7 +688,7 @@ CEO_plot <-
       # pretty colours
       scale_fill_met_d("Hokusai2", direction = -1) +
       labs(
-        x = "", y = "Total compensation"
+        x = "", y = "Total compensation", title = "CEO compensation"
       ) +
       theme(legend.position = "bottom")
   }
