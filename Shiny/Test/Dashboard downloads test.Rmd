@@ -191,6 +191,7 @@ output$downloadUI <- renderUI({
 })
 
 output$report <- downloadHandler(
+  
   filename = "report.pdf",
   content = function(file) {
     tempReport <- file.path(tempdir(), "report.Rmd")
@@ -203,6 +204,13 @@ output$report <- downloadHandler(
       end = input$end
     )
 
+    id <- showNotification(
+      "Generating report...",
+      duration = NULL,
+      closeButton = FALSE
+    )
+    on.exit(removeNotification(id), add = TRUE)
+
     rmarkdown::render(tempReport,
       output_file = file,
       params = params,
@@ -212,7 +220,7 @@ output$report <- downloadHandler(
 )
 
 observe({ # wait for button click
-
+  
   # Data frames ================================================================
 
   # creating data frame from html file
