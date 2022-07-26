@@ -693,8 +693,8 @@ CEO_plot <-
       labs(
         x = "", y = "", title = "CEO compensation"
       ) +
-      theme(legend.position = "bottom") +
-      theme_light()
+      theme_light() +
+      theme(legend.position = "bottom")
   }
 
 # Printing the plot if the data are available
