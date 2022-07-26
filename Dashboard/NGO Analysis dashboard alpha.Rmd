@@ -256,6 +256,12 @@ observe({
   
   # NGO title ==================================================================
   NGO <- reactive({
+    # validating the file again
+    validate(need(
+      tools::file_ext(input$excel$datapath) == "xlsx",
+      "Please upload an Excel file."
+    ))
+    # fetching the name
     read_excel(input$excel$datapath) |>
       # Turning the needed column into a list
       pull(Firm) |>
