@@ -758,7 +758,7 @@ observe({
   ## CEO compensation-----------------------------------------------------------
   CEO_plot <- reactive({
     # Testing for the presence of data
-    if (sum(!is.na(htmldata()$lederlonn)) == 0 &
+    if (sum(!is.na(htmldata()$lederlonn)) == 0 &&
       sum(!is.na(htmldata()$leder_annen_godtgjorelse)) == 0) {
       # Printing 'no information' plot if no data
       no_information()

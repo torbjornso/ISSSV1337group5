@@ -172,7 +172,7 @@ datatest <-
 
 ## Creating the Excel warning text --------------------------------------------
 excel_warning <- if (datatest == TRUE) {
-  "**    Warning: something is wrong with the Excel data.**"
+  "***    Warning: something is wrong with the Excel data.***"
 } else {
   ""
 }
@@ -193,7 +193,7 @@ balance_plot_warning <-  if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0
 }
 
 # Creating the CEO_plot warning text
-CEO_plot_warning <- if (sum(!is.na(htmldata$lederlonn)) == 0 &
+CEO_plot_warning <- if (sum(!is.na(htmldata$lederlonn)) == 0 &&
     sum(!is.na(htmldata$leder_annen_godtgjorelse)) == 0) {
   "*    No information about CEO compensation is available.*"
 } else {
@@ -201,7 +201,7 @@ CEO_plot_warning <- if (sum(!is.na(htmldata$lederlonn)) == 0 &
 }
 
 # Creating general warning
-general_warning <- if (datatest == TRUE | sum(!is.na(htmldata$arsresultat)) == 0 | sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0 | (sum(!is.na(htmldata$lederlonn)) == 0 &
+general_warning <- if (datatest == TRUE || sum(!is.na(htmldata$arsresultat)) == 0 || sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0 || (sum(!is.na(htmldata$lederlonn)) == 0 &&
     sum(!is.na(htmldata$leder_annen_godtgjorelse)) == 0)) {
   "## Note:"
 } else {
@@ -416,8 +416,8 @@ KPI_proportion <-
 
 ### NA warning-----------------------------------------------------------------
 # Testing for the presence of NAs; printing warning if there are any
-KPI_warning <- if (is.na(fundraising) | is.na(KPI_OPX) | is.na(KPI_private) |
-  is.na(KPI_public) | is.na(KPI_proportion)) {
+KPI_warning <- if (is.na(fundraising) || is.na(KPI_OPX) || is.na( KPI_private) ||
+  is.na(KPI_public) || is.na(KPI_proportion)) {
   "*A value of 'NA' indicates that there is something wrong with the Excel data, that the necessary data are not available, or that the data are unsuited to an automatic calculation of the KPI.*"
 } else {
   ""
@@ -653,7 +653,7 @@ if (datatest == FALSE) {
 ## CEO compensation-----------------------------------------------------------
 CEO_plot <-
   # Testing for the presence of data
-  if (sum(!is.na(htmldata$lederlonn)) == 0 &
+  if (sum(!is.na(htmldata$lederlonn)) == 0 &&
     sum(!is.na(htmldata$leder_annen_godtgjorelse)) == 0) {
     # Returning NA if no data
     NA
