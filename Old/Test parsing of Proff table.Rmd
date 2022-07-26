@@ -1,0 +1,668 @@
+---
+title: "Test parsing of Proff.no table"
+author: "Torbjørn Skinnemoen Ottersen"
+date: '2022-07-06'
+output: 
+  html_document: 
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+`read_proff6` is the current leading contender...
+
+NOT a model to be followed...
+
+```{r libraries}
+library(tidyverse)
+library(rvest)
+library(plotly)
+library(janitor)
+```
+
+### Reading in stages
+
+```{r kreftforeningen}
+# Reading saved html
+table_kreft <- read_html("Links/Kreftforeningen.html") |> 
+  html_node("#inner-frame") |> 
+  html_table()
+
+table_kreft
+
+table_kreft2 <- table_kreft
+
+# Removing white space
+table_kreft2$REGNSKAPSPERIODE <- table_kreft$REGNSKAPSPERIODE |>
+  str_squish()
+
+# Removing empty column
+table_kreft3 <- table_kreft2 |>
+  select(REGNSKAPSPERIODE:`2002`)
+
+# Removing duplicate rows
+table_kreft4 <- table_kreft3 |>
+  filter(!grepl("Lukk", REGNSKAPSPERIODE))
+
+
+
+# tidying data:
+
+table_kreft5 <- table_kreft4 |>
+  pivot_longer(`2021`:`2002`, names_to = "year")
+
+table_kreft6 <- table_kreft5
+
+# Turning "-" into NA
+table_kreft6 <- table_kreft6 |> 
+  mutate(value = na_if(value, "-")) 
+
+# Turning years into integers
+table_kreft6$year <-as.integer(table_kreft6$year)
+
+# currency
+table_kreft6b <- table_kreft6 |> mutate(
+  valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA))
+
+table_kreft6b |> 
+  fill(valutakode, .direction = "updown")
+
+# Removing unnecessary dates
+table_kreft7 <- table_kreft6 |> 
+  filter(
+    REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+      REGNSKAPSPERIODE != "Valutakode")
+
+# Removing whitespace
+table_kreft8 <- table_kreft7 |> 
+  mutate(
+    value = str_replace_all(value, "\\s", "")
+  )
+
+# Converting to numbers
+table_kreft8 <- table_kreft8 |> 
+  mutate(
+    value = as.numeric(value)
+  )
+
+# Quick visualisation
+table_kreft8 |> 
+  filter(year == 2021) |> 
+  ggplot(aes(REGNSKAPSPERIODE, value)) +
+  geom_col() +
+  coord_flip()
+
+# Removing values that are years
+table_kreft9 <- table_kreft8 |> 
+  mutate(
+    value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+  )
+
+# Viewing table
+table_kreft9 |>
+  arrange(desc(year))
+```
+
+>*Note that we might have to convert implicitly negative numbers.*
+
+### Testing with different file
+
+```{r opera}
+# Reading saved html
+opera <- read_html("Links/opera.html") |> 
+  html_element("#inner-frame") |> 
+  html_table(trim = TRUE)
+
+# Removing white space
+opera$REGNSKAPSPERIODE <- opera$REGNSKAPSPERIODE |>
+  str_squish()
+
+# Removing empty column
+opera <- opera |>
+  select(REGNSKAPSPERIODE:`1998`)
+
+# Removing duplicate rows (hack)
+opera <- opera |>
+  filter(
+  !row_number() > 176
+)
+
+# Removing duplicate rows
+opera <- opera |>
+  filter(!grepl("Lukk", REGNSKAPSPERIODE))
+
+# tidying data:
+opera <- opera |>
+  pivot_longer(`2021`:`1998`, names_to = "year")
+
+# Turning "-" into NA
+opera <- opera |> 
+  mutate(value = na_if(value, "-")) 
+
+# Turning years into integers
+opera$year <-as.integer(opera$year)
+
+# Removing unnecessary dates
+opera <- opera |> 
+  filter(
+    REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+      REGNSKAPSPERIODE != "Valutakode")
+
+# Removing whitespace
+opera <- opera |> 
+  mutate(
+    value = str_replace_all(value, "\\s", "")
+  )
+
+# Converting to numbers
+opera <- opera |> 
+  mutate(
+    value = as.numeric(value)
+  )
+
+# Removing values that are years
+opera <- opera |> 
+  mutate(
+    value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+  )
+
+# Viewing table
+opera |>
+  arrange(desc(year))
+
+```
+
+### As a single operation
+
+```{r single operation}
+opera_test <- read_html("Links/opera.html") |> 
+  html_node("#inner-frame") |> 
+  html_table() |> 
+  select(
+    REGNSKAPSPERIODE:`1998`) |> 
+  mutate(
+    REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+  ) |> 
+  filter(
+  !row_number() > 176
+  ) |> 
+  filter(
+    !grepl("Lukk", REGNSKAPSPERIODE)) |> 
+  pivot_longer(
+    `2021`:`1998`, names_to = "year") |> 
+  mutate(
+    value = na_if(value, "-"),
+    year = as.integer(year)) |> 
+  filter(
+    REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+      REGNSKAPSPERIODE != "Valutakode") |> 
+  mutate(
+    value = str_replace_all(value, "\\s", "")
+  ) |> 
+  mutate(
+    value = as.numeric(value)
+  ) |> 
+  mutate(
+    value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+  )
+
+# Testing identity
+identical(opera, opera_test)
+```
+
+### Function 1
+
+```{r function}
+# Function
+read_proff <- function(file){
+  read_html(file) |> 
+  html_node("#inner-frame") |> 
+  html_table() |> 
+  select(
+    REGNSKAPSPERIODE:`1998`) |> 
+  mutate(
+    REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+  ) |> 
+    filter(
+      !row_number() > 176
+    ) |>
+  filter(
+    !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |> 
+  pivot_longer(
+    `2021`:`1998`, names_to = "year") |> 
+  mutate(
+    value = na_if(value, "-"),
+    year = as.integer(year)) |> 
+  filter(
+    REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+      REGNSKAPSPERIODE != "Valutakode") |> 
+  mutate(
+    value = str_replace_all(value, "\\s", "")
+  ) |> 
+  mutate(
+    value = as.numeric(value)
+  ) |> 
+  mutate(
+    value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+  )
+}
+
+opera_func <- read_proff("Links/opera.html")
+
+#Testing identity
+identical(opera, opera_func)
+```
+
+### Slightly more robust function
+
+- `file`: name and location of html file
+- `start`: first available year as a string ("")
+- `end`: last available year as a string ("")
+
+```{r function_modified}
+read_proff2 <- function(file, start, end){
+  read_html(file, encoding = "UTF-8") |> 
+  html_node("#inner-frame") |> 
+  html_table() |> 
+  select( # removing empty column
+    REGNSKAPSPERIODE:start) |> 
+  mutate( # removing whitespace
+    REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+  ) |> 
+  filter( # removing duplicate table
+      !row_number() > 176
+    ) |>
+  filter( # removing duplicate rows
+    !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |> 
+  pivot_longer( # tidying data
+    end:start, names_to = "year") |> 
+  mutate( # changing to real NAs and turning years into numbers
+    value = na_if(value, "-"),
+    year = as.integer(year)) |> 
+  mutate( # adding currency column
+      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+    ) |> 
+  fill( # filling the currency column
+    valutakode, .direction = "updown"
+    ) |> 
+  filter( # removing dates and redundant currency
+    REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+      REGNSKAPSPERIODE != "Valutakode") |> 
+  mutate( # removing whitespace in numbers
+    value = str_replace_all(value, "\\s", "")
+  ) |> 
+  mutate( # turning into numbers
+    value = as.numeric(value)
+  ) |> 
+  mutate( # removing years as values
+    value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+  )
+}
+
+Kors <- read_proff2("Links/Kors.html", "2001", "2020") |> 
+  arrange(desc(year))
+
+Kors
+```
+
+## Improved function
+
+```{r, eval=FALSE}
+read_proff3 <- function(file, start, end){
+  read_html(file, encoding = "UTF-8") |> 
+  html_node("#inner-frame") |> 
+  html_table() |> 
+  select( # removing empty column
+    REGNSKAPSPERIODE:all_of(start)) |> # using all_of()
+  mutate( # removing whitespace
+    REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+  ) |> 
+  filter( # removing duplicate table
+      !row_number() > 176
+    ) |>
+  filter( # removing duplicate rows
+    !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |> 
+  pivot_longer( # tidying data
+    all_of(end):all_of(start), names_to = "year") |> # using all_of()
+  mutate( # changing to real NAs and turning years into numbers
+    value = na_if(value, "-"),
+    year = as.integer(year)) |> 
+  mutate( # adding currency column
+      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+    ) |> 
+  fill( # filling the currency column
+    valutakode, .direction = "updown"
+    ) |> 
+  filter( # removing dates and redundant currency
+    REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+      REGNSKAPSPERIODE != "Valutakode") |> 
+  mutate( # removing whitespace in numbers
+    value = str_replace_all(value, "\\s", "")
+  ) |> 
+  mutate( # turning into numbers
+    value = as.numeric(value)
+  ) |> 
+  mutate( # removing years as values
+    value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+  ) |> 
+    distinct() |> # removing duplicate rows
+    pivot_wider(
+      names_from = REGNSKAPSPERIODE, values_from = value
+      ) |> 
+    clean_names() |> 
+    arrange(desc(year)) # arranging by year
+}
+
+read_proff3("Links/Kors.html", "2001", "2020") # Testing
+riksmaal <- read_proff3("Links/Riksmaal.html", "2011", "2021") # Testing
+clean_names(riksmaal)
+riksmaal |> 
+  pivot_wider(names_from = entry, values_from = value) |> 
+  clean_names()
+riksmaal
+```
+
+## Even more improved function
+```{r}
+read_proff4 <- function(file, start, end){
+  read_html(file, encoding = "UTF-8") |> 
+  html_node("#inner-frame") |> 
+  html_table() |> 
+  select( # removing empty column
+    REGNSKAPSPERIODE:all_of(start)) |> # using all_of()
+  mutate( # removing whitespace
+    REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+  ) |> 
+  filter( # removing duplicate rows
+    !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |> 
+  pivot_longer( # tidying data
+    all_of(end):all_of(start), names_to = "year") |> # using all_of()
+  mutate( # changing to real NAs and turning years into numbers
+    value = na_if(value, "-"),
+    year = as.integer(year)) |> 
+  mutate( # adding currency column
+      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+    ) |> 
+  fill( # filling the currency column
+    valutakode, .direction = "updown"
+    ) |> 
+  filter( # removing dates and redundant currency
+    REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+      REGNSKAPSPERIODE != "Valutakode") |> 
+  mutate( # removing whitespace in numbers
+    value = str_replace_all(value, "\\s", "")
+  ) |> 
+  mutate( # turning into numbers
+    value = as.numeric(value)
+  ) |> 
+  mutate( # removing years as values
+    value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+  ) |> 
+    distinct() |> # removing duplicate rows
+    pivot_wider( # pivoting
+      names_from = REGNSKAPSPERIODE, values_from = value
+      ) |> 
+    clean_names() |> # tidying names
+    arrange(desc(year)) # arranging by year
+}
+
+riksmaal2 <- read_proff4("Links/Riksmaal.html", "2011", "2021") # Testing
+
+?require
+```
+
+## Function with libraries
+
+- `file`: name and location of html file
+- `start`: first available year as a string ("")
+- `end`: last available year as a string ("")
+```{r}
+read_proff5 <- function(file, start, end){
+  require(rvest)
+  require(tidyverse)
+  require(janitor)
+  read_html(file, encoding = "UTF-8") |> 
+  html_node("#inner-frame") |> 
+  html_table() |> 
+  select( # removing empty column
+    REGNSKAPSPERIODE:all_of(start)) |> # using all_of()
+  mutate( # removing whitespace
+    REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+  ) |> 
+  filter( # removing duplicate rows
+    !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |> 
+  pivot_longer( # tidying data
+    all_of(end):all_of(start), names_to = "year") |> # using all_of()
+  mutate( # changing to real NAs and turning years into numbers
+    value = na_if(value, "-"),
+    year = as.integer(year)) |> 
+  mutate( # adding currency column
+      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+    ) |> 
+  fill( # filling the currency column
+    valutakode, .direction = "updown"
+    ) |> 
+  filter( # removing dates and redundant currency
+    REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+      REGNSKAPSPERIODE != "Valutakode") |> 
+  mutate( # removing whitespace in numbers
+    value = str_replace_all(value, "\\s", "")
+  ) |> 
+  mutate( # turning into numbers
+    value = as.numeric(value)
+  ) |> 
+  mutate( # removing years as values
+    value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+  ) |> 
+    distinct() |> # removing duplicate rows
+    pivot_wider( # pivoting
+      names_from = REGNSKAPSPERIODE, values_from = value
+      ) |> 
+    clean_names() |> # tidying names
+    arrange(desc(year)) # arranging by year
+}
+
+riksmaal <- read_proff5("Links/Riksmaal.html", "2011", "2021")
+names(riksmaal)
+summary(riksmaal)
+
+rodekors <- read_proff5("Links/Kors.html", "2001", "2020")
+
+rodekors
+```
+
+## New function - ffs
+```{r read_proff6}
+read_proff6 <- function(file, start, end){
+  require(rvest)
+  require(tidyverse)
+  require(janitor)
+  read_html(file, encoding = "UTF-8") |> 
+  html_node("#inner-frame") |> 
+  html_table() |> 
+  select( # removing empty column
+    REGNSKAPSPERIODE:all_of(start)) |> # using all_of()
+  mutate( # removing whitespace
+    REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+  ) |> 
+  filter( # removing duplicate table - no idea why it's necessary
+      !row_number() > 176
+    ) |>
+  filter( # removing duplicate rows
+    !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |> 
+  pivot_longer( # tidying data
+    all_of(end):all_of(start), names_to = "year") |> # using all_of()
+  mutate( # changing to real NAs and turning years into numbers
+    value = na_if(value, "-"),
+    year = as.integer(year)) |> 
+  mutate( # adding currency column
+      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+    ) |> 
+  fill( # filling the currency column
+    valutakode, .direction = "updown"
+    ) |> 
+  filter( # removing dates and redundant currency
+    REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+      REGNSKAPSPERIODE != "Valutakode") |> 
+  mutate( # removing whitespace in numbers
+    value = str_replace_all(value, "\\s", "")
+  ) |> 
+  mutate( # turning into numbers
+    value = as.numeric(value)
+  ) |> 
+  mutate( # removing years as values
+    value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+  ) |> 
+  mutate( # values no longer in 1000
+      value = value * 1000
+    ) |> 
+  distinct() |> # removing any remaining duplicate rows
+  pivot_wider( # pivoting
+      names_from = REGNSKAPSPERIODE, values_from = value
+      ) |> 
+  clean_names() |> # tidying names
+  select(-lederlonn_i_hele_1000,
+           -resultatregnskap_i_hele_1000,
+           -balanseregnskap_i_hele_1000) |> # removing headings
+  rename( # making it clear what lonn refers to
+      lederlonn = lonn
+    ) |> 
+  arrange(desc(year)) # arranging by year
+}
+
+rodekors <- read_proff6("Links/Kors.html", "2001", "2020")
+opera <- read_proff6("Links/opera.html", "1998", "2021")
+read_proff6("Links/Riksmaal.html", "2011", "2021")
+
+```
+
+
+### Basic visualisations
+```{r}
+Kors |> 
+  filter(REGNSKAPSPERIODE == "Årsresultat") |> 
+  ggplot(aes(year, value)) +
+  geom_col()
+
+Kors |> 
+  filter(REGNSKAPSPERIODE == "SUM EGENKAPITAL OG GJELD") |> 
+  ggplot(aes(year, value)) +
+  geom_col()
+
+plot <- Kors |> 
+  filter(REGNSKAPSPERIODE == "Årsresultat") |> 
+  ggplot(aes(year, value)) +
+  geom_col()
+
+plot2 <- Kors |> 
+  filter(REGNSKAPSPERIODE == "SUM EGENKAPITAL OG GJELD") |> 
+  ggplot(aes(year, value)) +
+  geom_col()
+
+ggplotly(plot)
+ggplotly(plot2)
+
+Kors |> 
+  filter(REGNSKAPSPERIODE == "Driftsresultat") |> 
+  ggplot(aes(year, value)) +
+  geom_col()
+
+Kors |> 
+  filter(REGNSKAPSPERIODE == "Lønn") |> 
+  ggplot(aes(year, value)) +
+  geom_col()
+
+Kors |> 
+  filter(REGNSKAPSPERIODE == "Årsresultat") |> 
+  mutate(
+    profit = ifelse(value >= 0, TRUE, FALSE)
+  ) |> 
+  ggplot(aes(year, value * 1000, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = "", big.mark = ".",
+                                                   decimal.mark = ",")) +
+  theme(legend.position = "none", axis.title.y = element_blank())
+
+Kors |> 
+  filter(REGNSKAPSPERIODE == "Ordinært resultat") |> 
+  mutate(
+    profit = ifelse(value >= 0, TRUE, FALSE)
+  ) |> 
+  ggplot(aes(year, value * 1000, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = "", big.mark = ".",
+                                                   decimal.mark = ",")) +
+  theme(legend.position = "none", axis.title.y = element_blank())
+
+plot3 <- Kors |> 
+  filter(REGNSKAPSPERIODE == "Ordinært resultat") |> 
+  mutate(
+    profit = ifelse(value >= 0, TRUE, FALSE)
+  ) |> 
+  ggplot(aes(year, value * 1000, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = "", big.mark = ".",
+                                                   decimal.mark = ",")) +
+  theme(legend.position = "none", axis.title.y = element_blank())
+
+ggplotly(plot3)
+```
+
+## Visualisations - 5th function
+```{r}
+riksmaal |> 
+  ggplot(aes(year, arsresultat)) +
+  geom_path()
+
+riksmaal |> 
+  ggplot(aes(year, sum_egenkapital_og_gjeld)) +
+  geom_col()
+  
+```
+
+## Function 6 visualisations
+```{r}
+ggplot(opera, aes(year, lederlonn)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = "", big.mark = ".",
+                                                   decimal.mark = ","))
+opera |> 
+  group_by(year) |> 
+  transmute(
+    sum = sum(lederlonn, leder_annen_godtgjorelse, na.rm = TRUE)
+  ) |> 
+  ggplot(aes(year, sum)) +
+  geom_col()
+opera
+opera_lonn <- opera |> 
+  group_by(year) |> 
+  transmute(
+    percentage = sum(lederlonn, leder_annen_godtgjorelse, na.rm = TRUE) / arsresultat,
+    profit = ifelse(arsresultat >= 0, TRUE, FALSE)
+  ) |> 
+  ggplot(aes(year, percentage, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_percent(scale = 1),
+                     name = "Godtgjørelse") +
+  xlab("År") +
+  theme(legend.position = "none")
+
+opera_lonn
+ggplotly(opera_lonn)
+
+rodekors
+
+ggplot(rodekors, aes(year, sum_egenkapital_og_gjeld)) +
+  geom_col() +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = ""))
+```
+

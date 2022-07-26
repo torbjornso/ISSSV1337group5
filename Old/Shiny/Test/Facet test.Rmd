@@ -1,0 +1,132 @@
+---
+title: "Facet test"
+author: "Torbjørn Skinnemoen Ottersen"
+date: '2022-07-22'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if (!require("pacman")) install.packages("pacman"); library(pacman)
+p_load(shiny,tidyverse, scales, rvest, janitor, plotly, readxl, MetBrewer, cowplot)
+```
+
+
+
+```{r}
+revenue <- kreft_excel |> 
+  # Renaming for the purposes of the plot + dropping other variables
+      transmute(
+        Year                    = as.factor(year),
+        `Private contributions` = revenue_private_contributions,
+        `Membership fees`       = revenue_membership_fees,
+        `Public grants`         = revenue_public_grants,
+        Investments             = revenue_investments,
+        `Operational activities`= revenue_operational_activities,
+        `Commercial activities` = revenue_commercial_activities,
+        Other                   = revenue_other
+      ) |> 
+      # Pivoting to use fill
+      pivot_longer(
+        c(`Private contributions`:Other), names_to = "Revenue source"
+      ) |> 
+  ggplot(aes(Year, value, fill = `Revenue source`)) +
+      geom_col() +
+scale_y_continuous(labels = label_dollar(prefix = "NOK "),
+                         limits = c(NA, maximum)) +
+  scale_fill_manual(values = met.brewer("Hokusai2", 7)) +
+      labs(x = "", y = "", title = "Revenue (in thousands)")
+revenue
+expenses <- kreft_excel |> 
+  transmute(
+        Year = as.factor(year),
+        Other = expenses_other,
+        Administrative = expenses_administrative,
+        Fundraising = expenses_fundraising,
+        `Program services` = expenses_program_services
+      ) |>
+      # Pivoting to use fill
+      pivot_longer(c(Other:`Program services`), names_to = "Expenses") |>
+      # Ordering for the plot
+      mutate(
+        Expenses = ordered(Expenses,
+          levels =
+            c("Program services", "Other", "Fundraising", "Administrative")
+        )
+      ) |> 
+  ggplot(aes(Year, value, fill = Expenses)) +
+      geom_col() +
+      scale_y_continuous(labels = label_dollar(prefix = "NOK "),
+                         limits = c(NA, maximum)) +
+      scale_fill_met_d("Hokusai2") +
+      labs(x = "", y = "", title = "Expenses (in thousands)")
+
+expenses
+
+maximum
+
+?scale_y_continuous()
+
+expenses
+
+maximum <- read_excel("Data/OPXfinans_final.xlsx") |> 
+  select(-Firm, -`Sub-category`) |> 
+  filter(Category == "Revenue" | Category == "Expenses") |> 
+  group_by(Year, Category) |> 
+  summarise(
+    sum = sum(Value, na.rm = TRUE)
+  ) |> 
+  pull() |> 
+  max()
+
+maximum
+
+excel_long
+
+bare
+filtered <- bare |> 
+  filter(Category == "Revenue" | Category == "Expenses")
+
+filtered
+filtered <- filtered |>
+  select(-Firm, -`Sub-category`)
+
+filtered |> 
+  ggplot(aes(as.factor(Year), Value, fill = Name)) +
+  geom_col() +
+  facet_wrap(~Category) +
+  scale_y_continuous(labels = label_dollar()) +
+  scale_fill_manual(values = met.brewer("Hokusai3", 10))
+
+
+maximum <- filtered |> 
+  group_by(Year, Category) |> 
+  summarise(
+    sum = sum(Value, na.rm = TRUE)
+  ) |> 
+  pull() |> 
+  max()
+
+filtered |> 
+  group_by(Year, Category) |> 
+  summarise(
+    sum = sum(Value, na.rm = TRUE)
+  )
+
+```
+
+# Data
+```{r}
+widen_excel <- function(file){
+  read_excel(file) |> 
+  unite(
+    entry, c(Category, Name), sep = "_"
+  ) |> 
+  select(-`Sub-category`) |> 
+  pivot_wider(names_from = entry, values_from = Value) |> 
+  clean_names()
+}
+
+kreft_excel <- widen_excel("Data/OPXfinans_final.xlsx")
+```
+

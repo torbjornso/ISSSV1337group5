@@ -1,0 +1,168 @@
+---
+title: "Excel fun"
+author: "Torbjørn Skinnemoen Ottersen"
+date: '2022-07-11'
+output: 
+  html_document: 
+    df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries, include=FALSE}
+library(readxl)
+library(tidyverse)
+library(janitor)
+```
+
+## Reading long file
+
+```{r}
+test <- read_excel("Data/OPXfinans test.xlsx")
+test
+```
+
+## Tidying
+
+```{r}
+test2 <- test |> 
+  mutate(
+    category = ifelse(is.na(value), entry, NA) # transferring headings to category
+  ) |> 
+  fill(category) |> # filling category column
+  fill(year) |> # filling year column
+  filter(!is.na(value)) # removing headings
+test2
+```
+
+### Removing rows containing 'sum' and 'total'
+```{r}
+test2_no_totals <- test2 |> 
+  filter(
+    !str_detect(entry, "^Sum") & !str_detect(entry, "^Total")
+  )
+
+test2_no_totals
+test2_no_totals |>
+  group_by(category) |> 
+  summarise(
+    sum = sum(value)
+  )
+```
+
+## `pivot_wider()`
+```{r}
+test4 <- test2 |>
+  unite(entry, c(category, entry), sep = " ") |> 
+  select(-year) |> 
+  pivot_wider(names_from = entry, values_from = value)
+
+test4
+
+test4 |> 
+  summarise(
+    sum = sum(`Revenue Private contributions`:`Revenue Other`)
+  ) |> 
+  summarise(
+    test = sum == test4$`Revenue Sum total revenue`)
+```
+
+## Final version?
+```{r}
+excel <- read_excel("Data/OPXfinans2.xlsx")
+excel <- clean_names(excel)
+
+```
+
+## Final final?
+```{r}
+excel <- read_excel("Data/OPXfinans_final.xlsx")
+excel <- clean_names(excel)
+excel |> 
+  filter(year == 2020)
+
+excel2
+
+excel
+united <- excel |> 
+  unite(entry, c(category, name), sep = "_")
+united <- clean_names(united)
+united <- united |> 
+  select(-sub_category)
+united_wide <- united |> 
+  pivot_wider(names_from = entry, values_from = value) |> 
+  clean_names()
+united_wide
+
+
+
+united_wide |> 
+  mutate(
+    KPI = expenses_fundraising / revenue_private_contributions * 100
+  ) |> 
+  select(year, firm, KPI) |> 
+  ggplot(aes(as.factor(year), KPI)) +
+  geom_col()
+
+test <- excel
+test$result <- excel |> 
+  group_by(category) |> 
+  summarise(
+    value = sum(value)
+  ) |> 
+  pivot_wider(names_from = category, values_from = value) |> 
+  summarise(
+    result = Revenue - Expenses
+  ) |>
+  toString() |> 
+  as.numeric()
+test
+
+excel |> 
+  mutate(
+    value = ifelse(category == "Expenses" | category == "Liability", -value, value)
+  )
+excel |> 
+  filter(year == 2020) |> 
+  mutate(
+    total = sum(value)
+  )
+
+excel
+read_excel("Data/OPXfinans_final.xlsx") |> 
+  mutate(
+    Value = Value * 1000
+  )
+
+
+```
+
+## Function
+```{r}
+widen_excel <- function(file){
+  require(readxl)
+  require(tidyverse)
+  read_excel(file) |> 
+    mutate(
+      Value = Value * 1000
+    ) |> 
+  unite(
+    entry, c(Category, Name), sep = "_"
+  ) |> 
+  select(-`Sub-category`) |> 
+  pivot_wider(names_from = entry, values_from = Value) |> 
+  clean_names()
+}
+
+# View(wide)
+
+wide <- widen_excel("Data/OPXfinans_final.xlsx")
+
+wide$expenses_fundraising / (wide$revenue_private_contributions + wide$revenue_public_grants + wide$revenue_membership_fees)
+
+wide$expenses_administrative / wide$expenses_program_services * 100
+
+```
+
