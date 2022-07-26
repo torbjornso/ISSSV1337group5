@@ -698,7 +698,7 @@ CEO_plot <-
   }
 
 # Printing the plot if the data are available
-if (sum(!is.na(htmldata$lederlonn)) != 0 |
+if (sum(!is.na(htmldata$lederlonn)) != 0 ||
   sum(!is.na(htmldata$leder_annen_godtgjorelse)) != 0) {
   CEO_plot
 }
