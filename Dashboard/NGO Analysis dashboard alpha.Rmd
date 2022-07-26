@@ -48,6 +48,13 @@ fileInput("excel", "Upload Excel file", accept = ".xlsx")
 actionButton("click", "Analyse")
 ```
 
+If desired, a copy of the analysis in PDF format may then be downloaded.
+
+```{r sidebar_button}
+# download button
+uiOutput("downloadUI")
+```
+
 Dashboard
 =======================================================================
 
@@ -117,6 +124,16 @@ plotlyOutput("CEO_plotly")
 Details
 =======================================================================
 
+Row {data-height=60}
+-----------------------------------------------------------------------
+
+### NGO analysed  
+
+```{r}
+# Using htmlOutput() to use html styling
+htmlOutput("title")
+```
+
 Row 
 -----------------------------------------------------------------------
 
@@ -124,23 +141,37 @@ Row
 
 The KPIs are based on the following calculations, using data derived from the Excel sheet:
 
-- **Fundraising ROI**: $$\frac{\text{private contributions} + \text{membership fees} - \text{fundraising expenses}}{\text{fundraising expenses}} \times 100$$
-  - A basic measure of the ROI of direct fundraising expenses.
-- **Liquid assets/obligations**: $$\frac{\text{private contributions} + \text{investment income} + \text{cash in bank and cash equivalents}}{\text{short term grants payable} + \text{revocable endowments} + \text{long term grants payable}} \times 100$$
-  - A measure of the relationship between the organisation's liquid assets and its obligations.
-- **Private donations growth**: $$\frac{\text{private contributions}_2 - \text{private contributions}_1}{\text{private contributions}_1}\times 100$$
-  - A calculation of the percentage change in private contributions based on the two most recent years.
-- **Public grants growth**: $$\frac{\text{public grants}_2 - \text{public grants}_1}{\text{public grants}_1} \times 100$$
-  - A calculation of the percentage change in public grants received based on the two most recent years.
-- **Private/public proportion**: $$\frac{\text{private contributions} + \text{membership fees}}{\text{public grants} + \text{private contributions} + \text{membership fees}} \times 100$$
-  - Calculates the percentage of non-commercial or activity-based income that is derived from private contributions and membership fees as opposed to public grants.
+- **Fundraising ROI**:
+  - A basic measure of the return on investment of direct fundraising expenses: 
+  
+  $$\frac{\text{private contributions} + \text{membership fees} - \text{fundraising expenses}}{\text{fundraising expenses}} \times 100$$
+
+- **Liquid assets/obligations**:
+  - A measure of the relationship between the organisation's liquid assets and its obligations:
+  
+  $$\frac{\text{private contributions} + \text{investment income} + \text{cash in bank and cash equivalents}}{\text{short term grants payable} + \text{revocable endowments} + \text{long term grants payable}} \times 100$$
+
+- **Private donations growth**:
+  - A calculation of the percentage change in private contributions based on the two most recent years:
+  
+  $$\frac{\text{private contributions}_2 - \text{private contributions}_1}{\text{private contributions}_1}\times 100$$
+
+- **Public grants growth**:
+  - A calculation of the percentage change in public grants received based on the two most recent years:
+  
+$$\frac{\text{public grants}_2 - \text{public grants}_1}{\text{public grants}_1} \times 100$$
+
+- **Private/public proportion**:
+  - Calculates the percentage of non-commercial or activity-based income that is derived from private contributions and membership fees as opposed to public grants:
+  
+$$\frac{\text{private contributions} + \text{membership fees}}{\text{public grants} + \text{private contributions} + \text{membership fees}} \times 100$$
 
 Row 
 -----------------------------------------------------------------------
 
-### Plots
+### Graphs
 
-The dashboard includes five plots, three based on data from [Proff.no](https://www.proff.no) and two based on data from the Excel sheet.
+The dashboard includes five graphs, three based on data from [Proff.no](https://www.proff.no) and two based on data from the Excel sheet.
 
 - **Net income/loss**: Based on the entry *Årsresultat* in the Proff.no data.
 - **Total equity/liabilities**: Based on the entry *Sum egenkapital og gjeld* in the Proff.no data.
@@ -149,9 +180,52 @@ The dashboard includes five plots, three based on data from [Proff.no](https://w
 - **CEO compensation**: Based on the category *Lederlønn* in the Proff.no data. Not in thousands. Includes the entries *Lønn* and *Leder annen godtgjørelse*.
   - A common measure of transparency, but should normally be evaluated in context.
 
-```{r value_boxes, include=FALSE}
-# Shiny actions
-observe({ # wait for button click
+```{r report, include=FALSE}
+# Shiny actions begin here =====================================================
+
+# Report Output ================================================================
+
+output$downloadUI <- renderUI({
+  downloadButton("report", "Download report")
+})
+
+## Download and parameters -----------------------------------------------------
+output$report <- downloadHandler(
+  
+  filename = "report.pdf",
+  content = function(file) {
+    tempReport <- file.path(tempdir(), "report.Rmd")
+    file.copy("report.Rmd", tempReport, overwrite = TRUE)
+
+    params <- list(
+      htmlfile = input$html$datapath,
+      excelfile = input$excel$datapath,
+      start = input$start,
+      end = input$end
+    )
+
+    id <- showNotification(
+      "Generating report...",
+      duration = NULL,
+      closeButton = FALSE
+    )
+    on.exit(removeNotification(id), add = TRUE)
+
+    rmarkdown::render(tempReport,
+      output_file = file,
+      params = params,
+      envir = new.env(parent = globalenv())
+    )
+  }
+)
+```
+
+
+```{r reactive_title_value_boxes, include=FALSE}
+# First reactive chunk =========================================================
+
+# wait for button click
+observe({ 
 
   # Data frames ================================================================
 
@@ -162,6 +236,7 @@ observe({ # wait for button click
       tools::file_ext(input$html$datapath) == "html",
       "Please upload an html file."
     ))
+    # Creating data frame
     read_proff(
       input$html$datapath,
       as.character(input$start), as.character(input$end)
@@ -175,10 +250,42 @@ observe({ # wait for button click
       tools::file_ext(input$excel$datapath) == "xlsx",
       "Please upload an Excel file."
     ))
+    # Creating data frame
     widen_excel(input$excel$datapath)
+  })
+  
+  # NGO title ==================================================================
+  NGO <- reactive({
+    read_excel(input$excel$datapath) |>
+      # Turning the needed column into a list
+      pull(Firm) |>
+      # discarding all NAs in case the name is somewhere
+      purrr::discard(is.na) |>
+      # choosing the first available name
+      first()
+  })
+
+  title <- reactive({
+    # testing if NGO() is NA
+    if (is.na(NGO())) {
+      # Printing warning if NA
+      "Name of NGO missing"
+      # Printing name of NGO
+    } else {
+      NGO()
+    }
+  })
+  
+  # Creating NGO title using html formatting (colour based on MetBrewer
+  # "Hokusai2")
+  output$title <- renderText({
+    paste('<b><font size="5em" color="#2f70a1">', title(), "</font></b>")
   })
 
   # Value Boxes ================================================================
+  
+  # All boxes use the colour "primary" and the icon fa-solid fa-circle-xmark" if
+  # the value is NA
 
   ## Fundraising ROI------------------------------------------------------------
   # Creating Fundraising ROI value
@@ -221,6 +328,7 @@ observe({ # wait for button click
       } else {
         "success"
       },
+      # icon depends on whether or not the value is NA
       icon = if (is.na(KPI_fundraising_num())) {
         "fa-solid fa-circle-xmark"
       } else {
@@ -260,6 +368,7 @@ observe({ # wait for button click
     valueBox(
       value = KPI_to_string(KPI_OPX_num()),
       caption = "Liquid assets / obligations",
+      # colour depends on value
       color = if (is.na(KPI_OPX_num())) {
         "primary"
       } else if (KPI_OPX_num() < 100) {
@@ -267,6 +376,7 @@ observe({ # wait for button click
       } else {
         "success"
       },
+      # icon depends on value
       icon = if (is.na(KPI_OPX_num())) {
         "fa-solid fa-circle-xmark"
       } else if (KPI_OPX_num() < 100) {
@@ -303,6 +413,7 @@ observe({ # wait for button click
     valueBox(
       value = KPI_to_string(KPI_private_num()),
       caption = "Private donation growth",
+      # colour depends on value
       color = if (is.na(KPI_private_num())) {
         "primary"
       } else if (KPI_private_num() < 0) {
@@ -310,6 +421,7 @@ observe({ # wait for button click
       } else {
         "success"
       },
+      # icon depends on whether or not the value is NA
       icon = if (is.na(KPI_private_num())) {
         "fa-solid fa-circle-xmark"
       } else {
@@ -343,6 +455,7 @@ observe({ # wait for button click
     valueBox(
       value = KPI_to_string(KPI_public_num()),
       caption = "Public grants growth",
+      # colour depends on value
       color = if (is.na(KPI_public_num())) {
         "primary"
       } else if (KPI_public_num() < 0) {
@@ -350,6 +463,7 @@ observe({ # wait for button click
       } else {
         "success"
       },
+      # icon depends on whether or not the value is NA
       icon = if (is.na(KPI_public_num())) {
         "fa-solid fa-circle-xmark"
       } else {
@@ -366,6 +480,7 @@ observe({ # wait for button click
       NA
     } else {
       exceldata() |>
+        # calculating the value as a %
         transmute(
           proportion =
             sum(revenue_private_contributions,
@@ -378,6 +493,7 @@ observe({ # wait for button click
               ) * 100
         ) |>
         pull() |>
+        # getting the most recent year
         first()
     }
   })
@@ -393,6 +509,7 @@ observe({ # wait for button click
       } else {
         "info"
       },
+      # icon depends on whether or not the value is NA
       icon = if (is.na(KPI_proportion())) {
         "fa-solid fa-circle-xmark"
       } else {
@@ -401,7 +518,8 @@ observe({ # wait for button click
     )
   })
 
-  ## Excel data test (also below)-----------------------------------------------
+  ## Excel data test -----------------------------------------------------------
+  # (also below, in the second chunk)
   # Reactive function to test for Excel data quality (basic)
   datatest <- reactive({
     # let me know if anyone has a better idea for testing
@@ -411,17 +529,21 @@ observe({ # wait for button click
       FALSE
     }
   })
+  # the button click
 }) |> bindEvent(input$click)
 ```
 
 
-```{r plots, include=FALSE}
+```{r reactive_plots, include=FALSE}
+
+# Beginning of the second reactive chunk =======================================
 # It's necessary to split the observers into separate parts, with all necessary
-# code duplicated.
+# code duplicated, because of R's limitations.
 
 observe({
 
   # Data frames ================================================================
+  # Recreating, to make available to this chunk as well
 
   # creating data frame from html file
   htmldata <- reactive({
@@ -430,6 +552,7 @@ observe({
       tools::file_ext(input$html$datapath) == "html",
       "Please upload an html file."
     ))
+    # Creating data frame
     read_proff(
       input$html$datapath,
       as.character(input$start), as.character(input$end)
@@ -443,6 +566,7 @@ observe({
       tools::file_ext(input$excel$datapath) == "xlsx",
       "Please upload an Excel file."
     ))
+    # Creating data frame
     widen_excel(input$excel$datapath)
   })
   
