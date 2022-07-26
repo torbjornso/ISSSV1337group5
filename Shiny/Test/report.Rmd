@@ -23,8 +23,6 @@ p_load(
 
 <!--# The title element of the YAML block is further down, as it relies on data from the Excel sheet. -->
 
-<!-- # Need plot titles -->
-
 ```{r data}
 # Data reading =================================================================
 
@@ -225,8 +223,8 @@ KPI_to_string <- function(variable) {
   } else if (variable == Inf) {
     NA
   } else {
-    # Shortening (lengthening) the value, adding %
-    str_c(format(variable, digits = 3), "%")
+    # Shortening (lengthening) the value, adding %; making the text bold
+    str_c("**", format(variable, digits = 3), "%**")
   }
 }
 
@@ -432,23 +430,23 @@ The KPIs are based on the following calculations, using data derived from the Ex
 
 <!--# Need to decide whether to underline the KPIs, as in the first one -->
 
-- **Fundraising ROI: `r fundraising`**
+- **Fundraising ROI:** `r fundraising`
   - A basic measure of the return on investment of direct fundraising expenses:
   $$\frac{\text{private contributions} + \text{membership fees} - \text{fundraising expenses}}{\text{fundraising expenses}} \times 100$$
 
-- **Liquid assets/obligations: `r KPI_OPX`**
+- **Liquid assets/obligations:** `r KPI_OPX`
   - A measure of the relationship between the organisation's liquid assets and its obligations:
   $$\frac{\text{private contributions} + \text{investment income} + \text{cash in bank and cash equivalents}}{\text{short term grants payable} + \text{revocable endowments} + \text{long term grants payable}} \times 100$$
 
-- **Private donations growth: `r KPI_private`**
+- **Private donations growth:** `r KPI_private`
   - A calculation of the percentage change in private contributions based on the two most recent years:
   $$\frac{\text{private contributions}_2 - \text{private contributions}_1}{\text{private contributions}_1}\times 100$$
 
-- **Public grants growth: `r KPI_public`**
+- **Public grants growth:** `r KPI_public`
   - A calculation of the percentage change in public grants received based on the two most recent years:
   $$\frac{\text{public grants}_2 - \text{public grants}_1}{\text{public grants}_1} \times 100$$
 
-- **Private/public proportion: `r KPI_proportion`**
+- **Private/public proportion:** `r KPI_proportion`
   - Calculates the percentage of non-commercial or activity-based income that is derived from private contributions and membership fees as opposed to public grants:
   $$\frac{\text{private contributions} + \text{membership fees}}{\text{public grants} + \text{private contributions} + \text{membership fees}} \times 100$$
 
