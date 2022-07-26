@@ -73,7 +73,7 @@ datatest <- reactive({
 ```
 
 If there are any characters, the calculation outputs `NA`, otherwise it carries out the calculation. One example:
-```{r dashboard_KPI_calculation}
+```{r dashboard_KPI_calculation, eval=FALSE}
 # Creating Fundraising ROI value
 KPI_fundraising_num <- reactive({
   # testing for data quality, returning NA if bad
