@@ -192,11 +192,13 @@ output$downloadUI <- renderUI({
 ## Download and parameters -----------------------------------------------------
 output$report <- downloadHandler(
   
+  # Based on code in Mastering Shiny
   filename = "report.pdf",
   content = function(file) {
     tempReport <- file.path(tempdir(), "report.Rmd")
     file.copy("report.Rmd", tempReport, overwrite = TRUE)
 
+    # parameters
     params <- list(
       htmlfile = input$html$datapath,
       excelfile = input$excel$datapath,
@@ -204,6 +206,7 @@ output$report <- downloadHandler(
       end = input$end
     )
 
+    # notification
     id <- showNotification(
       "Generating report...",
       duration = NULL,
@@ -211,6 +214,7 @@ output$report <- downloadHandler(
     )
     on.exit(removeNotification(id), add = TRUE)
 
+    # R Markdown render
     rmarkdown::render(tempReport,
       output_file = file,
       params = params,
@@ -290,7 +294,7 @@ observe({
 
   # Value Boxes ================================================================
   
-  # All boxes use the colour "primary" and the icon fa-solid fa-circle-xmark" if
+  # All boxes use the colour "primary" and the icon "fa-solid fa-circle-xmark" if
   # the value is NA
 
   ## Fundraising ROI------------------------------------------------------------
