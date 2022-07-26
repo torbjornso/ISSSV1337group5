@@ -429,8 +429,6 @@ KPI_warning <- if (is.na(fundraising) || is.na(KPI_OPX) || is.na( KPI_private) |
 
 The KPIs are based on the following calculations, using data derived from the Excel sheet:
 
-<!--# Need to decide whether to underline the KPIs, as in the first one -->
-
 - **Fundraising ROI:** `r fundraising`
   - A basic measure of the return on investment of direct fundraising expenses:
   $$\frac{\text{private contributions} + \text{membership fees} - \text{fundraising expenses}}{\text{fundraising expenses}} \times 100$$
