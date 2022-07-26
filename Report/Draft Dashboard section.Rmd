@@ -403,5 +403,3 @@ output$report <- downloadHandler(
 ```
 
 The code in the R Markdown document is very similar to that of the dashboard, but structured in a more conventional way. Data warnings are here text rather than blank plots, and the KPIs are integrated into the text instead of being presented in value boxes.
-
-
