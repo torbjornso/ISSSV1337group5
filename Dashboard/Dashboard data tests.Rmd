@@ -231,29 +231,7 @@ output$report <- downloadHandler(
 # wait for button click
 observe({ 
 
-  # Data frames ================================================================
-
-  # creating data frame from html file
-  htmldata <- reactive({
-    # validating file
-    validate(need(
-      tools::file_ext(input$html$datapath) == "html",
-      "Please upload an html file."
-    ))
-    
-    # Testing
-    html_test <- read_proff_test(input$html$datapath)
-    
-    # Creating data frame
-    if (as.character(all_of(input$start)) %in% names(html_test) && as.character(all_of(input$end)) %in% names(html_test)) {
-    read_proff_complete(
-      html_test,
-      as.character(input$start), as.character(input$end)
-    )
-    } else {
-      validate("Please ensure you have entered the correct start and end years.")
-    }
-  })
+  # Data frame ================================================================
 
   # Creating data frame from Excel file
   exceldata <- reactive({
