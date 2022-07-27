@@ -383,7 +383,7 @@ exceldata <- reactive({
 ```
 
 - test if html
-- test of node is present
+- test if node is present
 - test if correct table
 - go for it
 
