@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(rvest)
 
-read_html("Dashboard/Data/")
+read_html("Data/Kreftforeningen.html")
 ```
 
 ```{r}
@@ -98,5 +98,10 @@ read_proff <- function(file, start, end) {
     # arranging by year for practical display
     arrange(desc(year))
 }
+```
+
+```{r}
+?geom_col
+vignette("ggplot2-specs")
 ```
 
