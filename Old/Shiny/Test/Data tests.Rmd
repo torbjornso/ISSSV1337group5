@@ -277,4 +277,19 @@ names(html_test)
 
 testing
 ```
+```{r}
+?validate
+```
+
+```{r}
+read_proff_names <- function(file, start, end) {
+  # Specifying encoding to deal with occasional errors
+  read_html(file, encoding = "UTF-8") |>
+    html_node("#inner-frame") |>
+    html_table() |>
+    names()
+}
+
+read_proff_names("Data/Kreftforeningen.html", "2002")
+```
 
