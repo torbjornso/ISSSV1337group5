@@ -182,10 +182,10 @@ read_proff_test <- function(file) {
     html_table()
 }
     
-read_proff_complete <- function(file, start, end) {
-    if (as.character(all_of(start)) %in% names(file) && as.character(all_of(end)) %in% names(file)) {
+read_proff_complete <- function(object, start, end) {
+    if (as.character(all_of(start)) %in% names(object) && as.character(all_of(end)) %in% names(object)) {
     # removing empty column, using all_of(argument)
-    file |> 
+    object |> 
       select(
       REGNSKAPSPERIODE:all_of(start)
     ) |>
