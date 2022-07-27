@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>2 Names and values | Advanced R</title>
+<meta name="author" content="Hadley Wickham">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.2"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src='https://d33wubrfki0l68.cloudfront.net/js/8bffb2f9d34bfa25d90b02e2a7d4c3fc0a5af3fe/libs/jquery-3.5.1/jquery-3.5.1.min.js'></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href='https://d33wubrfki0l68.cloudfront.net/css/f12e8071ec473dc368bb80b5cf2034b092902847/libs/bootstrap-4.6.0/bootstrap.min.css' rel='stylesheet'/>
+<script src='https://d33wubrfki0l68.cloudfront.net/js/cc19553dbf1d4286edcf143643dc883158c509ce/libs/bootstrap-4.6.0/bootstrap.bundle.min.js'></script><script src='https://d33wubrfki0l68.cloudfront.net/bundles/130af9c4536b38d98f14dec8d09ed9cff78cd8b5.js'></script><link href='https://d33wubrfki0l68.cloudfront.net/css/87f4121111ca8864e43aa1dc242276331e65a9c9/libs/bs4_book-1.0.0/bs4_book.css' rel='stylesheet'/><script src='https://d33wubrfki0l68.cloudfront.net/js/c37c6d86e4874c0e902ba3457a875917c4c0b7e4/libs/accessible-code-block-0.0.1/empty-anchor.js'></script><!-- Global site tag (gtag.js) - Google Analytics --><script async src="https://www.googletagmanager.com/gtag/js?id=UA-141212623-1"></script><script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+  
+    gtag('config', 'UA-141212623-1');
+  </script><script src="https://cdn.jsdelivr.net/autocomplete.js/0/autocomplete.jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/mark.js@8.11.1/dist/mark.min.js"></script><!-- CSS -->
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="">Advanced R</a>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Welcome</a></li>
+<li><a class="" href="preface.html">Preface</a></li>
+<li><a class="" href="introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Foundations</li>
+<li><a class="" href="foundations-intro.html">Introduction</a></li>
+<li><a class="active" href="names-values.html"><span class="header-section-number">2</span> Names and values</a></li>
+<li><a class="" href="vectors-chap.html"><span class="header-section-number">3</span> Vectors</a></li>
+<li><a class="" href="subsetting.html"><span class="header-section-number">4</span> Subsetting</a></li>
+<li><a class="" href="control-flow.html"><span class="header-section-number">5</span> Control flow</a></li>
+<li><a class="" href="functions.html"><span class="header-section-number">6</span> Functions</a></li>
+<li><a class="" href="environments.html"><span class="header-section-number">7</span> Environments</a></li>
+<li><a class="" href="conditions.html"><span class="header-section-number">8</span> Conditions</a></li>
+<li class="book-part">Functional programming</li>
+<li><a class="" href="fp.html">Introduction</a></li>
+<li><a class="" href="functionals.html"><span class="header-section-number">9</span> Functionals</a></li>
+<li><a class="" href="function-factories.html"><span class="header-section-number">10</span> Function factories</a></li>
+<li><a class="" href="function-operators.html"><span class="header-section-number">11</span> Function operators</a></li>
+<li class="book-part">Object-oriented programming</li>
+<li><a class="" href="oo.html">Introduction</a></li>
+<li><a class="" href="base-types.html"><span class="header-section-number">12</span> Base types</a></li>
+<li><a class="" href="s3.html"><span class="header-section-number">13</span> S3</a></li>
+<li><a class="" href="r6.html"><span class="header-section-number">14</span> R6</a></li>
+<li><a class="" href="s4.html"><span class="header-section-number">15</span> S4</a></li>
+<li><a class="" href="oo-tradeoffs.html"><span class="header-section-number">16</span> Trade-offs</a></li>
+<li class="book-part">Metaprogramming</li>
+<li><a class="" href="metaprogramming.html">Introduction</a></li>
+<li><a class="" href="meta-big-picture.html"><span class="header-section-number">17</span> Big picture</a></li>
+<li><a class="" href="expressions.html"><span class="header-section-number">18</span> Expressions</a></li>
+<li><a class="" href="quasiquotation.html"><span class="header-section-number">19</span> Quasiquotation</a></li>
+<li><a class="" href="evaluation.html"><span class="header-section-number">20</span> Evaluation</a></li>
+<li><a class="" href="translation.html"><span class="header-section-number">21</span> Translating R code</a></li>
+<li class="book-part">Techniques</li>
+<li><a class="" href="techniques.html">Introduction</a></li>
+<li><a class="" href="debugging.html"><span class="header-section-number">22</span> Debugging</a></li>
+<li><a class="" href="perf-measure.html"><span class="header-section-number">23</span> Measuring performance</a></li>
+<li><a class="" href="perf-improve.html"><span class="header-section-number">24</span> Improving performance</a></li>
+<li><a class="" href="rcpp.html"><span class="header-section-number">25</span> Rewriting R code in C++</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/hadley/adv-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="names-values" class="section level1">
+<h1>
+<span class="header-section-number">2</span> Names and values<a class="anchor" aria-label="anchor" href="#names-values"><i class="fas fa-link"></i></a>
+</h1>
+<div id="introduction-1" class="section level2">
+<h2>
+<span class="header-section-number">2.1</span> Introduction<a class="anchor" aria-label="anchor" href="#introduction-1"><i class="fas fa-link"></i></a>
+</h2>
+<p>In R, it is important to understand the distinction between an object and its name. Doing so will help you:</p>
+<ul>
+<li>More accurately predict the performance and memory usage of your code.</li>
+<li>Write faster code by avoiding accidental copies, a major source of slow code.</li>
+<li>Better understand R’s functional programming tools.</li>
+</ul>
+<p>The goal of this chapter is to help you understand the distinction between names and values, and when R will copy an object.</p>
+<div id="quiz" class="section level3 unnumbered">
+<h3>Quiz<a class="anchor" aria-label="anchor" href="#quiz"><i class="fas fa-link"></i></a>
+</h3>
+<p>Answer the following questions to see if you can safely skip this chapter. You can find the answers at the end of the chapter in Section <a href="names-values.html#names-values-answers">2.7</a>.</p>
+<ol style="list-style-type: decimal">
+<li>
+<p>Given the following data frame, how do I create a new column called “3”
+that contains the sum of <code>1</code> and <code>2</code>? You may only use <code><a href="https://rdrr.io/r/base/Extract.html">$</a></code>, not <code><a href="https://rdrr.io/r/base/Extract.html">[[</a></code>.
+What makes <code>1</code>, <code>2</code>, and <code>3</code> challenging as variable names?</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span></code></pre></div>
+</li>
+<li>
+<p>In the following code, how much memory does <code>y</code> occupy?</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">1e6</span><span class="op">)</span>
+<span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">x</span>, <span class="va">x</span><span class="op">)</span></code></pre></div>
+</li>
+<li>
+<p>On which line does <code>a</code> get copied in the following example?</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">5</span>, <span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span>
+<span class="va">b</span> <span class="op">&lt;-</span> <span class="va">a</span>
+<span class="va">b</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">10</span></code></pre></div>
+</li>
+</ol>
+</div>
+<div id="outline" class="section level3 unnumbered">
+<h3>Outline<a class="anchor" aria-label="anchor" href="#outline"><i class="fas fa-link"></i></a>
+</h3>
+<ul>
+<li><p>Section <a href="names-values.html#binding-basics">2.2</a> introduces you to the distinction between
+names and values, and discusses how <code><a href="https://rdrr.io/r/base/assignOps.html">&lt;-</a></code> creates a binding, or reference,
+between a name and a value.</p></li>
+<li><p>Section <a href="names-values.html#copy-on-modify">2.3</a> describes when R makes a copy: whenever you
+modify a vector, you’re almost certainly creating a new, modified vector.
+You’ll learn how to use <code><a href="https://rdrr.io/r/base/tracemem.html">tracemem()</a></code> to figure out when a copy actually
+occurs. Then you’ll explore the implications as they apply to function calls,
+lists, data frames, and character vectors.</p></li>
+<li><p>Section <a href="names-values.html#object-size">2.4</a> explores the implications of the previous two
+sections on how much memory an object occupies. Since your intuition may be
+profoundly wrong and since <code><a href="https://rdrr.io/r/utils/object.size.html">utils::object.size()</a></code> is unfortunately
+inaccurate, you’ll learn how to use <code><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">lobstr::obj_size()</a></code>.</p></li>
+<li><p>Section <a href="names-values.html#modify-in-place">2.5</a> describes the two important exceptions to
+copy-on-modify: with environments and values with a single name, objects are
+actually modified in place.</p></li>
+<li><p>Section <a href="names-values.html#gc">2.6</a> concludes the chapter with a discussion of the garbage
+collector, which frees up the memory used by objects no longer referenced by
+a name.</p></li>
+</ul>
+</div>
+<div id="prerequisites" class="section level3 unnumbered">
+<h3>Prerequisites<a class="anchor" aria-label="anchor" href="#prerequisites"><i class="fas fa-link"></i></a>
+</h3>
+<p>We’ll use the <a href="https://github.com/r-lib/lobstr">lobstr</a> package to dig into the internal representation of R objects.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/r-lib/lobstr">lobstr</a></span><span class="op">)</span></code></pre></div>
+</div>
+<div id="sources" class="section level3 unnumbered">
+<h3>Sources<a class="anchor" aria-label="anchor" href="#sources"><i class="fas fa-link"></i></a>
+</h3>
+<p>The details of R’s memory management are not documented in a single place. Much of the information in this chapter was gleaned from a close reading of the documentation (particularly <code><a href="https://rdrr.io/r/base/Memory.html">?Memory</a></code> and <code><a href="https://rdrr.io/r/base/gc.html">?gc</a></code>), the <a href="http://cran.r-project.org/doc/manuals/R-exts.html#Profiling-R-code-for-memory-use">memory profiling</a> section of <em>Writing R extensions</em>,<span class="citation"><a class="footnote-ref" tabindex="0" data-toggle="popover" data-content='&lt;p&gt;R Core Team, “Writing R Extensions,” &lt;em&gt;R Foundation for Statistical Computing&lt;/em&gt;, 2018, &lt;a href="https://cran.r-project.org/doc/manuals/r-devel/R-exts.html" role="doc-biblioref"&gt;https://cran.r-project.org/doc/manuals/r-devel/R-exts.html&lt;/a&gt;.&lt;/p&gt;'><sup>8</sup></a></span> and the <a href="http://cran.r-project.org/doc/manuals/R-ints.html#SEXPs">SEXPs</a> section of <em>R internals</em>.<span class="citation"><a class="footnote-ref" tabindex="0" data-toggle="popover" data-content='&lt;p&gt;R Core Team, “R Internals,” &lt;em&gt;R Foundation for Statistical Computing&lt;/em&gt;, 2018, &lt;a href="https://cran.r-project.org/doc/manuals/r-devel/R-ints.html" role="doc-biblioref"&gt;https://cran.r-project.org/doc/manuals/r-devel/R-ints.html&lt;/a&gt;.&lt;/p&gt;'><sup>9</sup></a></span> The rest I figured out by reading the C source code, performing small experiments, and asking questions on R-devel. Any mistakes are entirely mine.</p>
+</div>
+</div>
+<div id="binding-basics" class="section level2">
+<h2>
+<span class="header-section-number">2.2</span> Binding basics<a class="anchor" aria-label="anchor" href="#binding-basics"><i class="fas fa-link"></i></a>
+</h2>
+<p>
+
+</p>
+<p>Consider this code:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span></code></pre></div>
+<p>It’s easy to read it as: “create an object named ‘x’, containing the values 1, 2, and 3”. Unfortunately, that’s a simplification that will lead to inaccurate predictions about what R is actually doing behind the scenes. It’s more accurate to say that this code is doing two things:</p>
+<ul>
+<li>It’s creating an object, a vector of values, <code><a href="https://rdrr.io/r/base/c.html">c(1, 2, 3)</a></code>.</li>
+<li>And it’s binding that object to a name, <code>x</code>.</li>
+</ul>
+<p>In other words, the object, or value, doesn’t have a name; it’s actually the name that has a value.</p>
+<p>To further clarify this distinction, I’ll draw diagrams like this:</p>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/bd90c87ac98708b1731c92900f2f53ec6a71edaf/ce375/diagrams/name-value/binding-1.png" width="160" style="display: block; margin: auto;"></div>
+<p>The name, <code>x</code>, is drawn with a rounded rectangle. It has an arrow that points to (or binds or references) the value, the vector <code><a href="https://rdrr.io/r/base/c.html">c(1, 2, 3)</a></code>. The arrow points in opposite direction to the assignment arrow: <code><a href="https://rdrr.io/r/base/assignOps.html">&lt;-</a></code> creates a binding from the name on the left-hand side to the object on the right-hand side.</p>
+<p>Thus, you can think of a name as a reference to a value. For example, if you run this code, you don’t get another copy of the value <code><a href="https://rdrr.io/r/base/c.html">c(1, 2, 3)</a></code>, you get another binding to the existing object:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">x</span></code></pre></div>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/bdc72c04d3135f19fb3ab13731129eb84c9170af/f0ab9/diagrams/name-value/binding-2.png" width="170" style="display: block; margin: auto;"></div>
+<p>You might have noticed that the value <code><a href="https://rdrr.io/r/base/c.html">c(1, 2, 3)</a></code> has a label: <code>0x74b</code>. While the vector doesn’t have a name, I’ll occasionally need to refer to an object independent of its bindings. To make that possible, I’ll label values with a unique identifier. These identifiers have a special form that looks like the object’s memory “address”, i.e. the location in memory where the object is stored. But because the actual memory addresses changes every time the code is run, we use these identifiers instead.</p>
+<p>You can access an object’s identifier with <code><a href="https://rdrr.io/pkg/lobstr/man/obj_addr.html">lobstr::obj_addr()</a></code>. Doing so allows you to see that both <code>x</code> and <code>y</code> point to the same identifier:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_addr.html">obj_addr</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
+<span class="co">#&gt; [1] "0x7fe11b31b1e8"</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_addr.html">obj_addr</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>
+<span class="co">#&gt; [1] "0x7fe11b31b1e8"</span></code></pre></div>
+<p>These identifiers are long, and change every time you restart R.</p>
+<p>It can take some time to get your head around the distinction between names and values, but understanding this is really helpful in functional programming where functions can have different names in different contexts.</p>
+<div id="non-syntactic" class="section level3">
+<h3>
+<span class="header-section-number">2.2.1</span> Non-syntactic names<a class="anchor" aria-label="anchor" href="#non-syntactic"><i class="fas fa-link"></i></a>
+</h3>
+<p>
+
+</p>
+<p>R has strict rules about what constitutes a valid name. A <strong>syntactic</strong> name must consist of letters<a class="footnote-ref" tabindex="0" data-toggle="popover" data-content="&lt;p&gt;Surprisingly, precisely what constitutes a letter is determined by your current locale. That means that the syntax of R code can actually differ from computer to computer, and that it’s possible for a file that works on one computer to not even parse on another! Avoid this problem by sticking to ASCII characters (i.e. A-Z) as much as possible.&lt;/p&gt;"><sup>10</sup></a>, digits, <code>.</code> and <code>_</code> but can’t begin with <code>_</code> or a digit. Additionally, you can’t use any of the <strong>reserved words</strong> like <code>TRUE</code>, <code>NULL</code>, <code>if</code>, and <code>function</code> (see the complete list in <code><a href="https://rdrr.io/r/base/Reserved.html">?Reserved</a></code>). A name that doesn’t follow these rules is a <strong>non-syntactic</strong> name; if you try to use them, you’ll get an error:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="names-values.html#cb8-1"></a>_abc &lt;-<span class="st"> </span><span class="dv">1</span></span>
+<span id="cb8-2"><a href="names-values.html#cb8-2"></a><span class="co">#&gt; Error: unexpected input in "_"</span></span>
+<span id="cb8-3"><a href="names-values.html#cb8-3"></a></span>
+<span id="cb8-4"><a href="names-values.html#cb8-4"></a><span class="cf">if</span> &lt;-<span class="st"> </span><span class="dv">10</span></span>
+<span id="cb8-5"><a href="names-values.html#cb8-5"></a><span class="co">#&gt; Error: unexpected assignment in "if &lt;-"</span></span></code></pre></div>
+<p>It’s possible to override these rules and use any name, i.e., any sequence of characters, by surrounding it with backticks:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">`_abc`</span> <span class="op">&lt;-</span> <span class="fl">1</span>
+<span class="va">`_abc`</span>
+<span class="co">#&gt; [1] 1</span>
+
+<span class="va">`if`</span> <span class="op">&lt;-</span> <span class="fl">10</span>
+<span class="va">`if`</span>
+<span class="co">#&gt; [1] 10</span></code></pre></div>
+<p>While it’s unlikely you’d deliberately create such crazy names, you need to understand how these crazy names work because you’ll come across them, most commonly when you load data that has been created outside of R.</p>
+<div class="sidebar">
+<p>You <em>can</em> also create non-syntactic bindings using single or double quotes (e.g. <code>"_abc" &lt;- 1</code>) instead of backticks, but you shouldn’t, because you’ll have to use a different syntax to retrieve the values. The ability to use strings on the left hand side of the assignment arrow is an historical artefact, used before R supported backticks.</p>
+</div>
+</div>
+<div id="exercises" class="section level3">
+<h3>
+<span class="header-section-number">2.2.2</span> Exercises<a class="anchor" aria-label="anchor" href="#exercises"><i class="fas fa-link"></i></a>
+</h3>
+<ol style="list-style-type: decimal">
+<li>
+<p>Explain the relationship between <code>a</code>, <code>b</code>, <code>c</code> and <code>d</code> in the following
+code:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">a</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>
+<span class="va">b</span> <span class="op">&lt;-</span> <span class="va">a</span>
+<span class="va">c</span> <span class="op">&lt;-</span> <span class="va">b</span>
+<span class="va">d</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span></code></pre></div>
+</li>
+<li>
+<p>The following code accesses the mean function in multiple ways. Do they all
+point to the same underlying function object? Verify this with
+<code><a href="https://rdrr.io/pkg/lobstr/man/obj_addr.html">lobstr::obj_addr()</a></code>.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">mean</span>
+<span class="fu">base</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>
+<span class="fu"><a href="https://rdrr.io/r/base/get.html">get</a></span><span class="op">(</span><span class="st">"mean"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/eval.html">evalq</a></span><span class="op">(</span><span class="va">mean</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/match.fun.html">match.fun</a></span><span class="op">(</span><span class="st">"mean"</span><span class="op">)</span></code></pre></div>
+</li>
+<li><p>By default, base R data import functions, like <code><a href="https://rdrr.io/r/utils/read.table.html">read.csv()</a></code>, will
+automatically convert non-syntactic names to syntactic ones. Why might
+this be problematic? What option allows you to suppress this behaviour?</p></li>
+<li><p>What rules does <code><a href="https://rdrr.io/r/base/make.names.html">make.names()</a></code> use to convert non-syntactic names into
+syntactic ones?</p></li>
+<li><p>I slightly simplified the rules that govern syntactic names. Why is <code>.123e1</code>
+not a syntactic name? Read <code><a href="https://rdrr.io/r/base/make.names.html">?make.names</a></code> for the full details.</p></li>
+</ol>
+</div>
+</div>
+<div id="copy-on-modify" class="section level2">
+<h2>
+<span class="header-section-number">2.3</span> Copy-on-modify<a class="anchor" aria-label="anchor" href="#copy-on-modify"><i class="fas fa-link"></i></a>
+</h2>
+<p></p>
+<p>Consider the following code. It binds <code>x</code> and <code>y</code> to the same underlying value, then modifies <code>y</code><a class="footnote-ref" tabindex="0" data-toggle="popover" data-content='&lt;p&gt;You may be surprised to see &lt;code&gt;[[&lt;/code&gt; used to subset a numeric vector. We’ll come back to this in Section &lt;a href="subsetting.html#subset-single"&gt;4.3&lt;/a&gt;, but in brief, I think you should always use &lt;code&gt;[[&lt;/code&gt; when you are getting or setting a single element.&lt;/p&gt;'><sup>11</sup></a>.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>
+<span class="va">y</span> <span class="op">&lt;-</span> <span class="va">x</span>
+
+<span class="va">y</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">4</span>
+<span class="va">x</span>
+<span class="co">#&gt; [1] 1 2 3</span></code></pre></div>
+<p>Modifying <code>y</code> clearly didn’t modify <code>x</code>. So what happened to the shared binding? While the value associated with <code>y</code> changed, the original object did not. Instead, R created a new object, <code>0xcd2</code>, a copy of <code>0x74b</code> with one value changed, then rebound <code>y</code> to that object.</p>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/ef9f480effa2f1d0e401d1f94218d0cf118433c0/b56e9/diagrams/name-value/binding-3.png" width="160" style="display: block; margin: auto;"></div>
+<p>This behaviour is called <strong>copy-on-modify</strong>. Understanding it will radically improve your intuition about the performance of R code. A related way to describe this behaviour is to say that R objects are unchangeable, or <strong>immutable</strong>. However, I’ll generally avoid that term because there are a couple of important exceptions to copy-on-modify that you’ll learn about in Section <a href="names-values.html#modify-in-place">2.5</a>.</p>
+<p>When exploring copy-on-modify behaviour interactively, be aware that you’ll get different results inside of RStudio. That’s because the environment pane must make a reference to each object in order to display information about it. This distorts your interactive exploration but doesn’t affect code inside of functions, and so doesn’t affect performance during data analysis. For experimentation, I recommend either running R directly from the terminal, or using RMarkdown (like this book).</p>
+<div id="tracemem" class="section level3">
+<h3>
+<span class="header-section-number">2.3.1</span> <code>tracemem()</code><a class="anchor" aria-label="anchor" href="#tracemem"><i class="fas fa-link"></i></a>
+</h3>
+
+<p>You can see when an object gets copied with the help of <code><a href="https://rdrr.io/r/base/tracemem.html">base::tracemem()</a></code>. Once you call that function with an object, you’ll get the object’s current address:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tracemem.html">tracemem</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span>
+<span class="co">#&gt; &lt;0x7f80c0e0ffc8&gt; </span></code></pre></div>
+<p>From then on, whenever that object is copied, <code><a href="https://rdrr.io/r/base/tracemem.html">tracemem()</a></code> will print a message telling you which object was copied, its new address, and the sequence of calls that led to the copy:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">x</span>
+<span class="va">y</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">4L</span>
+<span class="co">#&gt; tracemem[0x7f80c0e0ffc8 -&gt; 0x7f80c4427f40]: </span></code></pre></div>
+<p>If you modify <code>y</code> again, it won’t get copied. That’s because the new object now only has a single name bound to it, so R applies modify-in-place optimisation. We’ll come back to this in Section <a href="names-values.html#modify-in-place">2.5</a>.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">y</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">5L</span>
+
+<span class="fu"><a href="https://rdrr.io/r/base/tracemem.html">untracemem</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></code></pre></div>
+<p><code><a href="https://rdrr.io/r/base/tracemem.html">untracemem()</a></code> is the opposite of <code><a href="https://rdrr.io/r/base/tracemem.html">tracemem()</a></code>; it turns tracing off.</p>
+</div>
+<div id="function-calls" class="section level3">
+<h3>
+<span class="header-section-number">2.3.2</span> Function calls<a class="anchor" aria-label="anchor" href="#function-calls"><i class="fas fa-link"></i></a>
+</h3>
+<p>The same rules for copying also apply to function calls. Take this code:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">f</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">a</span><span class="op">)</span> <span class="op">{</span>
+  <span class="va">a</span>
+<span class="op">}</span>
+
+<span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tracemem.html">tracemem</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span>
+<span class="co">#&gt; &lt;0x7fe1121693a8&gt;</span>
+
+<span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">f</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
+<span class="co"># there's no copy here!</span>
+
+<span class="fu"><a href="https://rdrr.io/r/base/tracemem.html">untracemem</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></code></pre></div>
+<p>While <code>f()</code> is running, the <code>a</code> inside the function points to the same value as the <code>x</code> does outside the function:</p>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/9174d4995fc38e7b213427692558324347638cb7/d5f84/diagrams/name-value/binding-f1.png" width="250" style="display: block; margin: auto;"></div>
+<p>You’ll learn more about the conventions used in this diagram in Section <a href="environments.html#execution-environments">7.4.4</a>. In brief: the function <code>f()</code> is depicted by the yellow object on the right. It has a formal argument, <code>a</code>, which becomes a binding (indicated by dotted black line) in the execution environment (the gray box) when the function is run.</p>
+<p>Once <code>f()</code> completes, <code>x</code> and <code>z</code> will point to the same object. <code>0x74b</code> never gets copied because it never gets modified. If <code>f()</code> did modify <code>x</code>, R would create a new copy, and then <code>z</code> would bind that object.</p>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/e8718027aabaed377da311f45b45a179588e4dcf/6bf90/diagrams/name-value/binding-f2.png" width="170" style="display: block; margin: auto;"></div>
+</div>
+<div id="list-references" class="section level3">
+<h3>
+<span class="header-section-number">2.3.3</span> Lists<a class="anchor" aria-label="anchor" href="#list-references"><i class="fas fa-link"></i></a>
+</h3>
+
+<p></p>
+<p>It’s not just names (i.e. variables) that point to values; elements of lists do too. Consider this list, which is superficially very similar to the numeric vector above:</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">l1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span></code></pre></div>
+<p>This list is more complex because instead of storing the values itself, it stores references to them:</p>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/dae84980f1586fc4ef47091c91f51a5737b38135/a1403/diagrams/name-value/list.png" width="189" style="display: block; margin: auto;"></div>
+<p>This is particularly important when we modify a list:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">l2</span> <span class="op">&lt;-</span> <span class="va">l1</span></code></pre></div>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/52bc0e3da3382cba957a9d83397b6c9200906ce2/c72aa/diagrams/name-value/l-modify-1.png" width="189" style="display: block; margin: auto;"></div>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">l2</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">4</span></code></pre></div>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/b844bb5a3443e1344299627f5760e2ae3a9885b5/e1c76/diagrams/name-value/l-modify-2.png" width="222" style="display: block; margin: auto;"></div>
+<p>Like vectors, lists use copy-on-modify behaviour; the original list is left unchanged, and R creates a modified copy. This, however, is a <strong>shallow</strong> copy: the list object and its bindings are copied, but the values pointed to by the bindings are not. The opposite of a shallow copy is a deep copy where the contents of every reference are copied. Prior to R 3.1.0, copies were always deep copies.</p>
+<p>To see values that are shared across lists, use <code><a href="https://rdrr.io/pkg/lobstr/man/ref.html">lobstr::ref()</a></code>. <code><a href="https://rdrr.io/pkg/lobstr/man/ref.html">ref()</a></code> prints the memory address of each object, along with a local ID so that you can easily cross-reference shared components.</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/ref.html">ref</a></span><span class="op">(</span><span class="va">l1</span>, <span class="va">l2</span><span class="op">)</span>
+<span class="co">#&gt; █ [1:0x7fe11166c6d8] &lt;list&gt; </span>
+<span class="co">#&gt; ├─[2:0x7fe11b6d2078] &lt;dbl&gt; </span>
+<span class="co">#&gt; ├─[3:0x7fe11b6d2040] &lt;dbl&gt; </span>
+<span class="co">#&gt; └─[4:0x7fe11b6d2008] &lt;dbl&gt; </span>
+<span class="co">#&gt;  </span>
+<span class="co">#&gt; █ [5:0x7fe11411cc18] &lt;list&gt; </span>
+<span class="co">#&gt; ├─[2:0x7fe11b6d2078] </span>
+<span class="co">#&gt; ├─[3:0x7fe11b6d2040] </span>
+<span class="co">#&gt; └─[6:0x7fe114130a70] &lt;dbl&gt;</span></code></pre></div>
+</div>
+<div id="df-modify" class="section level3">
+<h3>
+<span class="header-section-number">2.3.4</span> Data frames<a class="anchor" aria-label="anchor" href="#df-modify"><i class="fas fa-link"></i></a>
+</h3>
+<p>Data frames are lists of vectors, so copy-on-modify has important consequences when you modify a data frame. Take this data frame as an example:</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">d1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">5</span>, <span class="fl">6</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/80d8995999aa240ff4bc91bb6aba2c7bf72afc24/95ee6/diagrams/name-value/dataframe.png" width="165" style="display: block; margin: auto;"></div>
+<p>If you modify a column, only <em>that</em> column needs to be modified; the others will still point to their original references:</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">d2</span> <span class="op">&lt;-</span> <span class="va">d1</span>
+<span class="va">d2</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">d2</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span> <span class="op">*</span> <span class="fl">2</span></code></pre></div>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/c19fd7e31bf34ceff73d0fac6e3ea22b09429e4a/23d8d/diagrams/name-value/d-modify-c.png" width="212" style="display: block; margin: auto;"></div>
+<p>However, if you modify a row, every column is modified, which means every column must be copied:</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">d3</span> <span class="op">&lt;-</span> <span class="va">d1</span>
+<span class="va">d3</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span> <span class="op">&lt;-</span> <span class="va">d3</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span> <span class="op">*</span> <span class="fl">3</span></code></pre></div>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/36df61f54d1ac62e066fb814cb7ba38ea6047a74/facf8/diagrams/name-value/d-modify-r.png" width="326" style="display: block; margin: auto;"></div>
+</div>
+<div id="character-vectors" class="section level3">
+<h3>
+<span class="header-section-number">2.3.5</span> Character vectors<a class="anchor" aria-label="anchor" href="#character-vectors"><i class="fas fa-link"></i></a>
+</h3>
+<p></p>
+<p>The final place that R uses references is with character vectors<a class="footnote-ref" tabindex="0" data-toggle="popover" data-content="&lt;p&gt;Confusingly, a character vector is a vector of strings, not individual characters.&lt;/p&gt;"><sup>12</sup></a>. I usually draw character vectors like this:</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"a"</span>, <span class="st">"abc"</span>, <span class="st">"d"</span><span class="op">)</span></code></pre></div>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/4ce54f5125513d49a3f89d4498896b62ce1477fe/d415d/diagrams/name-value/character.png" width="241" style="display: block; margin: auto;"></div>
+<p>But this is a polite fiction. R actually uses a <strong>global string pool</strong> where each element of a character vector is a pointer to a unique string in the pool:</p>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/5dca035e5a0fb5f3ccb1b76f73b9bb06ef106a36/57025/diagrams/name-value/character-2.png" width="250" style="display: block; margin: auto;"></div>
+<p>You can request that <code><a href="https://rdrr.io/pkg/lobstr/man/ref.html">ref()</a></code> show these references by setting the <code>character</code> argument to <code>TRUE</code>:</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/ref.html">ref</a></span><span class="op">(</span><span class="va">x</span>, character <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
+<span class="co">#&gt; █ [1:0x7fe114251578] &lt;chr&gt; </span>
+<span class="co">#&gt; ├─[2:0x7fe10ead1648] &lt;string: "a"&gt; </span>
+<span class="co">#&gt; ├─[2:0x7fe10ead1648] </span>
+<span class="co">#&gt; ├─[3:0x7fe11b27d670] &lt;string: "abc"&gt; </span>
+<span class="co">#&gt; └─[4:0x7fe10eda4170] &lt;string: "d"&gt;</span></code></pre></div>
+<p>This has a profound impact on the amount of memory a character vector uses but is otherwise generally unimportant, so elsewhere in the book I’ll draw character vectors as if the strings lived inside a vector.</p>
+</div>
+<div id="exercises-1" class="section level3">
+<h3>
+<span class="header-section-number">2.3.6</span> Exercises<a class="anchor" aria-label="anchor" href="#exercises-1"><i class="fas fa-link"></i></a>
+</h3>
+<ol style="list-style-type: decimal">
+<li><p>Why is <code><a href="https://rdrr.io/r/base/tracemem.html">tracemem(1:10)</a></code> not useful?</p></li>
+<li>
+<p>Explain why <code><a href="https://rdrr.io/r/base/tracemem.html">tracemem()</a></code> shows two copies when you run this code.
+Hint: carefully look at the difference between this code and the code
+shown earlier in the section.</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">2L</span>, <span class="fl">3L</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/tracemem.html">tracemem</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
+
+<span class="va">x</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">4</span></code></pre></div>
+</li>
+<li>
+<p>Sketch out the relationship between the following objects:</p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">a</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>
+<span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">a</span>, <span class="va">a</span><span class="op">)</span>
+<span class="va">c</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">b</span>, <span class="va">a</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></code></pre></div>
+</li>
+<li>
+<p>What happens when you run this code?</p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span>
+<span class="va">x</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">x</span></code></pre></div>
+<p>Draw a picture.</p>
+</li>
+</ol>
+</div>
+</div>
+<div id="object-size" class="section level2">
+<h2>
+<span class="header-section-number">2.4</span> Object size<a class="anchor" aria-label="anchor" href="#object-size"><i class="fas fa-link"></i></a>
+</h2>
+
+<p></p>
+<p>You can find out how much memory an object takes with <code><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">lobstr::obj_size()</a></code><a class="footnote-ref" tabindex="0" data-toggle="popover" data-content="&lt;p&gt;Beware of the &lt;code&gt;utils::object.size()&lt;/code&gt; function. It does not correctly account for shared references and will return sizes that are too large.&lt;/p&gt;"><sup>13</sup></a>:</p>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="va">letters</span><span class="op">)</span>
+<span class="co">#&gt; 1,712 B</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="fu">ggplot2</span><span class="fu">::</span><span class="va"><a href="https://ggplot2.tidyverse.org/reference/diamonds.html">diamonds</a></span><span class="op">)</span>
+<span class="co">#&gt; 3,456,344 B</span></code></pre></div>
+<p>Since the elements of lists are references to values, the size of a list might be much smaller than you expect:</p>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">1e6</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
+<span class="co">#&gt; 8,000,048 B</span>
+
+<span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">x</span>, <span class="va">x</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>
+<span class="co">#&gt; 8,000,128 B</span></code></pre></div>
+<p><code>y</code> is only 80 bytes<a class="footnote-ref" tabindex="0" data-toggle="popover" data-content="&lt;p&gt;If you’re running 32-bit R, you’ll see slightly different sizes.&lt;/p&gt;"><sup>14</sup></a> bigger than <code>x</code>. That’s the size of an empty list with three elements:</p>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="cn">NULL</span>, <span class="cn">NULL</span>, <span class="cn">NULL</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; 80 B</span></code></pre></div>
+<p>Similarly, because R uses a global string pool character vectors take up less memory than you might expect: repeating a string 100 times does not make it take up 100 times as much memory.</p>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">banana</span> <span class="op">&lt;-</span> <span class="st">"bananas bananas bananas"</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="va">banana</span><span class="op">)</span>
+<span class="co">#&gt; 136 B</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="va">banana</span>, <span class="fl">100</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; 928 B</span></code></pre></div>
+<p>References also make it challenging to think about the size of individual objects. <code>obj_size(x) + obj_size(y)</code> will only equal <code><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size(x, y)</a></code> if there are no shared values. Here, the combined size of <code>x</code> and <code>y</code> is the same as the size of <code>y</code>:</p>
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span>
+<span class="co">#&gt; 8,000,128 B</span></code></pre></div>
+<p>Finally, R 3.5.0 and later versions have a feature that might lead to surprises: ALTREP, short for <strong>alternative representation</strong>. This allows R to represent certain types of vectors very compactly. The place you are most likely to see this is with <code><a href="https://rdrr.io/r/base/Colon.html">:</a></code> because instead of storing every single number in the sequence, R just stores the first and last number. This means that every sequence, no matter how large, is the same size:</p>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span>
+<span class="co">#&gt; 680 B</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">1e3</span><span class="op">)</span>
+<span class="co">#&gt; 680 B</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">1e6</span><span class="op">)</span>
+<span class="co">#&gt; 680 B</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">1e9</span><span class="op">)</span>
+<span class="co">#&gt; 680 B</span></code></pre></div>
+<div id="exercises-2" class="section level3">
+<h3>
+<span class="header-section-number">2.4.1</span> Exercises<a class="anchor" aria-label="anchor" href="#exercises-2"><i class="fas fa-link"></i></a>
+</h3>
+<ol style="list-style-type: decimal">
+<li>
+<p>In the following example, why are <code><a href="https://rdrr.io/r/utils/object.size.html">object.size(y)</a></code> and <code><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size(y)</a></code>
+so radically different? Consult the documentation of <code><a href="https://rdrr.io/r/utils/object.size.html">object.size()</a></code>.</p>
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">1e4</span><span class="op">)</span><span class="op">)</span>, <span class="fl">100</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/utils/object.size.html">object.size</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>
+<span class="co">#&gt; 8005648 bytes</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>
+<span class="co">#&gt; 80,896 B</span></code></pre></div>
+</li>
+<li>
+<p>Take the following list. Why is its size somewhat misleading?</p>
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">funs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">mean</span>, <span class="va">sd</span>, <span class="va">var</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="va">funs</span><span class="op">)</span>
+<span class="co">#&gt; 17,608 B</span></code></pre></div>
+</li>
+<li>
+<p>Predict the output of the following code:</p>
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">1e6</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="va">a</span><span class="op">)</span>
+
+<span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">a</span>, <span class="va">a</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="va">b</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span><span class="op">)</span>
+
+<span class="va">b</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">10</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="va">b</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span><span class="op">)</span>
+
+<span class="va">b</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">10</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="va">b</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span><span class="op">)</span></code></pre></div>
+</li>
+</ol>
+</div>
+</div>
+<div id="modify-in-place" class="section level2">
+<h2>
+<span class="header-section-number">2.5</span> Modify-in-place<a class="anchor" aria-label="anchor" href="#modify-in-place"><i class="fas fa-link"></i></a>
+</h2>
+<p></p>
+<p>As we’ve seen above, modifying an R object usually creates a copy. There are two exceptions:</p>
+<ul>
+<li><p>Objects with a single binding get a special performance optimisation.</p></li>
+<li><p>Environments, a special type of object, are always modified in place.</p></li>
+</ul>
+<div id="single-binding" class="section level3">
+<h3>
+<span class="header-section-number">2.5.1</span> Objects with a single binding<a class="anchor" aria-label="anchor" href="#single-binding"><i class="fas fa-link"></i></a>
+</h3>
+<p></p>
+<p>If an object has a single name bound to it, R will modify it in place:</p>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">v</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span></code></pre></div>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/496ac87edf04d7e235747c3cf4a4e66deca754f2/3ac04/diagrams/name-value/v-inplace-1.png" width="160" style="display: block; margin: auto;"></div>
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">v</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">4</span></code></pre></div>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/a6ef7ab337f156cdb2c21816923368383bc2e858/1f8bb/diagrams/name-value/v-inplace-2.png" width="160" style="display: block; margin: auto;"></div>
+<p>(Note the object IDs here: <code>v</code> continues to bind to the same object, <code>0x207</code>.)</p>
+<p>Two complications make predicting exactly when R applies this optimisation challenging:</p>
+<ul>
+<li><p>When it comes to bindings, R can currently<a class="footnote-ref" tabindex="0" data-toggle="popover" data-content='&lt;p&gt;By the time you read this, this may have changed, as plans are afoot to improve reference counting: &lt;a href="https://developer.r-project.org/Refcnt.html" class="uri"&gt;https://developer.r-project.org/Refcnt.html&lt;/a&gt;&lt;/p&gt;'><sup>15</sup></a> only count 0, 1,
+or many. That means that if an object has two bindings, and one goes away,
+the reference count does not go back to 1: one less than many is
+still many. In turn, this means that R will make copies when it sometimes
+doesn’t need to.</p></li>
+<li><p>Whenever you call the vast majority of functions, it makes a reference to the
+object. The only exception are specially written “primitive” C functions.
+These can only be written by R-core and occur mostly in the base package.</p></li>
+</ul>
+<p>Together, these two complications make it hard to predict whether or not a copy will occur. Instead, it’s better to determine it empirically with <code><a href="https://rdrr.io/r/base/tracemem.html">tracemem()</a></code>.</p>
+<p>
+
+Let’s explore the subtleties with a case study using for loops. For loops have a reputation for being slow in R, but often that slowness is caused by every iteration of the loop creating a copy. Consider the following code. It subtracts the median from each column of a large data frame:</p>
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">5</span> <span class="op">*</span> <span class="fl">1e4</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">5</span><span class="op">)</span><span class="op">)</span>
+<span class="va">medians</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">median</span>, <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>
+
+<span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_along</a></span><span class="op">(</span><span class="va">medians</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
+  <span class="va">x</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">-</span> <span class="va">medians</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>
+<span class="op">}</span></code></pre></div>
+<p>This loop is surprisingly slow because each iteration of the loop copies the data frame. You can see this by using <code><a href="https://rdrr.io/r/base/tracemem.html">tracemem()</a></code>:</p>
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tracemem.html">tracemem</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span>
+<span class="co">#&gt; &lt;0x7f80c429e020&gt; </span>
+
+<span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span> <span class="op">{</span>
+  <span class="va">x</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">-</span> <span class="va">medians</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>
+<span class="op">}</span>
+<span class="co">#&gt; tracemem[0x7f80c429e020 -&gt; 0x7f80c0c144d8]: </span>
+<span class="co">#&gt; tracemem[0x7f80c0c144d8 -&gt; 0x7f80c0c14540]: [[&lt;-.data.frame [[&lt;- </span>
+<span class="co">#&gt; tracemem[0x7f80c0c14540 -&gt; 0x7f80c0c145a8]: [[&lt;-.data.frame [[&lt;- </span>
+<span class="co">#&gt; tracemem[0x7f80c0c145a8 -&gt; 0x7f80c0c14610]: </span>
+<span class="co">#&gt; tracemem[0x7f80c0c14610 -&gt; 0x7f80c0c14678]: [[&lt;-.data.frame [[&lt;- </span>
+<span class="co">#&gt; tracemem[0x7f80c0c14678 -&gt; 0x7f80c0c146e0]: [[&lt;-.data.frame [[&lt;- </span>
+<span class="co">#&gt; tracemem[0x7f80c0c146e0 -&gt; 0x7f80c0c14748]: </span>
+<span class="co">#&gt; tracemem[0x7f80c0c14748 -&gt; 0x7f80c0c147b0]: [[&lt;-.data.frame [[&lt;- </span>
+<span class="co">#&gt; tracemem[0x7f80c0c147b0 -&gt; 0x7f80c0c14818]: [[&lt;-.data.frame [[&lt;- </span>
+<span class="co">#&gt; tracemem[0x7f80c0c14818 -&gt; 0x7f80c0c14880]: </span>
+<span class="co">#&gt; tracemem[0x7f80c0c14880 -&gt; 0x7f80c0c148e8]: [[&lt;-.data.frame [[&lt;- </span>
+<span class="co">#&gt; tracemem[0x7f80c0c148e8 -&gt; 0x7f80c0c14950]: [[&lt;-.data.frame [[&lt;- </span>
+<span class="co">#&gt; tracemem[0x7f80c0c14950 -&gt; 0x7f80c0c149b8]: </span>
+<span class="co">#&gt; tracemem[0x7f80c0c149b8 -&gt; 0x7f80c0c14a20]: [[&lt;-.data.frame [[&lt;- </span>
+<span class="co">#&gt; tracemem[0x7f80c0c14a20 -&gt; 0x7f80c0c14a88]: [[&lt;-.data.frame [[&lt;- </span>
+
+<span class="fu"><a href="https://rdrr.io/r/base/tracemem.html">untracemem</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></code></pre></div>
+<p>In fact, each iteration copies the data frame not once, not twice, but three times! Two copies are made by <code>[[.data.frame</code>, and a further copy<a class="footnote-ref" tabindex="0" data-toggle="popover" data-content="&lt;p&gt;These copies are shallow: they only copy the reference to each individual column, not the contents of the columns. This means the performance isn’t terrible, but it’s obviously not as good as it could be.&lt;/p&gt;"><sup>16</sup></a> is made because <code>[[.data.frame</code> is a regular function that increments the reference count of <code>x</code>.</p>
+<p>We can reduce the number of copies by using a list instead of a data frame. Modifying a list uses internal C code, so the references are not incremented and only a single copy is made:</p>
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">as.list</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tracemem.html">tracemem</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span>
+<span class="co">#&gt; &lt;0x7f80c5c3de20&gt;</span>
+  
+<span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span> <span class="op">{</span>
+  <span class="va">y</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">y</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">-</span> <span class="va">medians</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>
+<span class="op">}</span>
+<span class="co">#&gt; tracemem[0x7f80c5c3de20 -&gt; 0x7f80c48de210]: </span></code></pre></div>
+<p>While it’s not hard to determine when a copy is made, it is hard to prevent it. If you find yourself resorting to exotic tricks to avoid copies, it may be time to rewrite your function in C++, as described in Chapter <a href="rcpp.html#rcpp">25</a>.</p>
+</div>
+<div id="env-modify" class="section level3">
+<h3>
+<span class="header-section-number">2.5.2</span> Environments<a class="anchor" aria-label="anchor" href="#env-modify"><i class="fas fa-link"></i></a>
+</h3>
+<p>
+</p>
+<p>You’ll learn more about environments in Chapter <a href="environments.html#environments">7</a>, but it’s important to mention them here because their behaviour is different from that of other objects: environments are always modified in place. This property is sometimes described as <strong>reference semantics</strong> because when you modify an environment all existing bindings to that environment continue to have the same reference.</p>
+<p>Take this environment, which we bind to <code>e1</code> and <code>e2</code>:</p>
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">e1</span> <span class="op">&lt;-</span> <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/env.html">env</a></span><span class="op">(</span>a <span class="op">=</span> <span class="fl">1</span>, b <span class="op">=</span> <span class="fl">2</span>, c <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
+<span class="va">e2</span> <span class="op">&lt;-</span> <span class="va">e1</span></code></pre></div>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/2b8c13b3abc6e83ab8b4a8ac95c18d99446dbde3/e3f65/diagrams/name-value/e-modify-1.png" width="184" style="display: block; margin: auto;"></div>
+<p>If we change a binding, the environment is modified in place:</p>
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">e1</span><span class="op">$</span><span class="va">c</span> <span class="op">&lt;-</span> <span class="fl">4</span>
+<span class="va">e2</span><span class="op">$</span><span class="va">c</span>
+<span class="co">#&gt; [1] 4</span></code></pre></div>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/2727265afc4c2b7132c225b659b8cca57dfc0098/e9d1e/diagrams/name-value/e-modify-2.png" width="184" style="display: block; margin: auto;"></div>
+<p>This basic idea can be used to create functions that “remember” their previous state. See Section <a href="function-factories.html#stateful-funs">10.2.4</a> for more details. This property is also used to implement the R6 object-oriented programming system, the topic of Chapter <a href="r6.html#r6">14</a>.</p>
+<p>One consequence of this is that environments can contain themselves:</p>
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">e</span> <span class="op">&lt;-</span> <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/env.html">env</a></span><span class="op">(</span><span class="op">)</span>
+<span class="va">e</span><span class="op">$</span><span class="va">self</span> <span class="op">&lt;-</span> <span class="va">e</span>
+
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/ref.html">ref</a></span><span class="op">(</span><span class="va">e</span><span class="op">)</span>
+<span class="co">#&gt; █ [1:0x7fe114214cd8] &lt;env&gt; </span>
+<span class="co">#&gt; └─self = [1:0x7fe114214cd8]</span></code></pre></div>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/3c85cfa2fc5c1d013959ec0b955b00d84de665dc/a5c08/diagrams/name-value/e-self.png" width="142" style="display: block; margin: auto;"></div>
+<p>This is a unique property of environments!</p>
+</div>
+<div id="exercises-3" class="section level3">
+<h3>
+<span class="header-section-number">2.5.3</span> Exercises<a class="anchor" aria-label="anchor" href="#exercises-3"><i class="fas fa-link"></i></a>
+</h3>
+<ol style="list-style-type: decimal">
+<li>
+<p>Explain why the following code doesn’t create a circular list.</p>
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span>
+<span class="va">x</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">x</span></code></pre></div>
+</li>
+<li><p>Wrap the two methods for subtracting medians into two functions, then
+use the ‘bench’ package<span class="citation"><a class="footnote-ref" tabindex="0" data-toggle="popover" data-content='&lt;p&gt;Jim Hester, &lt;em&gt;Bench: High Precision Timing of R Expressions&lt;/em&gt;, 2018, &lt;a href="http://bench.r-lib.org/" role="doc-biblioref"&gt;http://bench.r-lib.org/&lt;/a&gt;.&lt;/p&gt;'><sup>17</sup></a></span> to carefully compare their speeds. How does
+performance change as the number of columns increase?</p></li>
+<li><p>What happens if you attempt to use <code><a href="https://rdrr.io/r/base/tracemem.html">tracemem()</a></code> on an environment?</p></li>
+</ol>
+</div>
+</div>
+<div id="gc" class="section level2">
+<h2>
+<span class="header-section-number">2.6</span> Unbinding and the garbage collector<a class="anchor" aria-label="anchor" href="#gc"><i class="fas fa-link"></i></a>
+</h2>
+<p>
+
+</p>
+<p>Consider this code:</p>
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span></code></pre></div>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/bd90c87ac98708b1731c92900f2f53ec6a71edaf/16159/diagrams/name-value/unbinding-1.png" width="160" style="display: block; margin: auto;"></div>
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fl">2</span><span class="op">:</span><span class="fl">4</span></code></pre></div>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/0e530cfefb236018cc549445a9ffc9c4c6a41acf/c1a48/diagrams/name-value/unbinding-2.png" width="160" style="display: block; margin: auto;"></div>
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/rm.html">rm</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></code></pre></div>
+<div class="inline-figure"><img src="https://d33wubrfki0l68.cloudfront.net/5451c203c9e3b9aa0ffa874a07fe0ab983aca634/b4a0e/diagrams/name-value/unbinding-3.png" width="160" style="display: block; margin: auto;"></div>
+<p>We created two objects, but by the time the code finishes, neither object is bound to a name. How do these objects get deleted? That’s the job of the <strong>garbage collector</strong>, or GC for short. The GC frees up memory by deleting R objects that are no longer used, and by requesting more memory from the operating system if needed.</p>
+<p>R uses a <strong>tracing</strong> GC. This means it traces every object that’s reachable from the global<a class="footnote-ref" tabindex="0" data-toggle="popover" data-content="&lt;p&gt;And every environment in the current call stack.&lt;/p&gt;"><sup>18</sup></a> environment, and all objects that are, in turn, reachable from those objects (i.e. the references in lists and environments are searched recursively). The garbage collector does not use the modify-in-place reference count described above. While these two ideas are closely related, the internal data structures are optimised for different use cases.</p>
+<p>The garbage collector (GC) runs automatically whenever R needs more memory to create a new object. Looking from the outside, it’s basically impossible to predict when the GC will run. In fact, you shouldn’t even try. If you want to find out when the GC runs, call <code><a href="https://rdrr.io/r/base/gc.html">gcinfo(TRUE)</a></code> and GC will print a message to the console every time it runs.</p>
+<p>
+You can force garbage collection by calling <code><a href="https://rdrr.io/r/base/gc.html">gc()</a></code>. But despite what you might have read elsewhere, there’s never any <em>need</em> to call <code><a href="https://rdrr.io/r/base/gc.html">gc()</a></code> yourself. The only reasons you might <em>want</em> to call <code><a href="https://rdrr.io/r/base/gc.html">gc()</a></code> is to ask R to return memory to your operating system so other programs can use it, or for the side-effect that tells you how much memory is currently being used:</p>
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/gc.html">gc</a></span><span class="op">(</span><span class="op">)</span> 
+<span class="co">#&gt;           used (Mb) gc trigger  (Mb) limit (Mb) max used (Mb)</span>
+<span class="co">#&gt; Ncells  884876 47.3    1698228  90.7         NA  1478961   79</span>
+<span class="co">#&gt; Vcells 5026893 38.4   17228590 131.5      16384 17226182  132</span></code></pre></div>
+<p><code><a href="https://rdrr.io/pkg/lobstr/man/mem_used.html">lobstr::mem_used()</a></code> is a wrapper around <code><a href="https://rdrr.io/r/base/gc.html">gc()</a></code> that prints the total number of bytes used:</p>
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/mem_used.html">mem_used</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; 89,748,952 B</span></code></pre></div>
+<p>This number won’t agree with the amount of memory reported by your operating system. There are three reasons:</p>
+<ol style="list-style-type: decimal">
+<li><p>It includes objects created by R but not by the R interpreter.</p></li>
+<li><p>Both R and the operating system are lazy: they won’t reclaim memory
+until it’s actually needed. R might be holding on to memory because
+the OS hasn’t yet asked for it back.</p></li>
+<li><p>R counts the memory occupied by objects but there may be empty gaps due to
+deleted objects. This problem is known as memory fragmentation.</p></li>
+</ol>
+</div>
+<div id="names-values-answers" class="section level2">
+<h2>
+<span class="header-section-number">2.7</span> Quiz answers<a class="anchor" aria-label="anchor" href="#names-values-answers"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li>
+<p>You must quote non-syntactic names with backticks: <code>`</code>: for example,
+the variables <code>1</code>, <code>2</code>, and <code>3</code>.</p>
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>
+
+<span class="va">df</span><span class="op">$</span><span class="va">`3`</span> <span class="op">&lt;-</span> <span class="va">df</span><span class="op">$</span><span class="va">`1`</span> <span class="op">+</span> <span class="va">df</span><span class="op">$</span><span class="va">`2`</span></code></pre></div>
+</li>
+<li>
+<p>It occupies about 8 MB.</p>
+<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">1e6</span><span class="op">)</span>
+<span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">x</span>, <span class="va">x</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/lobstr/man/obj_size.html">obj_size</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>
+<span class="co">#&gt; 8,000,128 B</span></code></pre></div>
+</li>
+<li><p><code>a</code> is copied when <code>b</code> is modified, <code>b[[1]] &lt;- 10</code>.</p></li>
+</ol>
+</div>
+</div>
+
+  <div class="chapter-nav">
+<div class="prev"><a href="foundations-intro.html">Introduction</a></div>
+<div class="next"><a href="vectors-chap.html"><span class="header-section-number">3</span> Vectors</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#names-values"><span class="header-section-number">2</span> Names and values</a></li>
+<li>
+<a class="nav-link" href="#introduction-1"><span class="header-section-number">2.1</span> Introduction</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#quiz">Quiz</a></li>
+<li><a class="nav-link" href="#outline">Outline</a></li>
+<li><a class="nav-link" href="#prerequisites">Prerequisites</a></li>
+<li><a class="nav-link" href="#sources">Sources</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#binding-basics"><span class="header-section-number">2.2</span> Binding basics</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#non-syntactic"><span class="header-section-number">2.2.1</span> Non-syntactic names</a></li>
+<li><a class="nav-link" href="#exercises"><span class="header-section-number">2.2.2</span> Exercises</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#copy-on-modify"><span class="header-section-number">2.3</span> Copy-on-modify</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#tracemem"><span class="header-section-number">2.3.1</span> tracemem()</a></li>
+<li><a class="nav-link" href="#function-calls"><span class="header-section-number">2.3.2</span> Function calls</a></li>
+<li><a class="nav-link" href="#list-references"><span class="header-section-number">2.3.3</span> Lists</a></li>
+<li><a class="nav-link" href="#df-modify"><span class="header-section-number">2.3.4</span> Data frames</a></li>
+<li><a class="nav-link" href="#character-vectors"><span class="header-section-number">2.3.5</span> Character vectors</a></li>
+<li><a class="nav-link" href="#exercises-1"><span class="header-section-number">2.3.6</span> Exercises</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#object-size"><span class="header-section-number">2.4</span> Object size</a><ul class="nav navbar-nav"><li><a class="nav-link" href="#exercises-2"><span class="header-section-number">2.4.1</span> Exercises</a></li></ul>
+</li>
+<li>
+<a class="nav-link" href="#modify-in-place"><span class="header-section-number">2.5</span> Modify-in-place</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#single-binding"><span class="header-section-number">2.5.1</span> Objects with a single binding</a></li>
+<li><a class="nav-link" href="#env-modify"><span class="header-section-number">2.5.2</span> Environments</a></li>
+<li><a class="nav-link" href="#exercises-3"><span class="header-section-number">2.5.3</span> Exercises</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#gc"><span class="header-section-number">2.6</span> Unbinding and the garbage collector</a></li>
+<li><a class="nav-link" href="#names-values-answers"><span class="header-section-number">2.7</span> Quiz answers</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/hadley/adv-r/blob/master/Names-values.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/hadley/adv-r/edit/master/Names-values.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Advanced R</strong>" was written by Hadley Wickham. </p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+</html>

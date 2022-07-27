@@ -171,7 +171,45 @@ if ("Year" %in% names(excel_base)) {
   FALSE
 }
 
-?missing
+names(excel_base)
+
+
+excel_base$`Sub-category`
+
+excel_tested <- read_excel("Data/Blank2.xlsx") |> 
+  clean_names()
+
+widen_excel_testing <- function(object) {
+  if ("Year" %in% names(object) && "Firm" %in% names(object) &&
+    "Category" %in% names(object) && "'Sub-category'" %in% names(object) &&
+    "Name" %in% names(object) && "Value" %in% names(object)) {
+    object |>
+      # uniting Category and Name to deal with multiple 'Other'
+      unite(
+        entry, c(Category, Name),
+        sep = "_"
+      ) |>
+      # deleting Sub-category and Firm
+      select(-`Sub-category`, -Firm) |>
+      # pivoting to create 'tidy' variables
+      pivot_wider(names_from = entry, values_from = Value) |>
+      # cleaning names
+      clean_names()
+  } else {
+    message("Bad")
+  }
+}
+
+getwd()
+
+widen_excel_testing(excel_base)
+
+exceltest |> clean_names()
+getwd()
+blank <- read_excel("Data/Blank2.xlsx")
+names(blank)
+
+clean_names(blank)
 ```
 
 ```{r}
@@ -291,5 +329,160 @@ read_proff_names <- function(file, start, end) {
 }
 
 read_proff_names("Data/Kreftforeningen.html", "2002")
+
+nrk <- read_html("Data/NRK.html")
+nrk_node <- nrk |> html_node("#inner-frame")
+
+class(nrk_node)
+
+wrong <- read_html("Data/Kreft_wrong.html") |> html_node("#inner-frame") |> html_table()
+
+wrong
+
+
+
+right <- read_html("Data/Kreftforeningen.html", encoding = "UTF-8") |>
+    html_node("#inner-frame") |>
+    html_table()
+
+right
+
+"REGNSKAPSPERIODE" %in% names(wrong)
+
+if (class(nrk_node) == "xml_missing") {
+  TRUE
+} else {
+  FALSE
+}
+
+read_proff_read <- function(file) {
+  read_html(file, encoding = "UTF-8") |>
+    html_node("#inner-frame")
+}
+
+testing <- read_html("Data/Kreftforeningen.html", encoding = "UTF-8") |>
+    html_node("#inner-frame")
+
+class(testing)
+
+read_proff_table <- function(object) {
+  html_table()
+}
+
+empty <- read_proff_read("Data/Kreft_wrong.html") |> html_table()
+
+"REGNSKAPSPERIODE" %in% names(empty)
+
+
+read_proff_testing(testing, "2002", "2021")
+
+exceldata <- reactive({
+  
+})
+
 ```
+
+- test if html
+- test of node is present
+- test if correct table
+- go for it
+
+
+
+```{r}
+read_proff_test <- function(file) {
+  # Specifying encoding to deal with occasional errors
+  read_html(file, encoding = "UTF-8") |>
+    html_node("#inner-frame") |>
+    html_table()
+}
+
+# Part 2 - version with integrated test
+read_proff_complete <- function(object, start, end) {
+  if (as.character(all_of(start)) %in% names(object) &&
+    as.character(all_of(end)) %in% names(object)) {
+    object |>
+      # removing empty column, using all_of(argument)
+      select(
+        REGNSKAPSPERIODE:all_of(start)
+      ) |>
+      # removing white space
+      mutate(
+        REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+      ) |>
+      # removing duplicate table sometimes created by read_html()
+      filter(
+        !row_number() > 176
+      ) |>
+      # removing duplicate rows
+      filter(
+        !grepl("Lukk", REGNSKAPSPERIODE)
+      ) |>
+      # tidying data using pivot_longer() and all_of(argument)
+      pivot_longer(
+        all_of(end):all_of(start),
+        names_to = "year"
+      ) |>
+      # creating a currency code column and turning current currency codes into
+      # NAs
+      mutate(
+        # changing to real NAs
+        value = na_if(value, "-"),
+        # turning years into numbers
+        year = as.integer(year),
+        # creating a currency code column and turning current currency codes into
+        # NAs
+        valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+      ) |>
+      # filling the currency column
+      fill(
+        valutakode,
+        .direction = "updown"
+      ) |>
+      # removing dates and redundant currency
+      filter(
+        REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+          REGNSKAPSPERIODE != "Valutakode"
+      ) |>
+      mutate(
+        # removing white space in numbers
+        value = str_replace_all(value, "\\s", ""),
+        # turning numbers into true numbers
+        value = as.numeric(value),
+        # removing values that are years
+        value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+      ) |>
+      # removing any remaining duplicate rows
+      distinct() |>
+      # pivoting to create 'tidy' variables
+      pivot_wider(
+        names_from = REGNSKAPSPERIODE, values_from = value
+      ) |>
+      # tidying names
+      clean_names() |>
+      # removing headings from the table
+      select(
+        -lederlonn_i_hele_1000,
+        -resultatregnskap_i_hele_1000,
+        -balanseregnskap_i_hele_1000
+      ) |>
+      # making it clear what lonn refers to
+      rename(
+        lederlonn = lonn
+      ) |>
+      # Creating new variables for plots
+      mutate(
+        annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
+        balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
+      ) |>
+      # arranging by year for practical display
+      arrange(desc(year))
+  } else {
+    validate("Please ensure you have entered the correct start and end years")
+  }
+}
+```
+
+
+
 
