@@ -18,5 +18,45 @@ install_tinytex()
 
 ```
 
+```{r}
+library(tidyverse)
+costofliving <- read_csv("https://raw.githubusercontent.com/sbjorkholt/ISSSV1337/main/Week%201/Day%203%20-%20Introduction%20to%20data%20analysis%20and%20data%20transformation/Tasks/costofliving.csv")
+```
+
+
+```{r}
+install.packages("janitor")
+library(janitor)
+
+costofliving_clean<-costofliving %>%
+  clean_names()
+  
+  
+```
+
+## Tidyverse functions
+
+-select
+-filter
+-mutate
+-rename
+-group_by
+-summarise
+
+### Select 
+
+```{r}
+costofliving_subset <- costofliving_clean %>%
+  select(cost_of_living_index,groceries_index)
+```
+
+```{r}
+costofliving_clean_subset <- costofliving_clean %>%
+  select(cost_of_living_index)
+```
+```
+
+```{r}
+
 
 
