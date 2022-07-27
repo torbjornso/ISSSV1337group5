@@ -671,6 +671,31 @@ read_proff_notest <- function(file, start, end) {
 
 ```{r}
 # This may be the function =====================================================
+
+html_testing <- function(file, start, end) {
+  
+  htmltest <- read_html(file, encoding = "UTF-8") |>
+    html_node("#inner-frame")
+
+  if (class(htmltest) == "xml_node") {
+    htmltable <- htmltest |> html_table()
+  } else {
+    "table error"
+  }
+
+  if ("REGNSKAPSPERIODE" %in% names(htmltable)) {
+    htmlready <- htmltable
+  } else {
+    "regnskap error"
+  }
+  
+  if (as.character(all_of(start)) %in% names(htmlready) &&
+    as.character(all_of(end)) %in% names(htmlready)) {
+    read_proff_notest(file, start, end)
+  } else {
+    "year error"
+  }
+}
 ```
 
 
