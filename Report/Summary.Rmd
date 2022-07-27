@@ -1,0 +1,120 @@
+---
+title: "Summary"
+author: "Torbjørn Skinnemoen Ottersen"
+date: '2022-07-12'
+output: 
+  html_document: 
+    code_folding: hide
+    number_sections: yes
+    df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r nb, include=FALSE}
+# Best read as a knitted HTML document!
+```
+
+
+# Data acquisition
+
+## Official (Brønnøysund) data are not easily accessible
+
+### Brønnøysund API access is expensive
+
+[API access](https://www.brreg.no/en/products-and-services-2/order-products/subscription/subscription-to-annual-accounts/?nocache=1657649463638) to annual accounts data costs NOK 480,000.
+
+The [experimental free API](https://data.norge.no/dataservices/4dabc5ea-b57b-3b68-9e48-2ff993be3f6e) no longer works.
+
+### Brønnøysund pdfs must be ordered manually, and data cannot safely be extracted automatically
+
+Pdf copies of annual accounts may be ordered manually. Data cannot safely be extracted automatically.
+
+### Proff.no HTML is an option, but data must be downloaded manually
+
+Brønnøysund data can be accessed manually at [Proff.no](https://www.proff.no). They do, however, prohibit automated access/web scraping. Data can, with some provisos, safely be extracted from downloaded HTML copies of individual web pages. Sample code is included below. The legality of this approach may be questionable, and, as noted below, Brønnøysund data does not contain all the necessary information.
+
+```{r proff, eval=FALSE}
+library(tidyverse)
+read_proff <- function(file, start, end){
+  # the user must supply file name and start and end years
+  read_html(file, encoding = "UTF-8") |> # reading HTML
+  html_node("#inner-frame") |> 
+  html_table() |> 
+  select( # removing empty column
+    REGNSKAPSPERIODE:start) |> 
+  mutate( # removing whitespace
+    REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+  ) |> 
+  filter( # removing duplicate table
+      !row_number() > 176
+    ) |>
+  filter( # removing duplicate rows
+    !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |> 
+  pivot_longer( # tidying data
+    end:start, names_to = "year") |> 
+  mutate( # changing to real NAs and turning years into numbers
+    value = na_if(value, "-"),
+    year = as.integer(year)) |> 
+  mutate( # adding currency column
+      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+    ) |> 
+  fill( # filling the currency column
+    valutakode, .direction = "updown"
+    ) |> 
+  filter( # removing dates and redundant currency
+    REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+      REGNSKAPSPERIODE != "Valutakode") |> 
+  mutate( # removing whitespace in numbers
+    value = str_replace_all(value, "\\s", "")
+  ) |> 
+  mutate( # turning into numbers
+    value = as.numeric(value)
+  ) |> 
+  mutate( # removing years as values
+    value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+  )
+}
+```
+
+>**Conclusion**: Manual downloads from Proff.no is the only functional option in the absence of API access. But this is only a partial solution.
+
+## Brønnøysund data does not contain all the necessary information
+
+A further problem is that the accounting data that must be supplied to Brønnøysund does not contain all the data necessary to calculate most relevant KPIs.
+
+### Annual reports are not always available, and cannot be read automatically
+
+Even in the case of NGOs that make pdf copies of their annual reports available, these may not contain the necessary data, and even if they do, these cannot safely be extracted automatically. (In some instances they may be extracted with the help of [Tabula](https://tabula.technology), but this process cannot be automated.)
+
+>**Conclusion**: The only possible data source is manual reporting by organisations. We propose using a standardised Excel form, which would enable automatic data extraction and calculation of KPIs, etc. (Example below.) This solution may be combined with data taken from Proff.no.
+
+```{r excel, message=FALSE}
+library(readxl)
+excel <- read_excel("Data/OPXfinans2.xlsx")
+excel
+```
+
+# KPIs and visualisations
+
+We can calculate the suggested KPI on the basis of the Excel. We are investigating other KPIs, and have some suggestions.
+
+>**To do**: decide on KPIs. Explore if any visualisations would be useful.
+
+# Final products
+
+## Shiny app?
+A Shiny app that accepts uploaded Excel and/or html files and automatically calculates the desired KPIs and displays them (+ one or more plots, if desired)?
+
+Problems:
+
+- hosting?
+- does this actually add any value beyond what they already have?
+- Need to discuss deliverables with Bosse and Solveig.
+- Do we want to learn Shiny? (Does anyone know it already?)
+
+## R Markdown report (*obligatory!*)
+Is this an outline of the process, a report to OPX, or?

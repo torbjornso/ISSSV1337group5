@@ -1,0 +1,88 @@
+---
+title: "Excel hack med alternativt fil"
+author: "Aga"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(readxl)
+library(janitor)
+
+```
+
+>Du har ikke lastet opp det nye Excel-arket :) (Plasser det gjerne i Data-mappen ;)) --Torbjørn
+
+>Nå er arket lastet opp i Data-mappen
+--Aga
+
+Jeg har et forslag til et alternativt excel-ark som jeg synes er enklere å bruke. Det er lastet opp i Github (håper jeg) og heter OPXfinansAGA 
+
+```{r alternativt excel-fil}
+# Leser inn excel-fil og angir kolonnenavn
+jukseark <- read_excel("./Data/OPXfinansAGA.xlsx", col_names = c("entry", "value"))
+
+# Lager et nytt objekt
+juksedata <- jukseark %>%
+  
+  # Dropper NA (det som var overskrifter i excel)
+    na.omit %>%
+  
+  # Gjør om rader til kolonner (variabler)
+  pivot_wider(names_from = entry, values_from = value) %>%
+  
+    # Lager mer r-vennlige kolonnenavn
+  clean_names() %>% 
+  
+  # Ved pivot ble alle kolonnene satt til character pga. den første kolonnen med 
+  # organisasjonsnavn. Det gjør det umulig å regne, så alle kolonnene unntatt den første
+  # må konverteres til numeric
+  mutate_at(vars(-org_name), as.numeric) %>%
+  
+  # Legger til en kolonne med KPI
+  mutate(KPI_ROI = fundraising/(private_contributions+membership_fees))
+```
+
+Med den fila vi har brukt til nå, får mange variabler flere rader med NA-verdier og flere av de verdiene vi skal regne sammen ligger på ulike rader og blir istedenfor regnet sammen med en NA-verdi, som gir NA i KPI-variabelen.  
+
+```{r pressure, echo=FALSE}
+# Leser inn excel-fil
+jukseark_1 <- read_excel("./OPXfinans2.xlsx")
+
+# Lager et nytt objekt
+juksedata_1 <- jukseark_1 %>% 
+  
+  # # Gjør om rader til kolonner (variabler)
+  pivot_wider(names_from = Name, values_from = Value) %>% 
+  
+   # Lager mer r-vennlige kolonnenavn
+  clean_names() %>% 
+  
+  # Legger til en kolonne med KPI men alt er NA
+  mutate(KPI_ROI = fundraising/(private_contributions+membership_fees))
+
+```
+
+Jeg har prøvd å løse dette med å droppe NA-verdier, men det har ikke fungert.
+
+```{r}
+
+# na.omit fjerner alt innhold fra tabellen
+juksedata_1 <- jukseark_1 %>% 
+  pivot_wider(names_from = Name, values_from = Value) %>% 
+  na.omit()
+
+# na.rm legger til en variabel som heter na.rm XD
+# KPI er fortsatt NA
+juksedata_1 <- jukseark_1 %>% 
+  pivot_wider(names_from = Name, values_from = Value) %>%
+  clean_names() %>% 
+  mutate(KPI_ROI = undraising/(private_contributions+membership_fees), 
+         na.rm = TRUE)
+
+```
+
+Solveig foreslo å legge til as.numeric i i mutate foran hver variabel vi bruker til å regne ut KPI, men mente også at det blir mye styr og at det alternative arket generelt var enklere å bruke. Så vi bør kanskje vurdere om vi har gode grunner til å bruke det vi har brukt så langt.

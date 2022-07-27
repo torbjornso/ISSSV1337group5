@@ -1,0 +1,234 @@
+---
+title: "Charity analysis"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: scroll
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+if (!require("pacman")) install.packages("pacman"); library(pacman)
+p_load(shiny, tidyverse, scales, rvest, janitor, plotly, readxl,
+       flexdashboard, MetBrewer)
+```
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+### File upload
+
+Please upload an html copy of annual accounts from [Proff.no](https://www.proff.no) and enter the start and end years from that table.
+
+Then upload an Excel file in the set format.
+
+Click 'Analyse' to analyse the data.
+
+
+```{r sidebar}
+# HTML
+fileInput("html", label = "Upload html file", accept = ".html")
+
+numericInput("start", label = "Start", value = 2002)
+numericInput("end", label = "End", value = 2021)
+
+# Excel
+fileInput("excel", "Upload Excel file", accept = ".xlsx")
+
+# Button
+actionButton("click", "Analyse")
+
+
+```
+
+Column 
+-----------------------------------------------------------------------
+
+### Plotly
+
+```{r}
+plotlyOutput("plotlyplot")
+```
+
+### ggplot
+```{r}
+plotOutput("htmlplot")
+```
+
+Column 
+-----------------------------------------------------------------------
+
+### Transparency
+```{r}
+plotlyOutput("fancyplot")
+```
+
+### KPI
+```{r}
+valueBoxOutput("KPI_box")
+```
+
+```{r shiny, include=FALSE}
+# Shiny actions
+observeEvent(input$click, { # wait for button click
+    
+    # creating data frame from html file
+    htmldata <- reactive({
+      read_proff6(input$html$datapath,
+                  as.character(input$start), as.character(input$end))
+      })
+    
+    # Creating data frame from Excel file
+    exceldata <- reactive({
+      widen_excel(input$excel$datapath)
+    })
+#---- Value Box ----------------------------------------------------------------    
+    # Creating value box
+    KPI_admin <- reactive({exceldata() |> 
+           mutate(
+    KPI_admin =
+      str_c(
+        format(
+        (expenses_administrative / expenses_program_services *100), digits = 3
+        ), "%"
+        )
+  ) |> 
+  filter(year == max(year)) |> 
+  select(KPI_admin) |> 
+  str_flatten()
+    })
+    
+    output$KPI_box <- renderValueBox({
+      valueBox(
+        value = KPI_admin(),
+        caption = "admin",
+        color = "info",
+        icon = "fa-random"
+      )
+    })
+#---- Plots --------------------------------------------------------------------    
+    # creating plots
+    
+    # ggplot as reactive function
+    lonnplot <- reactive({
+      ggplot(data = htmldata(), aes(year, lederlonn)) +
+        geom_col() +
+        scale_y_continuous(
+          labels = scales::label_dollar(prefix = ""))
+    })
+    
+    # Creating plotly plot
+    output$plotlyplot <- renderPlotly(
+      ggplotly(lonnplot())
+    )
+    
+    # Creating ggplot
+    output$htmlplot <- renderPlot(
+      lonnplot()
+    )
+    
+    # Creating fancier plot
+    fancyplot <- reactive(
+      htmldata() |> 
+        select(
+    year, lederlonn, leder_annen_godtgjorelse
+  ) |> 
+  rename(
+    Year = year,
+    Salary = lederlonn,
+    `Other compensation` = leder_annen_godtgjorelse
+  ) |> 
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+  ggplot(aes(Year, value, fill = Compensation)) +
+  geom_col() +
+  scale_y_continuous(
+    labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
+                    label_dollar(prefix = str_c(htmldata()$valutakode[1], " ")),
+                    label_dollar(prefix = "? "))
+      ) +
+  scale_fill_met_d("Troy") +
+  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
+       subtitle = ifelse(length(unique(htmldata()$valutakode)) == 1,
+                         "",
+                         "Note: not all values are denominated in the same currency"))
+    )
+    
+    output$fancyplot <- renderPlotly(
+      ggplotly(fancyplot())
+    )
+  })
+```
+
+```{r functions, include=FALSE}
+# Function to read html file
+read_proff6 <- function(file, start, end){
+    read_html(file, encoding = "UTF-8") |> 
+      html_node("#inner-frame") |> 
+      html_table() |> 
+      select( # removing empty column
+        REGNSKAPSPERIODE:all_of(start)) |> # using all_of()
+      mutate( # removing whitespace
+        REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+      ) |> 
+      filter( # removing duplicate table - no idea why it's necessary
+        !row_number() > 176
+      ) |>
+      filter( # removing duplicate rows
+        !grepl("Lukk", REGNSKAPSPERIODE)
+      ) |> 
+      pivot_longer( # tidying data
+        all_of(end):all_of(start), names_to = "year") |> # using all_of()
+      mutate( # changing to real NAs and turning years into numbers
+        value = na_if(value, "-"),
+        year = as.integer(year)) |> 
+      mutate( # adding currency column
+        valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+      ) |> 
+      fill( # filling the currency column
+        valutakode, .direction = "updown"
+      ) |> 
+      filter( # removing dates and redundant currency
+        REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+          REGNSKAPSPERIODE != "Valutakode") |> 
+      mutate( # removing whitespace in numbers
+        value = str_replace_all(value, "\\s", "")
+      ) |> 
+      mutate( # turning into numbers
+        value = as.numeric(value)
+      ) |> 
+      mutate( # removing years as values
+        value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+      ) |> 
+      mutate( # values no longer in 1000
+        value = value * 1000
+      ) |> 
+      distinct() |> # removing any remaining duplicate rows
+      pivot_wider( # pivoting
+        names_from = REGNSKAPSPERIODE, values_from = value
+      ) |> 
+      clean_names() |> # tidying names
+      select(-lederlonn_i_hele_1000,
+             -resultatregnskap_i_hele_1000,
+             -balanseregnskap_i_hele_1000) |> # removing headings
+      rename( # making it clear what lonn refers to
+        lederlonn = lonn
+      ) |> 
+      arrange(desc(year)) # arranging by year
+  }
+  
+# Function to read Excel file
+widen_excel <- function(file){
+    read_excel(file) |> 
+      mutate(
+        Value = Value * 1000
+      ) |> 
+      unite(
+        entry, c(Category, Name), sep = "_"
+      ) |> 
+      select(-`Sub-category`) |> 
+      pivot_wider(names_from = entry, values_from = Value) |> 
+      clean_names()
+}
+
+```
+

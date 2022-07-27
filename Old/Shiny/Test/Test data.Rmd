@@ -1,0 +1,1013 @@
+---
+title: "Test data"
+author: "Torbjørn Skinnemoen Ottersen"
+date: '2022-07-16'
+output: 
+  html_document: 
+    df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Testing ideas for the Shiny app/dashboard.
+
+# Background
+
+## Libraries
+```{r libraries}
+if (!require("pacman")) install.packages("pacman"); library(pacman)
+p_load(shiny,tidyverse, scales, rvest, janitor, plotly, readxl, MetBrewer)
+```
+
+## Functions
+
+### HTML
+```{r}
+read_proff6 <- function(file, start, end){
+    read_html(file, encoding = "UTF-8") |> 
+      html_node("#inner-frame") |> 
+      html_table() |> 
+      select( # removing empty column
+        REGNSKAPSPERIODE:all_of(start)) |> # using all_of()
+      mutate( # removing whitespace
+        REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+      ) |> 
+      filter( # removing duplicate table - no idea why it's necessary
+        !row_number() > 176
+      ) |>
+      filter( # removing duplicate rows
+        !grepl("Lukk", REGNSKAPSPERIODE)
+      ) |> 
+      pivot_longer( # tidying data
+        all_of(end):all_of(start), names_to = "year") |> # using all_of()
+      mutate( # changing to real NAs and turning years into numbers
+        value = na_if(value, "-"),
+        year = as.integer(year)) |> 
+      mutate( # adding currency column
+        valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+      ) |> 
+      fill( # filling the currency column
+        valutakode, .direction = "updown"
+      ) |> 
+      filter( # removing dates and redundant currency
+        REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+          REGNSKAPSPERIODE != "Valutakode") |> 
+      mutate( # removing whitespace in numbers
+        value = str_replace_all(value, "\\s", "")
+      ) |> 
+      mutate( # turning into numbers
+        value = as.numeric(value)
+      ) |> 
+      mutate( # removing years as values
+        value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+      ) |> 
+      mutate( # values no longer in 1000
+        value = value * 1000
+      ) |> 
+      distinct() |> # removing any remaining duplicate rows
+      pivot_wider( # pivoting
+        names_from = REGNSKAPSPERIODE, values_from = value
+      ) |> 
+      clean_names() |> # tidying names
+      select(-lederlonn_i_hele_1000,
+             -resultatregnskap_i_hele_1000,
+             -balanseregnskap_i_hele_1000) |> # removing headings
+      rename( # making it clear what lonn refers to
+        lederlonn = lonn
+      ) |> 
+      arrange(desc(year)) # arranging by year
+}
+
+read_proff7 <- function(file, start, end) {
+  read_html(file, encoding = "UTF-8") |>
+    html_node("#inner-frame") |>
+    html_table() |>
+    select( # removing empty column
+      REGNSKAPSPERIODE:all_of(start)
+    ) |> # using all_of()
+    mutate( # removing whitespace
+      REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+    ) |>
+    filter( # removing duplicate table - no idea why it's necessary
+      !row_number() > 176
+    ) |>
+    filter( # removing duplicate rows
+      !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |>
+    pivot_longer( # tidying data
+      all_of(end):all_of(start),
+      names_to = "year"
+    ) |> # using all_of()
+    mutate( # changing to real NAs and turning years into numbers
+      value = na_if(value, "-"),
+      year = as.integer(year)
+    ) |>
+    mutate( # adding currency column
+      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+    ) |>
+    fill( # filling the currency column
+      valutakode,
+      .direction = "updown"
+    ) |>
+    filter( # removing dates and redundant currency
+      REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+        REGNSKAPSPERIODE != "Valutakode"
+    ) |>
+    mutate( # removing whitespace in numbers
+      value = str_replace_all(value, "\\s", ""),
+      value = as.numeric(value),
+      value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value),
+      value = value * 1000
+    ) |>
+    distinct() |> # removing any remaining duplicate rows
+    pivot_wider( # pivoting
+      names_from = REGNSKAPSPERIODE, values_from = value
+    ) |>
+    clean_names() |> # tidying names
+    select(
+      -lederlonn_i_hele_1000,
+      -resultatregnskap_i_hele_1000,
+      -balanseregnskap_i_hele_1000
+    ) |> # removing headings
+    rename( # making it clear what lonn refers to
+      lederlonn = lonn
+    ) |>
+    arrange(desc(year)) # arranging by year
+}
+
+read_proff8 <- function(file, start, end){
+    read_html(file, encoding = "UTF-8") |> 
+      html_node("#inner-frame") |> 
+      html_table() |> 
+    # removing empty column
+      select( 
+        REGNSKAPSPERIODE:all_of(start)) |>
+    # removing whitespace
+      mutate( 
+        REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+      ) |> 
+    # removing duplicate table - no idea why it's necessary
+      filter(
+        !row_number() > 176
+      ) |>
+    # removing duplicate rows
+      filter( 
+        !grepl("Lukk", REGNSKAPSPERIODE)
+      ) |> 
+    # tidying data
+      pivot_longer( 
+        all_of(end):all_of(start), names_to = "year"
+        ) |> 
+    # changing to real NAs and turning years into numbers
+    # picking out the currency
+      mutate( 
+        value = na_if(value, "-"),
+        year = as.integer(year), 
+        valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+      ) |> 
+    # filling the currency column
+      fill( 
+        valutakode, .direction = "updown"
+      ) |> 
+    # removing dates and redundant currency
+      filter( 
+        REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+          REGNSKAPSPERIODE != "Valutakode") |> 
+    # removing white space in numbers
+    # removing years as numbers
+      mutate( 
+        value = str_replace_all(value, "\\s", ""),
+        value = as.numeric(value),
+        value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+      ) |> 
+    # removing any remaining duplicate rows
+      distinct() |> 
+    # pivoting
+      pivot_wider( 
+        names_from = REGNSKAPSPERIODE, values_from = value
+      ) |> 
+    # tidying names
+      clean_names() |> 
+    # removing headings
+      select(-lederlonn_i_hele_1000,
+             -resultatregnskap_i_hele_1000,
+             -balanseregnskap_i_hele_1000) |> 
+    # making it clear what lonn refers to
+      rename( 
+        lederlonn = lonn
+      ) |> 
+    # Creating new variables for plots
+    mutate(
+      annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
+      balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
+    ) |> 
+    # arranging by year
+      arrange(desc(year)) 
+}
+
+
+```
+
+### Excel wide
+```{r}
+widen_excel <- function(file){
+  read_excel(file) |> 
+  unite(
+    entry, c(Category, Name), sep = "_"
+  ) |> 
+  select(-`Sub-category`) |> 
+  pivot_wider(names_from = entry, values_from = Value) |> 
+  clean_names()
+}
+```
+
+## Loading data
+```{r}
+kreft_html <- read_proff6("Data/Kreftforeningen.html", "2002", "2021")
+kreft_excel <- widen_excel("Data/OPXfinans_final.xlsx")
+
+kreft_html3 <- read_proff7("Data/Kreftforeningen.html", "2002", "2021")
+
+identical(kreft_html, kreft_html3)
+
+kreft_html_with_variables <- read_proff8("Data/Kreftforeningen.html", "2002", "2021")
+
+identical(kreft_html, kreft_html5)
+
+kreft_html5 |> 
+  select(arsresultat, sum_egenkapital_og_gjeld, annual_profit, balance_positive)
+```
+
+## Viewing data
+
+### `View()`
+```{r view, eval=FALSE}
+View(kreft_html_with_variables)
+View(kreft_excel)
+```
+
+### kabled
+```{r}
+kreft_html
+kreft_excel
+kreft_html_with_variables
+
+
+```
+
+# Testing
+
+## Data manipulation
+```{r}
+kreft_excel |> 
+  filter(year == max(year))
+
+kreft_html |> 
+  filter(year == max(kreft_excel$year))
+
+kreft_excel |> 
+  left_join(kreft_html, by = "year")
+```
+
+
+## Visualisation ideas
+
+### CEO compensation and currency testing
+```{r}
+compensation_p <- kreft_html |> 
+  group_by(year) |> 
+  mutate(
+    leder_total = sum(lederlonn, leder_annen_godtgjorelse, na.rm = TRUE)
+  ) |> 
+  ggplot(aes(year, leder_total, fill = leder_total)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = "")) +
+  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation")
+ggplotly(compensation_p)
+
+compensation_p2 <- kreft_html |> 
+  select(
+    year, lederlonn, leder_annen_godtgjorelse
+  ) |> 
+  rename(
+    Year = year,
+    Salary = lederlonn,
+    `Other compensation` = leder_annen_godtgjorelse
+  ) |> 
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+  ggplot(aes(Year, value, fill = Compensation)) +
+  geom_col() +
+  scale_y_continuous(
+    labels = scales::label_dollar(prefix =
+                                    str_c(kreft_html$valutakode[1], " "))) +
+  scale_fill_met_d("Troy") +
+  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation")
+ggplotly(compensation_p2)
+
+# if else structure to check for uniform currency code?
+length(unique(kreft_html$valutakode)) == 1
+
+# Testing with uniform currency
+if (length(unique(kreft_html$valutakode)) == 1) {
+  kreft_html |> 
+  select(
+    year, lederlonn, leder_annen_godtgjorelse
+  ) |> 
+  rename(
+    Year = year,
+    Salary = lederlonn,
+    `Other compensation` = leder_annen_godtgjorelse
+  ) |> 
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+  ggplot(aes(Year, value, fill = Compensation)) +
+  geom_col() +
+  scale_y_continuous(
+    labels = scales::label_dollar(prefix =
+                                    str_c(kreft_html$valutakode[1], " "))) +
+  scale_fill_met_d("Troy") +
+  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation")
+} else {
+    kreft_html |> 
+  select(
+    year, lederlonn, leder_annen_godtgjorelse
+  ) |> 
+  rename(
+    Year = year,
+    Salary = lederlonn,
+    `Other compensation` = leder_annen_godtgjorelse
+  ) |> 
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+  ggplot(aes(Year, value, fill = Compensation)) +
+  geom_col() +
+  scale_y_continuous(
+    labels = scales::label_dollar(prefix = "? ")) +
+  scale_fill_met_d("Troy") +
+  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
+       subtitle = "Note: not all values are denominated in the same currency")
+}
+
+# Creating data frame with multiple currencies
+currency_test <- kreft_html |> 
+  mutate(
+    valutakode = ifelse(year == 2019, "USD", valutakode)
+  )
+
+# Testing new data frame
+if (length(unique(currency_test$valutakode)) == 1) {
+  currency_test |> 
+  select(
+    year, lederlonn, leder_annen_godtgjorelse
+  ) |> 
+  rename(
+    Year = year,
+    Salary = lederlonn,
+    `Other compensation` = leder_annen_godtgjorelse
+  ) |> 
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+  ggplot(aes(Year, value, fill = Compensation)) +
+  geom_col() +
+  scale_y_continuous(
+    labels = scales::label_dollar(prefix =
+                                    str_c(kreft_html$valutakode[1], " "))) +
+  scale_fill_met_d("Troy") +
+  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation")
+} else {
+    currency_test |> 
+  select(
+    year, lederlonn, leder_annen_godtgjorelse
+  ) |> 
+  rename(
+    Year = year,
+    Salary = lederlonn,
+    `Other compensation` = leder_annen_godtgjorelse
+  ) |> 
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+  ggplot(aes(Year, value, fill = Compensation)) +
+  geom_col() +
+  scale_y_continuous(
+    labels = scales::label_dollar(prefix = "? ")) +
+  scale_fill_met_d("Troy") +
+  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
+       subtitle = "Note: not all values are denominated in the same currency")
+}
+
+# Could probably be done with two internal ifelse() functions
+
+# ifelse() version
+
+# Testing
+currency_test |> 
+  select(
+    year, lederlonn, leder_annen_godtgjorelse
+  ) |> 
+  rename(
+    Year = year,
+    Salary = lederlonn,
+    `Other compensation` = leder_annen_godtgjorelse
+  ) |> 
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+  ggplot(aes(Year, value, fill = Compensation)) +
+  geom_col() +
+  scale_y_continuous(
+    labels = ifelse(length(unique(currency_test$valutakode)) == 1,
+                    label_dollar(prefix = str_c(kreft_html$valutakode[1], " ")),
+                    label_dollar(prefix = "? "))
+      ) +
+  scale_fill_met_d("Troy") +
+  labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
+       subtitle = ifelse(length(unique(currency_test$valutakode)) == 1,
+                         element_blank(),
+                         "Note: not all values are denominated in the same currency"))
+
+# Original
+kreft_html |>
+  select(
+    year, lederlonn, leder_annen_godtgjorelse
+  ) |>
+  rename(
+    Year = year,
+    Salary = lederlonn,
+    `Other compensation` = leder_annen_godtgjorelse
+  ) |>
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |>
+  ggplot(aes(Year, value, fill = Compensation)) +
+  geom_col() +
+  scale_y_continuous(
+    labels = ifelse(length(unique(kreft_html$valutakode)) == 1,
+      label_dollar(prefix = str_c(kreft_html$valutakode[1], " ")),
+      label_dollar(prefix = "? ")
+    )
+  ) +
+  scale_fill_met_d("Troy") +
+  labs(
+    x = "Year", y = "Total compensation", title = "Annual CEO compensation",
+    subtitle = ifelse(length(unique(kreft_html$valutakode)) == 1,
+      "",
+      "Note: not all values are denominated in the same currency"
+    )
+  )
+
+
+
+# New
+kreft_html5 |> 
+  select(
+          year, lederlonn, leder_annen_godtgjorelse
+         ) |> 
+        # Compensation in ordinary numbers
+        mutate(
+          lederlonn = lederlonn * 1000,
+          leder_annen_godtgjorelse = leder_annen_godtgjorelse * 1000
+        ) |> 
+        # renaming for the purposes of the plot
+        rename( 
+          Year = year,
+          Salary = lederlonn,
+          `Other compensation` = leder_annen_godtgjorelse
+        ) |> 
+        # pivoting to join the two values to use fill
+        pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+        ggplot(aes(Year, value, fill = Compensation)) +
+        geom_col() +
+        scale_y_continuous(
+          # Checking for uniform currency code
+        labels = ifelse(length(unique(kreft_html5$valutakode)) == 1,
+                        # Using the currency code if uniform
+                    label_dollar(prefix = str_c(kreft_html5$valutakode[1], " ")),
+                        # alternative prefix if multiple currencies in the data
+                    label_dollar(prefix = "? "))
+         ) +
+        # pretty colours
+        scale_fill_met_d("Troy") + 
+        labs(x = "Year", y = "Total compensation", title = "Annual CEO compensation",
+             # Checking again for currency; including warning if not uniform
+        subtitle = ifelse(length(unique(kreft_html5$valutakode)) == 1,
+                         "",
+                         "Note: not all values are denominated in the same currency"))
+testplot <- kreft_html5 |> 
+ggplot(aes(year, arsresultat, fill = annual_profit)) +
+      geom_col() +
+      scale_y_continuous(
+        labels = ifelse(length(unique(kreft_html5$valutakode)) == 1,
+                        # Using the currency code if uniform
+                    label_dollar(prefix = str_c(kreft_html5$valutakode[1], " ")),
+                        # alternative prefix if multiple currencies in the data
+                    label_dollar(prefix = "? "))
+        ) +
+        # slightly nicer colours + ensuring positive values are always green
+      scale_fill_met_d("Tsimshian",
+                   direction = ifelse(mean(kreft_html5$annual_profit, na.rm = TRUE) == 1,-1, 1)) +
+      theme(legend.position = "none") +
+      labs(x = "Year", y = "", title = "Annual result (in thousands)",
+             # Checking again for currency; including warning if not uniform
+        subtitle = "test")
+
+testplot
+ggplotly(testplot) |> layout(title = list(text = str_c('US State Population and Life Expectancy',
+                                    '<br>',
+                                    '<sup>',
+                                    string,
+                                    '</sup>'),
+                                    y = 0.95, x = 0.5, xanchor = 'center', yanchor =  'top'))
+
+layout(title = list(text='Plot Title', y = 0.95, x = 0.5, xanchor = 'center', yanchor =  'top'))
+string <- "test"
+
+"Note: not all values are denominated in the same currency"
+
+# bad test
+    mutate(
+    valutakode = ifelse(year == 2019, "USD", valutakode)
+  ) |>
+```
+
+### Result
+```{r}
+arsresultat_p <- kreft_html |> 
+  mutate(
+    profit = ifelse(arsresultat >= 0, TRUE, FALSE)
+  ) |> 
+  ggplot(aes(year, arsresultat, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = ""))
+ggplotly(arsresultat_p)
+
+arsresultat_p_met <- kreft_html |> 
+  mutate(
+    profit = ifelse(arsresultat >= 0, TRUE, FALSE)
+  ) |> 
+  ggplot(aes(year, arsresultat, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = "")) +
+  scale_fill_met_d("Tsimshian") +
+  theme(legend.position = "none")
+ggplotly(arsresultat_p_met)
+
+ordinaert_p <- kreft_html |> 
+  mutate(
+    profit = ifelse(ordinaert_resultat >= 0, TRUE, FALSE)
+  ) |> 
+  ggplot(aes(year, ordinaert_resultat, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = "")) +
+  theme(legend.position = "none")
+ggplotly(ordinaert_p)
+
+ordinaert_p_met <- kreft_html |> 
+  mutate(
+    profit = ifelse(ordinaert_resultat >= 0, TRUE, FALSE)
+  ) |> 
+  ggplot(aes(year, ordinaert_resultat, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = "")) +
+  theme(legend.position = "none") +
+  scale_fill_met_d("Tsimshian",
+                   direction = ifelse(mean(kreft_html$ordinaert_resultat) == 1,-1, 1)) +
+  theme(legend.position = "none") +
+  labs(x = "", y = "")
+ggplotly(ordinaert_p_met)
+
+
+
+# function extracted
+
+  
+  # Reactive function to check for currency and use an appropriate subtitle
+  currency_subtitle <- reactive({
+    if (length(unique(htmldata()$valutakode)) == 1){
+      ""
+    } else {
+      "Note: not all values are denominated in the same currency"
+    }
+  })
+```
+
+### Egenkapital og gjeld
+```{r}
+kreft_html2 <- kreft_html |> 
+  mutate(
+    profit = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
+  )
+kreft_html2 |> 
+  ggplot(aes(year, sum_egenkapital_og_gjeld, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = label_dollar()) +
+  scale_fill_met_d("Tsimshian",
+                   direction = if (mean(kreft_html2$profit) == 1){-1} else {1})
+
+kreft_html2 |> 
+  ggplot(aes(year, sum_egenkapital_og_gjeld, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = label_dollar()) +
+  scale_fill_met_d("Tsimshian",
+                   direction = ifelse(mean(kreft_html2$profit) == 1,-1, 1))
+
+kreft_html2 |> 
+  ggplot(aes(year, sum_egenkapital_og_gjeld, fill = profit)) +
+  geom_col() +
+  scale_y_continuous(labels = label_dollar()) +
+  scale_fill_met_d("Tsimshian",
+                   direction = ifelse(mean(kreft_html2$profit) == 1,-1, 1))
+
+# Need to add profit variables
+
+kreft_html_with_variables |> 
+  ggplot(aes(year, sum_egenkapital_og_gjeld, fill = balance_positive)) +
+  geom_col() +
+  currency_scale() +
+  scale_fill_met_d("Tsimshian",
+                   direction = ifelse(
+                     mean(kreft_html_with_variables$balance_positive,
+                          na.rm = TRUE) == 1,-1, 1)) +
+  theme(legend.position = "none") +
+  labs(x = "Year", y = "", title = "Balance (in thousands)",
+             # Checking again for currency; including warning if not uniform
+        subtitle = ifelse(length(unique(kreft_html_with_variables$valutakode)) == 1,
+                         "",
+                         "Note: not all values are denominated in the same currency"))
+
+currency_scale <- function()
+  {scale_y_continuous(
+        # Checking for uniform currency code
+        labels = ifelse(length(unique(kreft_html_with_variables$valutakode)) == 1,
+          # Using the currency code if uniform
+          label_dollar(prefix = str_c(kreft_html_with_variables$valutakode[1], " ")),
+          # alternative prefix if multiple currencies in the data
+          label_dollar(prefix = "? ")
+        )
+      )
+  }
+```
+
+### Expenses
+```{r}
+expenses_plot <- kreft_excel |> 
+  transmute(
+    Year = as.factor(year),
+    Other = expenses_other,
+    Administrative = expenses_administrative,
+    Fundraising = expenses_fundraising,
+    `Program services` = expenses_program_services
+  ) |> 
+  pivot_longer(c(Other:`Program services`), names_to = "Expenses") |> 
+  mutate(
+    Expenses = ordered(Expenses, levels =
+                         c("Program services", "Administrative",
+                         "Fundraising", "Other")) 
+  ) |> 
+  ggplot(aes(Year, value, fill = Expenses)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(labels = label_dollar()) +
+  scale_fill_met_d("Troy")
+
+ggplotly(expenses_plot) |>
+      layout(
+        annotations =
+          list(
+            x = 1, y = -0.1, text = "currency_caption()",
+            showarrow = F, xref = "paper", yref = "paper",
+            xanchor = "right", yanchor = "auto", xshift = 0, yshift = 0,
+            font = list(size = 11)
+          )
+      )
+
+plotlylayout <- function()({
+  list(
+            x = 1, y = -0.1, text = "currency_caption()",
+            showarrow = F, xref = "paper", yref = "paper",
+            xanchor = "right", yanchor = "auto", xshift = 0, yshift = 0,
+            font = list(size = 11)
+          )
+})
+
+ggplotly(expenses_plot) |> 
+layout(annotations = plotlylayout())
+
+kreft_excel |> 
+  transmute(
+    Year = as.factor(year),
+    Administrative = expenses_administrative,
+    Fundraising = expenses_fundraising,
+    `Program services` = expenses_program_services,
+    Other = expenses_other
+  )
+?as_factor
+```
+
+
+
+## KPI ideas
+
+### Fundraising ROI
+```{r}
+kreft_excel |> 
+  mutate(
+    KPI_ROI = expenses_fundraising / (revenue_private_contributions + revenue_membership_fees)
+  ) |> 
+  select(year, KPI_ROI)
+
+kreft_excel |> 
+          mutate(
+            KPI_fundraising =
+              str_c(format((revenue_private_contributions + revenue_membership_fees) / expenses_fundraising) * 100, digits = 3
+          ), "%"
+         ) |> 
+  filter(year == max(year)) |> # selecting latest available year
+             select(KPI_fundraising) |> 
+        str_flatten() # turning into a single string
+
+# Numeric, for further transformation
+
+KPI_fundraising_num <- kreft_excel |> 
+          mutate(
+            KPI_fundraising_num =
+              (revenue_private_contributions +
+                 revenue_membership_fees - expenses_fundraising) /
+              expenses_fundraising * 100) |> 
+  filter(year == max(year)) |> 
+  select(KPI_fundraising_num) |> 
+  pull()
+
+# To turn into percentage
+str_c(format(KPI_fundraising_num, digits = 3), "%")
+
+KPI_fundraising_num
+
+if (KPI_fundraising_num < 100) {"danger"} else if (KPI_fundraising_num < 200) {"warning"} else {"success"}
+
+kreft_excel |> 
+  mutate(
+    KPI_admin =
+      str_c(
+        format(
+        ((revenue_private_contributions + revenue_membership_fees - expenses_fundraising) / expenses_fundraising * 100), digits = 3
+        ), "%"
+        )
+  ) |> 
+  filter(year == max(year)) |> 
+  select(KPI_admin) |> 
+  str_flatten()
+
+(kreft_excel$revenue_private_contributions + kreft_excel$revenue_membership_fees) / kreft_excel$expenses_fundraising
+
+
+```
+
+### Administrative expenses
+```{r}
+kreft_excel |> 
+  mutate(
+    KPI_admin =
+      str_c(
+        format(
+        (expenses_administrative / expenses_program_services *100), digits = 3
+        ), "%"
+        )
+  ) |> 
+  select(year, KPI_admin)
+
+kreft_excel |> 
+  mutate(
+    KPI_admin =
+      str_c(
+        format(
+        (expenses_administrative / expenses_program_services *100), digits = 3
+        ), "%"
+        )
+  ) |> 
+  filter(year == max(year)) |> 
+  select(KPI_admin) |> 
+  str_flatten()
+
+kreft_excel |> mutate(
+            KPI_admin =
+              expenses_administrative / expenses_program_services *100) |> 
+           filter(year == max(year)) |> 
+          select(KPI_admin)
+
+kreft_excel |>
+      mutate(
+        KPI_admin =
+          str_c( # Using str_c() to concatenate value and % sign
+            format( # shortening(lengthening) the resulting value
+              # calculating the value
+              (expenses_administrative / (expenses_program_services +
+                                            expenses_administrative +
+                                            expenses_fundraising +
+                                            expenses_other) * 100),
+              digits = 3
+            ), "%"
+          )
+      ) |>
+      filter(year == max(year)) |> # selecting latest available year
+      select(KPI_admin) |> # dropping all other variables
+      str_flatten() # turning into a single string
+
+kreft_excel |>
+      mutate(
+        KPI_admin =
+            format( # shortening(lengthening) the resulting value
+              # calculating the value
+              (expenses_administrative / (expenses_program_services +
+                                            expenses_administrative +
+                                            expenses_fundraising +
+                                            expenses_other) * 100),
+              digits = 3)
+      ) |>
+      filter(year == max(year)) |> # selecting latest available year
+      select(KPI_admin) |> # dropping all other variables
+      pull
+  class()
+
+
+KPI_admin_num <- kreft_excel |> 
+  filter(year == max(year)) |> 
+  transmute(
+    KPI_admin = expenses_administrative / (expenses_program_services +
+                                            expenses_administrative +
+                                            expenses_fundraising +
+                                            expenses_other) * 100
+  ) |> 
+  pull()
+  
+KPI_to_string <- function(variable){
+  if (variable == 0 | is.na(variable)){
+    NA
+  } else {
+    str_c(format(variable, digits = 3), "%")
+  }
+}
+
+KPI_to_string(KPI_admin_num)
+
+```
+
+### Private donation growth
+```{r}
+kreft_excel |> 
+  transmute(
+    growth = revenue_private_contributions[1] / revenue_private_contributions[2] * 100
+  ) |> 
+  pull() |> 
+  first()
+
+kreft_excel |> 
+      filter(year == max(year)) |>
+      transmute(
+        # Calculating the value as a percentage; removing all other
+        KPI_fundraising_num =
+          (revenue_private_contributions +
+            revenue_membership_fees - expenses_fundraising) /
+            expenses_fundraising * 100
+      ) |>
+      # just want the single number
+      pull()
+
+?pull
+```
+
+### Public grants growth
+```{r}
+kreft_excel |> 
+  transmute(
+    growth = revenue_public_grants[1] / revenue_public_grants[2] * 100
+  ) |> 
+  pull() |> 
+  first()
+```
+
+### Private/public
+```{r}
+kreft_excel |> 
+  transmute(
+    proportion = (revenue_private_contributions + revenue_membership_fees) / (revenue_public_grants + revenue_private_contributions + revenue_membership_fees) * 100
+  ) |> 
+  pull() |> 
+  first()
+
+kreft_excel
+```
+
+
+### Their KPI
+
+```{r}
+# private contributions, investments, cash in bank / short-term garnts payable, revocable endowments, long-term grants payable
+
+mutate(kreft_excel,
+    KPI_OPX = (revenue_private_contributions + revenue_investments +
+                 assets_cash_in_bank_and_cash_equivalents) /
+      (liability_short_term_grants_payable +
+         liability_revocable_endowments +
+         liability_long_term_grants_payable) * 100
+  ) |> select(year, KPI_OPX)
+
+kreft_excel |> 
+  filter(year == max(year)) |> 
+      transmute(
+        KPI_OPX = (revenue_private_contributions + revenue_investments +
+                 assets_cash_in_bank_and_cash_equivalents) /
+      (liability_short_term_grants_payable +
+         liability_revocable_endowments +
+         liability_long_term_grants_payable) * 100
+      ) |> 
+      pull()
+kreft_excel |> 
+filter(year == max(year)) |>
+      # Calculating the value as a %
+      transmute(
+        KPI_OPX = (revenue_private_contributions + revenue_investments +
+          assets_cash_in_bank_and_cash_equivalents) /
+          (liability_short_term_grants_payable +
+            liability_revocable_endowments +
+            liability_long_term_grants_payable) * 100
+      ) |>
+      # Just the single number
+      pull()
+```
+
+### Revenue plot
+```{r}
+kreft_excel |> 
+  transmute(
+        Year                    = as.factor(year),
+        `Private contributions` = revenue_private_contributions,
+        `Membership fees`       = revenue_membership_fees,
+        `Public grants`         = revenue_public_grants,
+        Investments             = revenue_investments,
+        `Operational activities`= revenue_operational_activities,
+        `Commercial activities` = revenue_commercial_activities,
+        Other                   = revenue_other
+      ) |> 
+      # Pivoting to use fill
+      pivot_longer(
+        c(`Private contributions`:Other), names_to = "Revenue source"
+      ) |> 
+      ggplot(aes(Year, value, fill = `Revenue source`)) +
+      geom_col() +
+      # Flipping, because the Excel file only contains two years atm
+      coord_flip() +
+      scale_fill_met_d("Hokusai2", direction = -1) +
+      labs(x = "", y = "", title = "Revenue (in thousands)")
+```
+
+
+## More functions
+```{r}
+# mutate(
+#       KPI_admin =
+#         str_c( # Using str_c() to concatenate value and % sign
+#          format( # shortening(lengthening) the resulting value
+#            # calculating the value
+#           (expenses_administrative / expenses_program_services *100), digits = 3
+#           ), "%"
+#          )
+#       ) |> 
+#       filter(year == max(year)) |> # selecting latest available year
+#        select(KPI_admin) |> # dropping all other variables
+#         str_flatten() # turning into a single string
+
+kreft_excel2 |> 
+  filter(year == max(year)) |> 
+  transmute(
+    boxvalue = str_c(format(KPI_admin, digits = 3), "%")
+  ) |> 
+  str_flatten()
+```
+
+```{r}
+NGO <- read_excel("Data/OPXfinans_final.xlsx") |> 
+  pull(Firm) |>
+  first()
+
+title <- if (is.na(NGO)) {
+  "Name of NGO missing"
+} else {
+  NGO
+}
+
+title
+
+NGO_blank <- read_excel("Data/Bad_data_no_name.xlsx") |> 
+  pull(Firm) |>
+  first()
+
+NGO_blank <- read_excel("Data/Bad_data_no_name.xlsx") |> 
+  pull(Firm) |> 
+  purrr::discard(is.na) |> 
+  first()
+
+length(NGO_blank)
+
+
+```
+
+```{r}
+summary(kreft_excel)
+```
+{.tabset-fade}
+
+{.no-title}
