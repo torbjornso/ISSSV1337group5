@@ -1047,15 +1047,16 @@ observe({
 
 ## Functions to read Excel file ------------------------------------------------
 widen_excel_test <- function(file) {
+  # Reading Excel file
   read_excel(file) |> 
     # cleaning names to enable later operations
     clean_names()
 }
 
 widen_excel <- function(object) {
-  if ("year" %in% names(object) && "firm" %in% names(object) &&
-    "category" %in% names(object) && "sub_category" %in% names(object) &&
-    "name" %in% names(object) && "value" %in% names(object)) {
+  # testing if all columns are present
+  if (setequal(names(object),
+               c("year", "firm", "category", "sub_category", "name", "value"))) {
     object |>
       # uniting category and name to deal with multiple 'Other'
       unite(
