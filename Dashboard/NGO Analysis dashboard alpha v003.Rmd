@@ -193,7 +193,7 @@ output$downloadUI <- renderUI({
 
 ## Report download and parameters ----------------------------------------------s
 output$report <- downloadHandler(
-  
+
   # Based on code in Mastering Shiny
   filename = "report.pdf",
   content = function(file) {
@@ -929,8 +929,8 @@ html_test_create <- function(file, start, end) {
 }
 
 read_proff_one <- function(object, start, end) {
-    object |> 
-  # removing empty column, using all_of(argument)
+  object |>
+    # removing empty column, using all_of(argument)
     select(
       REGNSKAPSPERIODE:all_of(start)
     ) |>
@@ -961,17 +961,17 @@ read_proff_one <- function(object, start, end) {
       # creating a currency code column and turning current currency codes into
       # NAs
       valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
-    ) |> 
+    ) |>
     fill(
       valutakode,
       .direction = "downup"
     )
 }
-    
+
 read_proff_two <- function(object) {
-     object |>
+  object |>
     # removing dates and redundant currency
-    select(-valutakode) |> 
+    select(-valutakode) |>
     filter(
       REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
         REGNSKAPSPERIODE != "Valutakode"
@@ -1037,7 +1037,7 @@ widen_excel <- function(object) {
       pivot_wider(names_from = entry, values_from = value) |>
       # cleaning names
       clean_names()
-    # Notfification if all columns are not present
+    # Notification if all columns are not present
   } else {
     validate("Please upload data using the specified Excel template.")
   }
@@ -1095,6 +1095,7 @@ empty_plot <- function(warning) {
     geom_text(aes(0, 0, label = " ")) +
     # as blank a slate as possible
     theme_void() +
+    # annotating the plot with the specified warning message
     annotate(
       "text",
       label = warning,
