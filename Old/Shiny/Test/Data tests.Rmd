@@ -476,7 +476,8 @@ html_testing <- function(file, start, end) {
     html_node("#inner-frame")
 
   if (class(htmltest) == "xml_node") {
-    htmltable <- htmltest |> html_table()
+    htmltable <- htmltest |>
+      html_table()
   } else {
     "table error"
   }
