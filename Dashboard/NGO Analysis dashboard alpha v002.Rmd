@@ -231,7 +231,7 @@ output$report <- downloadHandler(
 # First reactive chunk =========================================================
 
 # wait for button click
-observe({ 
+observe({
 
   # Excel data frame ===========================================================
 
@@ -250,7 +250,7 @@ observe({
   exceldata <- reactive({
     widen_excel(excel_test())
   })
-  
+
   # NGO title ==================================================================
   NGO <- reactive({
     # checking for the required column again
@@ -278,7 +278,7 @@ observe({
       NGO()
     }
   })
-  
+
   # Creating NGO title using html formatting (colour based on MetBrewer
   # "Hokusai2")
   output$title <- renderText({
@@ -286,7 +286,7 @@ observe({
   })
 
   # Value Boxes ================================================================
-  
+
   # All boxes use the colour "primary" and the icon "fa-solid fa-circle-xmark" if
   # the value is NA
 
@@ -354,11 +354,14 @@ observe({
         transmute(
           KPI_OPX =
             sum(revenue_private_contributions,
-                revenue_investments, assets_cash_in_bank_and_cash_equivalents,
-                na.rm = TRUE) /
+              revenue_investments, assets_cash_in_bank_and_cash_equivalents,
+              na.rm = TRUE
+            ) /
               sum(liability_short_term_grants_payable,
-                  liability_revocable_endowments,
-                  liability_long_term_grants_payable, na.rm = TRUE) * 100
+                liability_revocable_endowments,
+                liability_long_term_grants_payable,
+                na.rm = TRUE
+              ) * 100
         ) |>
         # Just the single number
         pull() |>
@@ -538,7 +541,6 @@ observe({
 
 
 ```{r reactive_plots, include=FALSE}
-
 # Beginning of the second reactive chunk =======================================
 # It's necessary to split the observers into separate parts, with all necessary
 # code duplicated, because of R's limitations.
@@ -547,16 +549,18 @@ observe({
 
   # Data frames ================================================================
   ## Creating data frame from html file-----------------------------------------
-    htmldata <- reactive({
+  htmldata <- reactive({
     # validating file
     validate(need(
       tools::file_ext(input$html$datapath) == "html",
       "Please upload an html file."
     ))
-    
+
     # Testing and creating data frame
-    html_test_create(input$html$datapath,
-                 as.character(input$start), as.character(input$end))
+    html_test_create(
+      input$html$datapath,
+      as.character(input$start), as.character(input$end)
+    )
   })
 
 
@@ -576,7 +580,7 @@ observe({
   exceldata <- reactive({
     widen_excel(excel_test())
   })
-  
+
   # Plots ======================================================================
 
   ## Annual result--------------------------------------------------------------
@@ -592,7 +596,7 @@ observe({
           Year = year,
           `Net income` = arsresultat,
           `Net positive` = annual_profit
-        ) |> 
+        ) |>
         ggplot(aes(Year, `Net income`, fill = `Net positive`)) +
         geom_col() +
         # using currency scale function to add correct currency code or ?
@@ -631,7 +635,7 @@ observe({
           Year = year,
           `Total equity/liabilities` = sum_egenkapital_og_gjeld,
           `Positive equity` = balance_positive
-        ) |> 
+        ) |>
         ggplot(aes(Year, `Total equity/liabilities`, fill = `Positive equity`)) +
         geom_col() +
         # using currency scale function to add correct currency code or ?
@@ -854,21 +858,21 @@ observe({
     if (datatest() == TRUE) {
       NA
     } else {
-    # reading the Excel sheet anew
-    read_excel(input$excel$datapath) |>
-      # removing the firm and sub-category columns
-      select(-Firm, -`Sub-category`) |>
-      # filtering to retain only revenue and expenses entries
-      filter(Category == "Revenue" | Category == "Expenses") |>
-      # grouping and summarising to calculate maximum value
-      group_by(Year, Category) |>
-      summarise(
-        sum = sum(Value, na.rm = TRUE)
-      ) |>
-      # Creating list of sums
-      pull() |>
-      # selecting the highest value
-      max()
+      # reading the Excel sheet anew
+      read_excel(input$excel$datapath) |>
+        # removing the firm and sub-category columns
+        select(-Firm, -`Sub-category`) |>
+        # filtering to retain only revenue and expenses entries
+        filter(Category == "Revenue" | Category == "Expenses") |>
+        # grouping and summarising to calculate maximum value
+        group_by(Year, Category) |>
+        summarise(
+          sum = sum(Value, na.rm = TRUE)
+        ) |>
+        # Creating list of sums
+        pull() |>
+        # selecting the highest value
+        max()
     }
   })
 
@@ -884,7 +888,6 @@ observe({
   })
   # Let the magic/disaster happen (i.e. execute when the user clicks the button)
 }) |> bindEvent(input$click)
-
 ```
 
 ```{r non-reactive functions, include=FALSE}
@@ -910,7 +913,7 @@ html_test_create <- function(file, start, end) {
   } else {
     validate("Please upload the specified type of html document.")
   }
-  
+
   # Testing if the correct years have been entered
   if (as.character(all_of(start)) %in% names(htmlready) &&
     as.character(all_of(end)) %in% names(htmlready)) {
@@ -924,88 +927,88 @@ html_test_create <- function(file, start, end) {
 read_proff <- function(file, start, end) {
   read_html(file, encoding = "UTF-8") |>
     html_node("#inner-frame") |>
-    html_table() |> 
-      # removing empty column, using all_of(argument)
-      select(
-        REGNSKAPSPERIODE:all_of(start)
-      ) |>
-      # removing white space
-      mutate(
-        REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
-      ) |>
-      # removing duplicate table sometimes created by read_html()
-      filter(
-        !row_number() > 176
-      ) |>
-      # removing duplicate rows
-      filter(
-        !grepl("Lukk", REGNSKAPSPERIODE)
-      ) |>
-      # tidying data using pivot_longer() and all_of(argument)
-      pivot_longer(
-        all_of(end):all_of(start),
-        names_to = "year"
-      ) |>
+    html_table() |>
+    # removing empty column, using all_of(argument)
+    select(
+      REGNSKAPSPERIODE:all_of(start)
+    ) |>
+    # removing white space
+    mutate(
+      REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+    ) |>
+    # removing duplicate table sometimes created by read_html()
+    filter(
+      !row_number() > 176
+    ) |>
+    # removing duplicate rows
+    filter(
+      !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |>
+    # tidying data using pivot_longer() and all_of(argument)
+    pivot_longer(
+      all_of(end):all_of(start),
+      names_to = "year"
+    ) |>
+    # creating a currency code column and turning current currency codes into
+    # NAs
+    mutate(
+      # changing to real NAs
+      value = na_if(value, "-"),
+      # turning years into numbers
+      year = as.integer(year),
       # creating a currency code column and turning current currency codes into
       # NAs
-      mutate(
-        # changing to real NAs
-        value = na_if(value, "-"),
-        # turning years into numbers
-        year = as.integer(year),
-        # creating a currency code column and turning current currency codes into
-        # NAs
-        valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
-      ) |>
-      # filling the currency column
-      fill(
-        valutakode,
-        .direction = "updown"
-      ) |>
-      # removing dates and redundant currency
-      filter(
-        REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
-          REGNSKAPSPERIODE != "Valutakode"
-      ) |>
-      mutate(
-        # removing white space in numbers
-        value = str_replace_all(value, "\\s", ""),
-        # turning numbers into true numbers
-        value = as.numeric(value),
-        # removing values that are years
-        value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
-      ) |>
-      # removing any remaining duplicate rows
-      distinct() |>
-      # pivoting to create 'tidy' variables
-      pivot_wider(
-        names_from = REGNSKAPSPERIODE, values_from = value
-      ) |>
-      # tidying names
-      clean_names() |>
-      # removing headings from the table
-      select(
-        -lederlonn_i_hele_1000,
-        -resultatregnskap_i_hele_1000,
-        -balanseregnskap_i_hele_1000
-      ) |>
-      # making it clear what lonn refers to
-      rename(
-        lederlonn = lonn
-      ) |>
-      # Creating new variables for plots
-      mutate(
-        annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
-        balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
-      ) |>
-      # arranging by year for practical display
-      arrange(desc(year))
+      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+    ) |>
+    # filling the currency column
+    fill(
+      valutakode,
+      .direction = "updown"
+    ) |>
+    # removing dates and redundant currency
+    filter(
+      REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+        REGNSKAPSPERIODE != "Valutakode"
+    ) |>
+    mutate(
+      # removing white space in numbers
+      value = str_replace_all(value, "\\s", ""),
+      # turning numbers into true numbers
+      value = as.numeric(value),
+      # removing values that are years
+      value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+    ) |>
+    # removing any remaining duplicate rows
+    distinct() |>
+    # pivoting to create 'tidy' variables
+    pivot_wider(
+      names_from = REGNSKAPSPERIODE, values_from = value
+    ) |>
+    # tidying names
+    clean_names() |>
+    # removing headings from the table
+    select(
+      -lederlonn_i_hele_1000,
+      -resultatregnskap_i_hele_1000,
+      -balanseregnskap_i_hele_1000
+    ) |>
+    # making it clear what lonn refers to
+    rename(
+      lederlonn = lonn
+    ) |>
+    # Creating new variables for plots
+    mutate(
+      annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
+      balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
+    ) |>
+    # arranging by year for practical display
+    arrange(desc(year))
 }
 
 ## Functions to read Excel file ------------------------------------------------
 widen_excel_test <- function(file) {
   # Reading Excel file
-  read_excel(file) |> 
+  read_excel(file) |>
     # cleaning names to enable later operations
     clean_names()
 }
