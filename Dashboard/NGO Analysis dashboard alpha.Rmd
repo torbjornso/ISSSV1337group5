@@ -9,7 +9,8 @@ runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
-# Loading packages using pacman to ensure they're all installed
+# Loading packages using pacman to ensure they're all installed and avoiding
+# catastrophic dashboard errors if they're not installed
 if (!require("pacman")) install.packages("pacman")
 library(pacman)
 p_load(
@@ -903,7 +904,7 @@ read_proff <- function(file, start, end) {
     select(
       REGNSKAPSPERIODE:all_of(start)
     ) |>
-    # removing white space
+    # removing text white space
     mutate(
       REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
     ) |>

@@ -1045,7 +1045,7 @@ observe({
 #     arrange(desc(year)) # arranging by year
 # }
 
-## Function to read Excel file -------------------------------------------------
+## Functions to read Excel file ------------------------------------------------
 widen_excel_test <- function(file) {
   read_excel(file) |> 
     # cleaning names to enable later operations
@@ -1059,8 +1059,7 @@ widen_excel <- function(object) {
     object |>
       # uniting category and name to deal with multiple 'Other'
       unite(
-        entry, c(category, name),
-        sep = "_"
+        entry, c(category, name)
       ) |>
       # deleting Sub-category and Firm
       select(-sub_category, -firm) |>
