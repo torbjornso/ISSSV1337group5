@@ -552,15 +552,9 @@ observe({
       "Please upload an html file."
     ))
     
-    # Testing
-    html_test <- read_proff_test(input$html$datapath)
-    
-    # Creating data frame
-    
-    read_proff_complete(
-      html_test,
-      as.character(input$start), as.character(input$end)
-    )
+    # Testing and creating data frame
+    html_test_create(input$html$datapath,
+                 as.character(input$start), as.character(input$end))
   })
 
   # Recreating, to make available to this chunk as well
@@ -1148,19 +1142,40 @@ empty_plot <- function(warning) {
 ```
 
 ```{r new_data_tests}
-# Part 1
-read_proff_test <- function(file) {
-  # Specifying encoding to deal with occasional errors
-  read_html(file, encoding = "UTF-8") |>
-    html_node("#inner-frame") |>
-    html_table()
+html_test_create <- function(file, start, end) {
+  # Reading file and node
+  htmltest <- read_html(file, encoding = "UTF-8") |>
+    html_node("#inner-frame")
+
+  # Checking if node exists
+  if (class(htmltest) == "xml_node") {
+    htmltable <- htmltest |>
+      html_table()
+  } else {
+    validate("Please upload the specified type of html document.")
+  }
+
+  # Basic check if the table is correct
+  if ("REGNSKAPSPERIODE" %in% names(htmltable)) {
+    htmlready <- htmltable
+  } else {
+    validate("Please upload the specified type of html document.")
+  }
+  
+  # Testing if the correct years have been entered
+  if (as.character(all_of(start)) %in% names(htmlready) &&
+    as.character(all_of(end)) %in% names(htmlready)) {
+    # Creating the data frame
+    read_proff(file, start, end)
+  } else {
+    validate("Please ensure you have entered the correct start and end years.")
+  }
 }
 
-# Part 2 - version with integrated test
-read_proff_complete <- function(object, start, end) {
-  if (as.character(all_of(start)) %in% names(object) &&
-    as.character(all_of(end)) %in% names(object)) {
-    object |>
+read_proff <- function(file, start, end) {
+  read_html(file, encoding = "UTF-8") |>
+    html_node("#inner-frame") |>
+    html_table() |> 
       # removing empty column, using all_of(argument)
       select(
         REGNSKAPSPERIODE:all_of(start)
@@ -1236,9 +1251,6 @@ read_proff_complete <- function(object, start, end) {
       ) |>
       # arranging by year for practical display
       arrange(desc(year))
-  } else {
-    validate("Please ensure you have entered the correct start and end years")
-  }
 }
 ```
 
