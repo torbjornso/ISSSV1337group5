@@ -210,6 +210,25 @@ blank <- read_excel("Data/Blank2.xlsx")
 names(blank)
 
 clean_names(blank)
+
+getwd()
+excel_logic <- read_excel("Data/OPXfinans_final.xlsx") |> clean_names()
+
+excel_logic
+
+excel_names <- names(excel_logic)
+
+excel_names == c("year", "firm", "category", "sub_category", "name", "value")
+
+class(excel_names)
+
+if (excel_names == c("year", "firm", "category", "sub_category", "name", "value")) {
+  "yes"
+} else {
+  "no"
+}
+
+setequal(excel_names, c("year", "firm", "category", "sub_category", "name", "value"))
 ```
 
 ```{r}
