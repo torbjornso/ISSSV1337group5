@@ -401,7 +401,7 @@ unique(na.omit(pull(.data = valutatest, valutakode)))
 ```
 
 ```{r}
-read_proff <- function(file, start, end) {
+read_proff_one <- function(file, start, end) {
   read_html(file, encoding = "UTF-8") |>
     html_node("#inner-frame") |>
     html_table() |>
@@ -436,61 +436,69 @@ read_proff <- function(file, start, end) {
       # creating a currency code column and turning current currency codes into
       # NAs
       valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
-    ) |>
-    # filling the currency column
-    
-    ### NEED TO SPLIT HERE
-    
-    
-    
+    ) |> 
     fill(
       valutakode,
       .direction = "downup"
-    ) # |>
+    )
+}
+  
+    ### NEED TO SPLIT HERE
+    
+    
+read_proff_two <- function(object) {
+     object |>
     # removing dates and redundant currency
-    # filter(
-    #   REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
-    #     REGNSKAPSPERIODE != "Valutakode"
-    # ) |>
-    # mutate(
-    #   # removing white space in numbers
-    #   value = str_replace_all(value, "\\s", ""),
-    #   # turning numbers into true numbers
-    #   value = as.numeric(value),
-    #   # removing values that are years
-    #   value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
-    # ) |>
-    # # removing any remaining duplicate rows
-    # distinct() |>
-    # # pivoting to create 'tidy' variables
-    # pivot_wider(
-    #   names_from = REGNSKAPSPERIODE, values_from = value
-    # ) |>
-    # # tidying names
-    # clean_names() |>
-    # # removing headings from the table
-    # select(
-    #   -lederlonn_i_hele_1000,
-    #   -resultatregnskap_i_hele_1000,
-    #   -balanseregnskap_i_hele_1000
-    # ) |>
-    # # making it clear what lonn refers to
-    # rename(
-    #   lederlonn = lonn
-    # ) |>
-    # # Creating new variables for plots
-    # mutate(
-    #   annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
-    #   balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
-    # ) |>
-    # # arranging by year for practical display
-    # arrange(desc(year))
+    select(-valutakode) |> 
+    filter(
+      REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+        REGNSKAPSPERIODE != "Valutakode"
+    ) |>
+    mutate(
+      # removing white space in numbers
+      value = str_replace_all(value, "\\s", ""),
+      # turning numbers into true numbers
+      value = as.numeric(value),
+      # removing values that are years
+      value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+    ) |>
+    # removing any remaining duplicate rows
+    distinct() |>
+    # pivoting to create 'tidy' variables
+    pivot_wider(
+      names_from = REGNSKAPSPERIODE, values_from = value
+    ) |>
+    # tidying names
+    clean_names() |>
+    # removing headings from the table
+    select(
+      -lederlonn_i_hele_1000,
+      -resultatregnskap_i_hele_1000,
+      -balanseregnskap_i_hele_1000
+    ) |>
+    # making it clear what lonn refers to
+    rename(
+      lederlonn = lonn
+    ) |>
+    # Creating new variables for plots
+    mutate(
+      annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
+      balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
+    ) |>
+    # arranging by year for practical display
+    arrange(desc(year))
 }
 
 test <- read_proff("Data/Kreftforeningen2002_2021 copy.html", "2002", "2021")
 
 unique(test$valutakode)
 
+read_proff_two(test)
+
 test
+```
+
+```{r}
+?validate
 ```
 
