@@ -584,7 +584,7 @@ observe({
 observe({
 
   # Data frames ================================================================
-  ## creating data frame from html file-----------------------------------------
+  ## Creating data frame from html file-----------------------------------------
   htmldata <- reactive({
     # validating file
     validate(need(
