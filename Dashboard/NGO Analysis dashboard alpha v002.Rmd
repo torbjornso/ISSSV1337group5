@@ -1102,18 +1102,5 @@ empty_plot <- function(warning) {
       x = 0, y = 0, size = 8, colour = met.brewer("Hokusai2", 1)
     )
 }
-
-# Testing arguments ============================================================
-# One or more of the elements of this mutate() operation may be inserted at the
-# end of the read_proff() function to create various data problems for some
-# quick and dirty testing
-
-# mutate(
-#       valutakode = ifelse(year == 2019, "USD", valutakode),
-#       leder_annen_godtgjorelse = NA,
-#       lederlonn = NA,
-#       arsresultat = NA,
-#       sum_egenkapital_og_gjeld = NA
-#     ) |>
 ```
 
