@@ -52,7 +52,7 @@ actionButton("click", "Analyse")
 If desired, a copy of the analysis in PDF format may then be downloaded.
 
 ```{r sidebar_button}
-# download button
+# download button - using uiOutput() because of an apparent bug
 uiOutput("downloadUI")
 ```
 
@@ -186,11 +186,12 @@ The dashboard includes five graphs, three based on data from [Proff.no](https://
 
 # Report Output ================================================================
 
+## Download button -------------------------------------------------------------
 output$downloadUI <- renderUI({
   downloadButton("report", "Download report")
 })
 
-## Download and parameters -----------------------------------------------------
+## Report download and parameters ----------------------------------------------s
 output$report <- downloadHandler(
   
   # Based on code in Mastering Shiny
@@ -232,48 +233,50 @@ output$report <- downloadHandler(
 # wait for button click
 observe({ 
 
-  # Data frames ================================================================
+  # Excel data frame ===========================================================
 
-  # creating data frame from html file <- Can be deleted
-  htmldata <- reactive({
-    # validating file
-    validate(need(
-      tools::file_ext(input$html$datapath) == "html",
-      "Please upload an html file."
-    ))
-    # Creating data frame
-    read_proff(
-      input$html$datapath,
-      as.character(input$start), as.character(input$end)
-    )
-  })
-
-  # Creating data frame from Excel file
-  exceldata <- reactive({
+  ## Validating and creating long version of Excel file, if possible------------
+  excel_test <- reactive({
     # validating file
     validate(need(
       tools::file_ext(input$excel$datapath) == "xlsx",
       "Please upload an Excel file."
     ))
-    # Creating data frame
-    widen_excel(input$excel$datapath)
+
+    widen_excel_test(input$excel$datapath)
   })
+
+  ## Creating the primary Excel data frame--------------------------------------
+  exceldata <- reactive({
+    widen_excel(excel_test())
+  })
+  
+  # # Creating data frame from Excel file
+  # exceldata <- reactive({
+  #   # validating file
+  #   validate(need(
+  #     tools::file_ext(input$excel$datapath) == "xlsx",
+  #     "Please upload an Excel file."
+  #   ))
+  #   # Creating data frame
+  #   widen_excel(input$excel$datapath)
+  # })
   
   # NGO title ==================================================================
   NGO <- reactive({
-    # validating the file again
-    validate(need(
-      tools::file_ext(input$excel$datapath) == "xlsx",
-      "Please upload an Excel file."
-    ))
-    # fetching the name
-    read_excel(input$excel$datapath) |>
-      # Turning the needed column into a list
-      pull(Firm) |>
-      # discarding all NAs in case the name is somewhere
-      purrr::discard(is.na) |>
-      # choosing the first available name
-      first()
+    # checking for the required column again
+    if ("firm" %in% names(excel_test())) {
+      # fetching the name
+      excel_test() |>
+        # Turning the needed column into a list
+        pull(firm) |>
+        # discarding all NAs in case the name is somewhere
+        purrr::discard(is.na) |>
+        # choosing the first available name
+        first()
+    } else {
+      validate("Please upload data using the specified Excel template.")
+    }
   })
 
   title <- reactive({
@@ -286,6 +289,33 @@ observe({
       NGO()
     }
   })
+  
+  # NGO <- reactive({
+  #   # validating the file again
+  #   validate(need(
+  #     tools::file_ext(input$excel$datapath) == "xlsx",
+  #     "Please upload an Excel file."
+  #   ))
+  #   # fetching the name
+  #   read_excel(input$excel$datapath) |>
+  #     # Turning the needed column into a list
+  #     pull(Firm) |>
+  #     # discarding all NAs in case the name is somewhere
+  #     purrr::discard(is.na) |>
+  #     # choosing the first available name
+  #     first()
+  # })
+  # 
+  # title <- reactive({
+  #   # testing if NGO() is NA
+  #   if (is.na(NGO())) {
+  #     # Printing warning if NA
+  #     "Name of NGO missing"
+  #     # Printing name of NGO
+  #   } else {
+  #     NGO()
+  #   }
+  # })
   
   # Creating NGO title using html formatting (colour based on MetBrewer
   # "Hokusai2")
@@ -554,9 +584,7 @@ observe({
 observe({
 
   # Data frames ================================================================
-  # Recreating, to make available to this chunk as well
-
-  # creating data frame from html file
+  ## creating data frame from html file-----------------------------------------
   htmldata <- reactive({
     # validating file
     validate(need(
@@ -570,15 +598,21 @@ observe({
     )
   })
 
-  # Creating data frame from Excel file
-  exceldata <- reactive({
+  # Recreating, to make available to this chunk as well
+  ## Validating and creating long version of Excel file, if possible------------
+  excel_test <- reactive({
     # validating file
     validate(need(
       tools::file_ext(input$excel$datapath) == "xlsx",
       "Please upload an Excel file."
     ))
-    # Creating data frame
-    widen_excel(input$excel$datapath)
+
+    widen_excel_test(input$excel$datapath)
+  })
+
+  ## Creating the primary Excel data frame--------------------------------------
+  exceldata <- reactive({
+    widen_excel(excel_test())
   })
   
   # Plots ======================================================================
@@ -977,21 +1011,52 @@ read_proff <- function(file, start, end) {
     arrange(desc(year))
 }
 
-## Function to read Excel file -------------------------------------------------
-widen_excel <- function(file) {
-  read_excel(file) |>
-    # uniting Category and Name to deal with multiple 'Other'
-    unite(
-      entry, c(Category, Name),
-      sep = "_"
-    ) |>
-    # deleting Sub-category and Firm
-    select(-`Sub-category`, -Firm) |>
-    # pivoting to create 'tidy' variables
-    pivot_wider(names_from = entry, values_from = Value) |>
-    # cleaning names
+## Functions to read Excel file ------------------------------------------------
+widen_excel_test <- function(file) {
+  # Reading Excel file
+  read_excel(file) |> 
+    # cleaning names to enable later operations
     clean_names()
 }
+
+# Function to create primary Excel data frame
+widen_excel <- function(object) {
+  # testing if all columns are present
+  if (setequal(
+    names(object),
+    c("year", "firm", "category", "sub_category", "name", "value")
+  )) {
+    object |>
+      # uniting category and name to deal with multiple 'Other'
+      unite(
+        entry, c(category, name)
+      ) |>
+      # deleting Sub-category and Firm
+      select(-sub_category, -firm) |>
+      # pivoting to create 'tidy' variables
+      pivot_wider(names_from = entry, values_from = value) |>
+      # cleaning names
+      clean_names()
+    # Notfification if all columns are not present
+  } else {
+    validate("Please upload data using the specified Excel template.")
+  }
+}
+
+# widen_excel <- function(file) {
+#   read_excel(file) |>
+#     # uniting Category and Name to deal with multiple 'Other'
+#     unite(
+#       entry, c(Category, Name),
+#       sep = "_"
+#     ) |>
+#     # deleting Sub-category and Firm
+#     select(-`Sub-category`, -Firm) |>
+#     # pivoting to create 'tidy' variables
+#     pivot_wider(names_from = entry, values_from = Value) |>
+#     # cleaning names
+#     clean_names()
+# }
 
 # Support functions ============================================================
 
@@ -1065,73 +1130,5 @@ empty_plot <- function(warning) {
 #       arsresultat = NA,
 #       sum_egenkapital_og_gjeld = NA
 #     ) |>
-
-### Test version of function that creates multiple data problems----------------
-# read_proff <- function(file, start, end) {
-#   read_html(file, encoding = "UTF-8") |>
-#     html_node("#inner-frame") |>
-#     html_table() |>
-#     select( # removing empty column
-#       REGNSKAPSPERIODE:all_of(start)
-#     ) |> # using all_of()
-#     mutate( # removing whitespace
-#       REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
-#     ) |>
-#     filter( # removing duplicate table - no idea why it's necessary
-#       !row_number() > 176
-#     ) |>
-#     filter( # removing duplicate rows
-#       !grepl("Lukk", REGNSKAPSPERIODE)
-#     ) |>
-#     pivot_longer( # tidying data
-#       all_of(end):all_of(start),
-#       names_to = "year"
-#     ) |> # using all_of()
-#     mutate( # changing to real NAs and turning years into numbers
-#       value = na_if(value, "-"),
-#       year = as.integer(year),
-#       valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
-#     ) |>
-#     fill( # filling the currency column
-#       valutakode,
-#       .direction = "updown"
-#     ) |>
-#     filter( # removing dates and redundant currency
-#       REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
-#         REGNSKAPSPERIODE != "Valutakode"
-#     ) |>
-#     mutate( # removing whitespace in numbers
-#       value = str_replace_all(value, "\\s", ""),
-#       value = as.numeric(value),
-#       value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
-#     ) |>
-#     distinct() |> # removing any remaining duplicate rows
-#     pivot_wider( # pivoting
-#       names_from = REGNSKAPSPERIODE, values_from = value
-#     ) |>
-#     clean_names() |> # tidying names
-#     select(
-#       -lederlonn_i_hele_1000,
-#       -resultatregnskap_i_hele_1000,
-#       -balanseregnskap_i_hele_1000
-#     ) |> # removing headings
-#     rename( # making it clear what lonn refers to
-#       lederlonn = lonn
-#     ) |>
-#     # Creating new variables for plots
-#     mutate(
-#       annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
-#       balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE),
-#     ) |>
-#     # bad test - REMOVE
-#     mutate(
-#       valutakode = ifelse(year == 2019, "USD", valutakode),
-#       leder_annen_godtgjorelse = NA,
-#       lederlonn = NA,
-#       arsresultat = NA,
-#       sum_egenkapital_og_gjeld = NA
-#     ) |>
-#     arrange(desc(year)) # arranging by year
-# }
 ```
 
