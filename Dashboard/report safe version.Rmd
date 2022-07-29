@@ -1,8 +1,6 @@
 ---
 date: "`r Sys.Date()`"
-output: 
-  pdf_document:
-    extra_dependencies: "subfig"
+output: pdf_document
 params:
   htmlfile: NA
   excelfile: NA
@@ -656,116 +654,6 @@ if (datatest == FALSE) {
   expenses_plot
 }
 ```
-
-```{r revenue_expenses_plot_test, fig.asp=1, fig.show="hold", out.width="45%", fig.cap="Based on the categories \`Revenue' and \`Expenses' in the Excel sheet."}
-## Revenue--------------------------------------------------------------------
-revenue_plot <-
-  # testing for data quality
-  if (datatest == TRUE) {
-    # printing 'bad data' plot if data are bad
-    NA
-  } else {
-    exceldata |>
-      # Renaming for the purposes of the plot + dropping other variables
-      transmute(
-        Year = as.factor(year),
-        `Private contributions` = revenue_private_contributions,
-        `Membership fees` = revenue_membership_fees,
-        `Public grants` = revenue_public_grants,
-        Investments = revenue_investments,
-        `Operational activities` = revenue_operational_activities,
-        `Commercial activities` = revenue_commercial_activities,
-        Other = revenue_other
-      ) |>
-      # Pivoting to use fill
-      pivot_longer(
-        c(`Private contributions`:Other),
-        names_to = "Revenue source"
-      ) |>
-      # Ordering for the plot
-      mutate(
-        `Revenue source` =
-          ordered(`Revenue source`,
-            levels =
-              c(
-                "Other", "Commercial activities",
-                "Operational activities", "Investments",
-                "Membership fees", "Private contributions",
-                "Public grants"
-              )
-          )
-      ) |>
-      ggplot(aes(Year, value, fill = `Revenue source`)) +
-      geom_col() +
-      scale_y_continuous(
-        # Excel data are assumed to be in NOK; if this changes, code based on
-        # the currency_code() function may be adapted
-        labels = label_dollar(prefix = "NOK "),
-        # Basing lower limit on the data (not suppressing erroneous negative
-        # numbers), and the upper limit on the maximum value in revenues and
-        # expenses, to match the two plots
-        limits = c(NA, maximum)
-      ) +
-      # Specifying the number of values, as the base palette only includes 6
-      scale_fill_manual(values = met.brewer("Hokusai2", 7)) +
-      labs(x = "", y = "", title = "Revenue (in thousands)") +
-      theme_light() +
-      theme(title = element_text(size = 14))
-  }
-
-# Printing the plot if the data are OK
-if (datatest == FALSE) {
-  revenue_plot
-}
-
-## Expenses -------------------------------------------------------------------
-expenses_plot <-
-  # testing for data quality
-  if (datatest == TRUE) {
-    # printing 'bad data' plot if data are bad
-    NA
-  } else {
-    exceldata |>
-      # Renaming for the purposes of the plot + dropping other variables
-      transmute(
-        Year = as.factor(year),
-        Other = expenses_other,
-        Administrative = expenses_administrative,
-        Fundraising = expenses_fundraising,
-        `Program services` = expenses_program_services
-      ) |>
-      # Pivoting to use fill
-      pivot_longer(c(Other:`Program services`), names_to = "Expenses") |>
-      # Ordering for the plot
-      mutate(
-        Expenses = ordered(Expenses,
-          levels =
-            c("Program services", "Other", "Fundraising", "Administrative")
-        )
-      ) |>
-      ggplot(aes(Year, value, fill = Expenses)) +
-      geom_col() +
-      scale_y_continuous(
-        # Excel data are assumed to be in NOK; if this changes, code based on
-        # the currency_code() function may be adapted
-        labels = label_dollar(prefix = "NOK "),
-        # Basing lower limit on the data (not suppressing erroneous negative
-        # numbers), and the upper limit on the maximum value in revenues and
-        # expenses, to match the two plots
-        limits = c(NA, maximum)
-      ) +
-      scale_fill_met_d("Hokusai2") +
-      labs(x = "", y = "", title = "Expenses (in thousands)") +
-      theme_light() +
-      theme(title = element_text(size = 14))
-  }
-
-# Printing the plot if the data are OK
-if (datatest == FALSE) {
-  expenses_plot
-}
-```
-
 
 ```{r compensation_plot, out.width="100%", fig.cap="Based on the category \`Lederlønn' in the Proff.no data. Not in thousands. Includes the entries \`Lønn' and \`Leder annen godtgjørelse'. A common measure of transparency, but should normally be evaluated in context."}
 ## CEO compensation-----------------------------------------------------------
