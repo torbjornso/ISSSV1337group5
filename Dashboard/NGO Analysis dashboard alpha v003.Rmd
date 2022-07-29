@@ -35,14 +35,14 @@ Then upload an Excel file in the set format.
 Click 'Analyse' to analyse the data.
 
 ```{r sidebar}
-# HTML
+# HTML upload
 fileInput("html", label = "Upload html file", accept = ".html")
 
 # Year inputs
 numericInput("start", label = "Start", value = 2002)
 numericInput("end", label = "End", value = 2021)
 
-# Excel
+# Excel upload
 fileInput("excel", "Upload Excel file", accept = ".xlsx")
 
 # Analyse button
@@ -904,6 +904,7 @@ html_test_create <- function(file, start, end) {
   htmltest <- read_html(file, encoding = "UTF-8") |>
     html_node("#inner-frame")
 
+  ### A series of tests to catch problems before they spit out errors-----------
   # Checking if node exists
   if (class(htmltest) == "xml_node") {
     htmltable <- htmltest |>
@@ -922,7 +923,7 @@ html_test_create <- function(file, start, end) {
   # Testing if the correct years have been entered
   if (as.character(all_of(start)) %in% names(htmlready) &&
     as.character(all_of(end)) %in% names(htmlready)) {
-    # Creating the data frame
+    # Creating the first part of the data frame
     read_proff_one(htmltable, start, end)
   } else {
     validate("Please ensure you have entered the correct start and end years.")
