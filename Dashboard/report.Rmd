@@ -657,7 +657,7 @@ if (datatest == FALSE) {
 }
 ```
 
-```{r revenue_expenses_plot_test, fig.asp=1, out.width="50%", fig.cap="Revenue and Expenses", fig.subcap=c("(Based on the category \`Revenue' in the Excel sheet.)", "( Based on the category \`Expenses' in the Excel sheet.)")}
+```{r revenue_expenses_plot_test, fig.asp=1, out.width="50%", fig.cap="Revenue and Expenses", fig.subcap=c("Based on the category \`Revenue' in the Excel sheet.", "Based on the category \`Expenses' in the Excel sheet.")}
 ## Revenue--------------------------------------------------------------------
 revenue_plot <-
   # testing for data quality
@@ -722,7 +722,7 @@ if (datatest == FALSE) {
 expenses_plot <-
   # testing for data quality
   if (datatest == TRUE) {
-    # printing 'bad data' plot if data are bad
+    # printing 'bad data' plot if data are bad  <- Delete all this
     NA
   } else {
     exceldata |>
