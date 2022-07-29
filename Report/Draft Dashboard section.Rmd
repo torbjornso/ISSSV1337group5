@@ -11,7 +11,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 ```
 
->Ca. 8 sider.
+>Ca. 11 sider med all koden...
 
 # The Dashboard
 
@@ -55,7 +55,156 @@ validate(need(tools::file_ext(input$excel$datapath) == "xlsx",
                   "Please upload an Excel file."))
 ```
 
-If the validation is successful the files are read using the functions developed for this purpose.
+If the validation is successful the files are read using the functions developed for this purpose, which conduct further testing, outputting error messages using `validate()`:
+```{r dashboard_file_functions, eval=FALSE}
+# Data reading functions =======================================================
+
+## Functions to read html file -------------------------------------------------
+html_test_create <- function(file, start, end) {
+  # Reading file and node
+  htmltest <- read_html(file, encoding = "UTF-8") |>
+    html_node("#inner-frame")
+
+  # Checking if node exists
+  if (class(htmltest) == "xml_node") {
+    htmltable <- htmltest |>
+      html_table()
+  } else {
+    validate("Please upload the specified type of html document.")
+  }
+
+  # Basic check if the table is correct
+  if ("REGNSKAPSPERIODE" %in% names(htmltable)) {
+    htmlready <- htmltable
+  } else {
+    validate("Please upload the specified type of html document.")
+  }
+
+  # Testing if the correct years have been entered
+  if (as.character(all_of(start)) %in% names(htmlready) &&
+    as.character(all_of(end)) %in% names(htmlready)) {
+    # Creating the data frame
+    read_proff_one(htmltable, start, end)
+  } else {
+    validate("Please ensure you have entered the correct start and end years.")
+  }
+}
+
+read_proff_one <- function(object, start, end) {
+  object |>
+    # removing empty column, using all_of(argument)
+    select(
+      REGNSKAPSPERIODE:all_of(start)
+    ) |>
+    # removing white space
+    mutate(
+      REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+    ) |>
+    # removing duplicate table sometimes created by read_html()
+    filter(
+      !row_number() > 176
+    ) |>
+    # removing duplicate rows
+    filter(
+      !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |>
+    # tidying data using pivot_longer() and all_of(argument)
+    pivot_longer(
+      all_of(end):all_of(start),
+      names_to = "year"
+    ) |>
+    # creating a currency code column and turning current currency codes into
+    # NAs
+    mutate(
+      # changing to real NAs
+      value = na_if(value, "-"),
+      # turning years into numbers
+      year = as.integer(year),
+      # creating a currency code column and turning current currency codes into
+      # NAs
+      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+    ) |>
+    fill(
+      valutakode,
+      .direction = "downup"
+    )
+}
+
+read_proff_two <- function(object) {
+  object |>
+    # removing dates and redundant currency
+    select(-valutakode) |>
+    filter(
+      REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+        REGNSKAPSPERIODE != "Valutakode"
+    ) |>
+    mutate(
+      # removing white space in numbers
+      value = str_replace_all(value, "\\s", ""),
+      # turning numbers into true numbers
+      value = as.numeric(value),
+      # removing values that are years
+      value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+    ) |>
+    # removing any remaining duplicate rows
+    distinct() |>
+    # pivoting to create 'tidy' variables
+    pivot_wider(
+      names_from = REGNSKAPSPERIODE, values_from = value
+    ) |>
+    # tidying names
+    clean_names() |>
+    # removing headings from the table
+    select(
+      -lederlonn_i_hele_1000,
+      -resultatregnskap_i_hele_1000,
+      -balanseregnskap_i_hele_1000
+    ) |>
+    # making it clear what lonn refers to
+    rename(
+      lederlonn = lonn
+    ) |>
+    # Creating new variables for plots
+    mutate(
+      annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
+      balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
+    ) |>
+    # arranging by year for practical display
+    arrange(desc(year))
+}
+
+## Functions to read Excel file ------------------------------------------------
+widen_excel_test <- function(file) {
+  # Reading Excel file
+  read_excel(file) |>
+    # cleaning names to enable later operations
+    clean_names()
+}
+
+# Function to create primary Excel data frame
+widen_excel <- function(object) {
+  # testing if all columns are present
+  if (setequal(
+    names(object),
+    c("year", "firm", "category", "sub_category", "name", "value")
+  )) {
+    object |>
+      # uniting category and name to deal with multiple 'Other'
+      unite(
+        entry, c(category, name)
+      ) |>
+      # deleting Sub-category and Firm
+      select(-sub_category, -firm) |>
+      # pivoting to create 'tidy' variables
+      pivot_wider(names_from = entry, values_from = value) |>
+      # cleaning names
+      clean_names()
+    # Notification if all columns are not present
+  } else {
+    validate("Please upload data using the specified Excel template.")
+  }
+}
+```
 
 ## The dashboard proper
 
@@ -195,9 +344,9 @@ The top row contains two plots showing the annual result and balance data for th
 currency_scale <- reactive({
   scale_y_continuous(
     # Checking for uniform currency code
-    labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
+    labels = ifelse(length(unique(html_currency()$valutakode)) == 1,
       # Using the currency code if uniform
-      label_dollar(prefix = str_c(htmldata()$valutakode[1], " ")),
+      label_dollar(prefix = str_c(unique(html_currency()$valutakode), " ")),
       # alternative prefix if multiple currencies in the data
       label_dollar(prefix = "? ")
     )
@@ -228,7 +377,8 @@ output$arsresultat_plotly <- renderPlotly(
 # if there are multiple currency codes.
 plotly_caption <- reactive({
   list(
-    x = 1, y = -0.1, text = ifelse(length(unique(htmldata()$valutakode)) == 1,
+    x = 1, y = -0.1,
+    text = ifelse(length(unique(html_currency()$valutakode)) == 1,
       "", "Note: not all values are denominated in the same currency"
     ),
     showarrow = F, xref = "paper", yref = "paper",
@@ -299,21 +449,25 @@ The revenue and expenses plots rely on a separate 'maximum' function to create t
 ```{r dashboard_maximum, eval=FALSE}
 # Reactive function to create the maximum value for revenue and expenses plots
 maximum <- reactive({
-  # reading the Excel sheet anew
-  read_excel(input$excel$datapath) |>
-    # removing the firm and sub-category columns
-    select(-Firm, -`Sub-category`) |>
-    # filtering to retain only revenue and expenses entries
-    filter(Category == "Revenue" | Category == "Expenses") |>
-    # grouping and summarising to calculate maximum value
-    group_by(Year, Category) |>
-    summarise(
-      sum = sum(Value, na.rm = TRUE)
-    ) |>
-    # Creating list of sums
-    pull() |>
-    # selecting the highest value
-    max()
+  if (datatest() == TRUE) {
+    NA
+  } else {
+    # reading the Excel sheet anew
+    read_excel(input$excel$datapath) |>
+      # removing the firm and sub-category columns
+      select(-Firm, -`Sub-category`) |>
+      # filtering to retain only revenue and expenses entries
+      filter(Category == "Revenue" | Category == "Expenses") |>
+      # grouping and summarising to calculate maximum value
+      group_by(Year, Category) |>
+      summarise(
+        sum = sum(Value, na.rm = TRUE)
+      ) |>
+      # Creating list of sums
+      pull() |>
+      # selecting the highest value
+      max()
+  }
 })
 ```
 
@@ -327,19 +481,19 @@ Finally, the dashboard contains a separate tab with some basic details about the
 ```{r dashboard_title_creation, eval=FALSE}
 # NGO title ==================================================================
 NGO <- reactive({
-  # validating the file again
-  validate(need(
-    tools::file_ext(input$excel$datapath) == "xlsx",
-    "Please upload an Excel file."
-  ))
-  # fetching the name
-  read_excel(input$excel$datapath) |>
-    # Turning the needed column into a list
-    pull(Firm) |>
-    # discarding all NAs in case the name is somewhere
-    purrr::discard(is.na) |>
-    # choosing the first available name
-    first()
+  # checking for the required column again
+  if ("firm" %in% names(excel_test())) {
+    # fetching the name
+    excel_test() |>
+      # Turning the needed column into a list
+      pull(firm) |>
+      # discarding all NAs in case the name is somewhere
+      purrr::discard(is.na) |>
+      # choosing the first available name
+      first()
+  } else {
+    validate("Please upload data using the specified Excel template.")
+  }
 })
 
 title <- reactive({
