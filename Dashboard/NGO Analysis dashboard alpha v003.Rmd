@@ -929,6 +929,8 @@ html_test_create <- function(file, start, end) {
   }
 }
 
+### First html transformation function, invoked by html_test_create() ----------
+# (stopping to allow checks for differing currency codes)
 read_proff_one <- function(object, start, end) {
   object |>
     # removing empty column, using all_of(argument)
@@ -963,16 +965,19 @@ read_proff_one <- function(object, start, end) {
       # NAs
       valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
     ) |>
+    # filling the currency column to avoid having to deal with NAs later
     fill(
       valutakode,
       .direction = "downup"
     )
 }
 
+### Second html transformation function, creating the data frame ---------------
 read_proff_two <- function(object) {
   object |>
-    # removing dates and redundant currency
+    # removing unneeded currency column
     select(-valutakode) |>
+    # removing dates and redundant currency
     filter(
       REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
         REGNSKAPSPERIODE != "Valutakode"
@@ -1003,7 +1008,7 @@ read_proff_two <- function(object) {
     rename(
       lederlonn = lonn
     ) |>
-    # Creating new variables for plots
+    # Creating new variables for plots (red/green profit/loss)
     mutate(
       annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
       balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
@@ -1013,6 +1018,7 @@ read_proff_two <- function(object) {
 }
 
 ## Functions to read Excel file ------------------------------------------------
+### First Excel transformation - creating df used by NGO title function---------
 widen_excel_test <- function(file) {
   # Reading Excel file
   read_excel(file) |>
@@ -1020,7 +1026,7 @@ widen_excel_test <- function(file) {
     clean_names()
 }
 
-# Function to create primary Excel data frame
+### Second Excel function - creating primary Excel data frame-------------------
 widen_excel <- function(object) {
   # testing if all columns are present
   if (setequal(
