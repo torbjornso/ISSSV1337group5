@@ -28,12 +28,12 @@ p_load(
 ```{r data}
 # Data reading =================================================================
 
-## Function to read html file --------------------------------------------------
-read_proff <- function(file, start, end) {
-  # Specifying encoding to deal with occasional errors
+## Functions to read html file -------------------------------------------------
+
+read_proff_one <- function(file, start, end) {
   read_html(file, encoding = "UTF-8") |>
-    html_node("#inner-frame") |>
-    html_table() |>
+    html_node("#inner-frame") |> 
+    html_table() |> 
     # removing empty column, using all_of(argument)
     select(
       REGNSKAPSPERIODE:all_of(start)
@@ -66,12 +66,16 @@ read_proff <- function(file, start, end) {
       # NAs
       valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
     ) |>
-    # filling the currency column
     fill(
       valutakode,
-      .direction = "updown"
-    ) |>
+      .direction = "downup"
+    )
+}
+
+read_proff_two <- function(object) {
+  object |>
     # removing dates and redundant currency
+    select(-valutakode) |>
     filter(
       REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
         REGNSKAPSPERIODE != "Valutakode"
@@ -110,6 +114,15 @@ read_proff <- function(file, start, end) {
     # arranging by year for practical display
     arrange(desc(year))
 }
+  ## Creating data frame from html file-----------------------------------------
+html_currency <- 
+    # Testing and creating data frame
+    read_proff_one(
+      params$htmlfile,
+      as.character(params$start), as.character(params$start)
+    )
+
+htmldata <- read_proff_two(html_currency)
 
 ## Function to read Excel file -------------------------------------------------
 widen_excel <- function(file) {
@@ -126,11 +139,7 @@ widen_excel <- function(file) {
     # cleaning names
     clean_names()
 }
-### Reading html ---------------------
-htmldata <- read_proff(
-  params$htmlfile,
-  as.character(params$start), as.character(params$end)
-)
+
 
 ### Reading excel ---------------------
 exceldata <- widen_excel(params$excelfile)
@@ -278,24 +287,18 @@ maximum <- if (datatest == TRUE) {
 currency_scale <-
   scale_y_continuous(
     # Checking for uniform currency code
-    labels = ifelse(length(unique(htmldata$valutakode)) == 1,
+    labels = ifelse(length(unique(html_currency$valutakode)) == 1,
       # Using the currency code if uniform
-      label_dollar(prefix = str_c(htmldata$valutakode[1], " ")),
+      label_dollar(prefix = str_c(unique(html_currency$valutakode), " ")),
       # alternative prefix if multiple currencies in the data
       label_dollar(prefix = "? ")
     )
   )
 
 ## Currency caption-----------------------------------------------------------
-# Real currency caption
-currency_caption <- ifelse(length(unique(htmldata$valutakode)) == 1,
-      "", "Note: not all values are denominated in the same currency.\n"
+currency_caption <- ifelse(length(unique(html_currency$valutakode)) == 1,
+      "", "Note: not all values are denominated in the same currency."
     )
-
-# Fake currency caption - turns the values around
-# currency_caption <- ifelse(length(unique(htmldata$valutakode)) == 1,
-#   "Note: not all values are denominated in the same currency.", ""
-# )
 ```
 
 <!--# Creating KPIs -->
@@ -483,10 +486,6 @@ The KPIs are based on the following calculations, using data derived from the Ex
 ```{r arsresultat_plot, fig.cap="Based on the entry \`Årsresultat' in the Proff.no data."}
 ## Annual result--------------------------------------------------------------
 arsresultat_plot <-
-  # testing for the presence of data
-  if (sum(!is.na(htmldata$arsresultat)) == 0) {
-    NA
-  } else {
     htmldata |>
       # renaming for plotly hover
       rename(
@@ -505,7 +504,7 @@ arsresultat_plot <-
       ) +
       theme_light() +
       theme(legend.position = "none")
-  }
+
 # Printing plot if the data are available
 if (sum(!is.na(htmldata$arsresultat)) != 0) {
   arsresultat_plot
@@ -515,11 +514,6 @@ if (sum(!is.na(htmldata$arsresultat)) != 0) {
 ```{r balance_plot, fig.cap="Based on the entry \`Sum egenkapital og gjeld' in the Proff.no data."}
 ## Balance--------------------------------------------------------------------
 balance_plot <-
-  # testing for the presence of data
-  if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0) {
-    # Printing 'no information' plot if no data
-    NA
-  } else {
     htmldata |>
       # rename for plotly hover
       rename(
@@ -539,7 +533,6 @@ balance_plot <-
       ) +
       theme_light() +
       theme(legend.position = "none")
-  }
 
 # Printing the plot if the data are available
 if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) != 0) {
@@ -547,124 +540,9 @@ if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) != 0) {
 }
 ```
 
-
-```{r revenue_expenses_plot, fig.asp=1, fig.show="hold", out.width="45%", fig.cap="Based on the categories \`Revenue' and \`Expenses' in the Excel sheet."}
-## Revenue--------------------------------------------------------------------
-revenue_plot <-
-  # testing for data quality
-  if (datatest == TRUE) {
-    # printing 'bad data' plot if data are bad
-    NA
-  } else {
-    exceldata |>
-      # Renaming for the purposes of the plot + dropping other variables
-      transmute(
-        Year = as.factor(year),
-        `Private contributions` = revenue_private_contributions,
-        `Membership fees` = revenue_membership_fees,
-        `Public grants` = revenue_public_grants,
-        Investments = revenue_investments,
-        `Operational activities` = revenue_operational_activities,
-        `Commercial activities` = revenue_commercial_activities,
-        Other = revenue_other
-      ) |>
-      # Pivoting to use fill
-      pivot_longer(
-        c(`Private contributions`:Other),
-        names_to = "Revenue source"
-      ) |>
-      # Ordering for the plot
-      mutate(
-        `Revenue source` =
-          ordered(`Revenue source`,
-            levels =
-              c(
-                "Other", "Commercial activities",
-                "Operational activities", "Investments",
-                "Membership fees", "Private contributions",
-                "Public grants"
-              )
-          )
-      ) |>
-      ggplot(aes(Year, value, fill = `Revenue source`)) +
-      geom_col() +
-      scale_y_continuous(
-        # Excel data are assumed to be in NOK; if this changes, code based on
-        # the currency_code() function may be adapted
-        labels = label_dollar(prefix = "NOK "),
-        # Basing lower limit on the data (not suppressing erroneous negative
-        # numbers), and the upper limit on the maximum value in revenues and
-        # expenses, to match the two plots
-        limits = c(NA, maximum)
-      ) +
-      # Specifying the number of values, as the base palette only includes 6
-      scale_fill_manual(values = met.brewer("Hokusai2", 7)) +
-      labs(x = "", y = "", title = "Revenue (in thousands)") +
-      theme_light() +
-      theme(title = element_text(size = 14))
-  }
-
-# Printing the plot if the data are OK
-if (datatest == FALSE) {
-  revenue_plot
-}
-
-## Expenses -------------------------------------------------------------------
-expenses_plot <-
-  # testing for data quality
-  if (datatest == TRUE) {
-    # printing 'bad data' plot if data are bad
-    NA
-  } else {
-    exceldata |>
-      # Renaming for the purposes of the plot + dropping other variables
-      transmute(
-        Year = as.factor(year),
-        Other = expenses_other,
-        Administrative = expenses_administrative,
-        Fundraising = expenses_fundraising,
-        `Program services` = expenses_program_services
-      ) |>
-      # Pivoting to use fill
-      pivot_longer(c(Other:`Program services`), names_to = "Expenses") |>
-      # Ordering for the plot
-      mutate(
-        Expenses = ordered(Expenses,
-          levels =
-            c("Program services", "Other", "Fundraising", "Administrative")
-        )
-      ) |>
-      ggplot(aes(Year, value, fill = Expenses)) +
-      geom_col() +
-      scale_y_continuous(
-        # Excel data are assumed to be in NOK; if this changes, code based on
-        # the currency_code() function may be adapted
-        labels = label_dollar(prefix = "NOK "),
-        # Basing lower limit on the data (not suppressing erroneous negative
-        # numbers), and the upper limit on the maximum value in revenues and
-        # expenses, to match the two plots
-        limits = c(NA, maximum)
-      ) +
-      scale_fill_met_d("Hokusai2") +
-      labs(x = "", y = "", title = "Expenses (in thousands)") +
-      theme_light() +
-      theme(title = element_text(size = 14))
-  }
-
-# Printing the plot if the data are OK
-if (datatest == FALSE) {
-  expenses_plot
-}
-```
-
 ```{r revenue_expenses_plot_test, fig.asp=1, out.width="50%", fig.cap="Revenue and Expenses", fig.subcap=c("Based on the category \`Revenue' in the Excel sheet.", "Based on the category \`Expenses' in the Excel sheet.")}
 ## Revenue--------------------------------------------------------------------
 revenue_plot <-
-  # testing for data quality
-  if (datatest == TRUE) {
-    # printing 'bad data' plot if data are bad
-    NA
-  } else {
     exceldata |>
       # Renaming for the purposes of the plot + dropping other variables
       transmute(
@@ -711,7 +589,6 @@ revenue_plot <-
       labs(x = "", y = "", title = "Revenue (in thousands)") +
       theme_light() +
       theme(title = element_text(size = 14))
-  }
 
 # Printing the plot if the data are OK
 if (datatest == FALSE) {
@@ -720,11 +597,6 @@ if (datatest == FALSE) {
 
 ## Expenses -------------------------------------------------------------------
 expenses_plot <-
-  # testing for data quality
-  if (datatest == TRUE) {
-    # printing 'bad data' plot if data are bad  <- Delete all this
-    NA
-  } else {
     exceldata |>
       # Renaming for the purposes of the plot + dropping other variables
       transmute(
@@ -758,7 +630,6 @@ expenses_plot <-
       labs(x = "", y = "", title = "Expenses (in thousands)") +
       theme_light() +
       theme(title = element_text(size = 14))
-  }
 
 # Printing the plot if the data are OK
 if (datatest == FALSE) {
@@ -770,12 +641,6 @@ if (datatest == FALSE) {
 ```{r compensation_plot, out.width="100%", fig.cap="Based on the category \`Lederlønn' in the Proff.no data. Not in thousands. Includes the entries \`Lønn' and \`Leder annen godtgjørelse'. A common measure of transparency, but should normally be evaluated in context."}
 ## CEO compensation-----------------------------------------------------------
 CEO_plot <-
-  # Testing for the presence of data
-  if (sum(!is.na(htmldata$lederlonn)) == 0 &&
-    sum(!is.na(htmldata$leder_annen_godtgjorelse)) == 0) {
-    # Returning NA if no data
-    NA
-  } else {
     # Creating plot if any data exist
     # Note that the plot will still look empty, but have a legend and scales,
     # if all values are explicit zeroes
@@ -808,7 +673,6 @@ CEO_plot <-
       ) +
       theme_light() +
       theme(legend.position = "bottom")
-  }
 
 # Printing the plot if the data are available
 if (sum(!is.na(htmldata$lederlonn)) != 0 ||
