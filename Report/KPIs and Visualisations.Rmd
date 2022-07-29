@@ -41,16 +41,32 @@ Legg merke til at ingen av koden, unntatt setup-chunken kjøres når man knitter
 
 The KPIs are based on the following calculations, using data derived from the Excel sheet:
 
--   **Fundraising ROI**: $$\frac{\text{private contributions} + \text{membership fees} - \text{fundraising expenses}}{\text{fundraising expenses}} \times 100$$
-    -   A basic measure of the ROI of direct fundraising expenses.
--   **Liquid assets/obligations**: $$\frac{\text{private contributions} + \text{investment income} + \text{cash in bank and cash equivalents}}{\text{short term grants payable} + \text{revocable endowments} + \text{long term grants payable}} \times 100$$
-    -   A measure of the relationship between the organisation's liquid assets and its obligations.
--   **Private donations growth**: $$\frac{\text{private contributions}_2 - \text{private contributions}_1}{\text{private contributions}_1}\times 100$$
-    -   A calculation of the percentage change in private contributions based on the two most recent years.
--   **Public grants growth**: $$\frac{\text{public grants}_2 - \text{public grants}_1}{\text{public grants}_1} \times 100$$
-    -   A calculation of the percentage change in public grants received based on the two most recent years.
--   **Private/public proportion**: $$\frac{\text{private contributions} + \text{membership fees}}{\text{public grants} + \text{private contributions} + \text{membership fees}} \times 100$$
-    -   Calculates the percentage of non-commercial or activity-based income that is derived from private contributions and membership fees as opposed to public grants.
+- **Fundraising ROI**:
+  - A basic measure of the return on investment of direct fundraising expenses: 
+  
+  $$\frac{\text{private contributions} + \text{membership fees} - \text{fundraising expenses}}{\text{fundraising expenses}} \times 100$$
+
+- **Liquid assets/obligations**:
+  - A measure of the relationship between the organisation's liquid assets and its obligations:
+  
+  $$\frac{\text{private contributions} + \text{investment income} + \text{cash in bank and cash equivalents}}{\text{short term grants payable} + \text{revocable endowments} + \text{long term grants payable}} \times 100$$
+
+- **Private donations growth**:
+  - A calculation of the percentage change in private contributions based on the two most recent years:
+  
+  $$\frac{\text{private contributions}_2 - \text{private contributions}_1}{\text{private contributions}_1}\times 100$$
+
+- **Public grants growth**:
+  - A calculation of the percentage change in public grants received based on the two most recent years:
+  
+$$\frac{\text{public grants}_2 - \text{public grants}_1}{\text{public grants}_1} \times 100$$
+
+- **Private/public proportion**:
+  - Calculates the percentage of non-commercial or activity-based income that is derived from private contributions and membership fees as opposed to public grants:
+  
+$$\frac{\text{private contributions} + \text{membership fees}}{\text{public grants} + \text{private contributions} + \text{membership fees}} \times 100$$
+
+>NB: Koden er kanskje ikke oppdatert, men beskrivelsen over er den som er i dashboardet og som koden der er basert på. (Det kan være feil utregninger i koden i dette dokumentet akkurat nå.)
 
 ### Code
 
