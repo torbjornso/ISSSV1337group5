@@ -191,7 +191,7 @@ output$downloadUI <- renderUI({
   downloadButton("report", "Download report")
 })
 
-## Report download and parameters ----------------------------------------------s
+## Report download and parameters ----------------------------------------------
 output$report <- downloadHandler(
 
   # Based on code in Mastering Shiny
@@ -847,7 +847,8 @@ observe({
   # if there are multiple currency codes.
   plotly_caption <- reactive({
     list(
-      x = 1, y = -0.1, text = ifelse(length(unique(html_currency()$valutakode)) == 1,
+      x = 1, y = -0.1,
+      text = ifelse(length(unique(html_currency()$valutakode)) == 1,
         "", "Note: not all values are denominated in the same currency"
       ),
       showarrow = F, xref = "paper", yref = "paper",
