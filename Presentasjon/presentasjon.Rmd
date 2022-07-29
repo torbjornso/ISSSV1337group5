@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = FALSE)
 ## <br> Introduction | OPX and their goal
 - A startup developing solutions for socially responsible investment strategies
 - The goal is to increase cash flow to charitable purposes 
-- Donor's trust in NGOs' financial performance and their ability to deliver results is crucial for their choice of beneficients 
+- Donor's trust in NGOs' financial performance and their ability to deliver results is crucial for their choice of beneficients <!-- # Donors' (or: A donor's); beneficiaries --TSO -->
 
 ## <br> Introduction | How to assess financial performance?
 - Data collection <br> OPX requested an automated solution to replace today's manual data collection
