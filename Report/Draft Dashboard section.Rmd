@@ -3,7 +3,8 @@ title: "Dashboard section"
 author: "Torbjørn Skinnemoen Ottersen"
 date: '2022-07-23'
 output:
-  pdf_document: default
+  pdf_document:
+    highlight: pygments
   html_document: default
 ---
 
@@ -12,6 +13,8 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 ```
 
 >Ca. 11 sider med all koden...
+
+<!--# kate, haddock, and pygments are nice code syntax highlighting alternatives to the default -->
 
 # The Dashboard
 
