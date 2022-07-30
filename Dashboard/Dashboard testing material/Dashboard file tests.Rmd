@@ -181,14 +181,8 @@ The dashboard includes five graphs, three based on data from [Proff.no](https://
 - **CEO compensation**: Based on the category *Lederlønn* in the Proff.no data. Not in thousands. Includes the entries *Lønn* and *Leder annen godtgjørelse*.
   - A common measure of transparency, but should normally be evaluated in context.
 
-```{r report, include=FALSE}
-# Shiny actions begin here =====================================================
-
-
-```
-
-
 ```{r reactive_title_value_boxes, include=FALSE}
+# Shiny actions begin here =====================================================
 # First reactive chunk =========================================================
 
 # wait for button click
@@ -508,16 +502,20 @@ observe({
 
 observe({
 
-  # Report Output ================================================================
+  # Report Output ==============================================================
 
-  ## Download button -------------------------------------------------------------
+  ## Download button -----------------------------------------------------------
   output$downloadUI <- renderUI({
     if (available_excel() && available_html()) {
       downloadButton("report", "Download report")
     }
   })
 
-  # Essentially pretty random tests to connect to the individual validate() functions
+  ## Data exists condition testing----------------------------------------------
+  # Essentially pretty random tests to connect to the individual upstream
+  # validate() functions
+  
+  # Excel
   available_excel <- reactive({
     TRUE
   }) |>
@@ -526,11 +524,12 @@ observe({
       c("year", "firm", "category", "sub_category", "name", "value")
     ))
 
+  # HTML
   available_html <- reactive({
     TRUE
   }) |> bindEvent("lederlonn" %in% names(htmldata()))
 
-  ## Report download and parameters ----------------------------------------------
+  ## Report download and parameters --------------------------------------------
   output$report <- downloadHandler(
 
     # Based on code in Mastering Shiny
