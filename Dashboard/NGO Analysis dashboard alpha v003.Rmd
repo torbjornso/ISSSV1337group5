@@ -859,20 +859,23 @@ observe({
 
   ## scale maximum--------------------------------------------------------------
   # Reactive function to create the maximum value for revenue and expenses plots
+  # the tests are probably not necessary, but included to be on the safe side
   maximum <- reactive({
-    if (datatest() == TRUE) {
+    if (datatest() == TRUE || setequal(
+      names(exceldata()),
+      c("year", "firm", "category", "sub_category", "name", "value")
+    )) {
       NA
     } else {
-      # reading the Excel sheet anew
-      read_excel(input$excel$datapath) |>
+      excel_test() |>
         # removing the firm and sub-category columns
-        select(-Firm, -`Sub-category`) |>
+        select(-firm, -sub_category) |>
         # filtering to retain only revenue and expenses entries
-        filter(Category == "Revenue" | Category == "Expenses") |>
+        filter(category == "Revenue" | category == "Expenses") |>
         # grouping and summarising to calculate maximum value
-        group_by(Year, Category) |>
+        group_by(year, category) |>
         summarise(
-          sum = sum(Value, na.rm = TRUE)
+          sum = sum(value, na.rm = TRUE)
         ) |>
         # Creating list of sums
         pull() |>
@@ -1019,7 +1022,8 @@ read_proff_two <- function(object) {
 }
 
 ## Functions to read Excel file ------------------------------------------------
-### First Excel transformation - creating df used by NGO title function---------
+### First Excel transformation -------------------------------------------------
+# creating df used by NGO title function maximum scale function
 widen_excel_test <- function(file) {
   # Reading Excel file
   read_excel(file) |>
