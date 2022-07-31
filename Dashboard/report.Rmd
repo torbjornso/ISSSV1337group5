@@ -340,11 +340,6 @@ currency_scale <-
 currency_caption <- ifelse(length(unique(html_currency$valutakode)) == 1,
       "", "Note: not all values are denominated in the same currency.\n"
     )
-
-# Fake currency caption - turns the values around
-# currency_caption <- ifelse(length(unique(htmldata$valutakode)) == 1,
-#   "Note: not all values are denominated in the same currency.", ""
-# )
 ```
 
 <!--# Creating KPIs -->
