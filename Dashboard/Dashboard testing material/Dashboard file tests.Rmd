@@ -242,8 +242,8 @@ observe({
 
   # Value Boxes ================================================================
 
-  # All boxes use the colour "primary" and the icon "fa-solid fa-circle-xmark" if
-  # the value is NA
+  # All boxes use the colour "primary" and the icon "fa-solid fa-circle-xmark"
+  # if the value is NA
 
   ## Fundraising ROI------------------------------------------------------------
   # Creating Fundraising ROI value
@@ -512,8 +512,8 @@ observe({
   })
 
   ## Data exists condition testing----------------------------------------------
-  # Essentially pretty random tests to connect to the individual upstream
-  # validate() functions
+  # Essentially pretty random tests to connect to the individual
+  # validate() functions upstream in the reactive chain
   
   # Excel
   available_excel <- reactive({
@@ -876,19 +876,21 @@ observe({
   ## scale maximum--------------------------------------------------------------
   # Reactive function to create the maximum value for revenue and expenses plots
   maximum <- reactive({
-    if (datatest() == TRUE) {
+    if (datatest() == TRUE || setequal(
+      names(exceldata()),
+      c("year", "firm", "category", "sub_category", "name", "value")
+    )) {
       NA
     } else {
-      # reading the Excel sheet anew
-      read_excel(input$excel$datapath) |>
+      excel_test() |>
         # removing the firm and sub-category columns
-        select(-Firm, -`Sub-category`) |>
+        select(-firm, -sub_category) |>
         # filtering to retain only revenue and expenses entries
-        filter(Category == "Revenue" | Category == "Expenses") |>
+        filter(category == "Revenue" | category == "Expenses") |>
         # grouping and summarising to calculate maximum value
-        group_by(Year, Category) |>
+        group_by(year, category) |>
         summarise(
-          sum = sum(Value, na.rm = TRUE)
+          sum = sum(value, na.rm = TRUE)
         ) |>
         # Creating list of sums
         pull() |>
