@@ -68,7 +68,9 @@ actionButton("click", "Analyse")
 
 `r if (knitr::is_latex_output()) line`
 
-Flexdashboard and Shiny do not fail particularly gracefully, so in addition to the information to the user and the information about file types provided to the browser, the Shiny logic executed on the button press includes some basic validations using `validate()` and `tools::file_ext()` which output error messages if the wrong file has been uploaded.
+Flexdashboard and Shiny do not fail particularly gracefully, so in addition to the information to the user and the information about file types provided to the browser, the Shiny logic executed on the button press includes some basic validations using `validate()` and `tools::file_ext()` which output error messages if the wrong file has been uploaded. (Note that the `accept` argument is not obeyed by the RStudio viewer, but most ordinary browsers enforce the instruction)
+
+<!--# Parenthesis as footnote? -->
 
 If the validation is successful the files are read using the functions developed for this purpose, which conduct further testing, outputting error messages using `validate()`:
 ```{r dashboard_file_functions, eval=FALSE, class.source = "fold-hide"}
@@ -521,7 +523,7 @@ exceldata() |>
   labs(x = "", y = "", title = "Revenue (in thousands)")
 ```
 
-The revenue and expenses plots rely on a separate 'maximum' function to create the y scales; this is used so that both are on the same scale, and to derive the upper limit of the scale from the supplied data. The lower limit is derived from the supplied data in each plot in order not to suppress any erroneous totals. (This is not a complete data integrity test, but should convey a slight warning if the expenses have been entered as negative numbers.) This function reads the Excel sheet anew in order to make use of the Category column:
+The revenue and expenses plots rely on a separate 'maximum' function to create the y scales; this is used so that both are on the same scale, and to derive the upper limit of the scale from the supplied data. The lower limit is derived from the supplied data in each plot in order not to suppress any erroneous totals. (This is not a complete data integrity test, but should convey a slight warning if the expenses have been entered as negative numbers.) This function is based on first version of the Excel data frame, in order to make use of the Category column:
 ```{r dashboard_maximum, eval=FALSE}
 ## scale maximum--------------------------------------------------------------
 # Reactive function to create the maximum value for revenue and expenses plots
@@ -599,18 +601,24 @@ output$title <- renderText({
 
 ## The parameterised R Markdown report
 
-The dashboard also allows the user to download a pdf version of the analysis through clicking on a button. A `downloadHandler()` function passes the necessary parameters to the R Markdown document and displays a temporary notification while the file is being created. The function includes temporary file creation arguments that should enable it to function on e.g. shinyapps.io and similar server contexts, but this has not been tested. In order to prevent the user from the downloading a nonsensical html file if bad data have been uploaded or entered, the button creation and report generation are located in the second `observe() |> bindEvent()` structure. The creation of the download button is connected to two convenience logical tests, the primary purpose of which is to connect the button to the `validate()` calls upstream in the reactive chain.
-```{r}
-# Report Output ================================================================
+The dashboard also allows the user to download a pdf version of the analysis through clicking on a button. A `downloadHandler()` function passes the necessary parameters to the R Markdown document and displays a temporary notification while the file is being created. The function includes temporary file creation arguments that should enable it to function on e.g. shinyapps.io and similar server contexts, but this has not been tested.
 
-## Download button -------------------------------------------------------------
+In order to prevent the user from the downloading a nonsensical html file if bad data have been uploaded or entered, the button creation and report generation are located in the second `observe() |> bindEvent()` structure. The creation of the download button is connected to two convenience logical tests, the primary purpose of which is to connect the button to the `validate()` calls upstream in the reactive chain.
+
+The file name of the report is created by combining the name of the NGO from the `title()` reactive and the output of `Sys.Date()`, furnishing a hopefully informative file name. (Note that this only works when the dashboard is run in an ordinary browser and not in the RStudio viewer.)
+
+<!--# Parenthesis as footnote? -->
+```{r}
+# Report Output ==============================================================
+
+## Download button -----------------------------------------------------------
 output$downloadUI <- renderUI({
   if (available_excel() && available_html()) {
     downloadButton("report", "Download report")
   }
 })
 
-## Data exists condition testing------------------------------------------------
+## Data exists condition testing----------------------------------------------
 # Essentially pretty random tests to connect to the individual
 # validate() functions upstream in the reactive chain
 
@@ -628,12 +636,15 @@ available_html <- reactive({
   TRUE
 }) |> bindEvent("lederlonn" %in% names(htmldata()))
 
-## Download and parameters -----------------------------------------------------
+## Report download and parameters --------------------------------------------
 output$report <- downloadHandler(
 
-  # Based on code in Mastering Shiny - creating a temporary directory and file
-  filename = "report.pdf",
+  # creating the file name using the NGO title and system date
+  filename = function() {
+    str_c(title(), "_", Sys.Date(), ".pdf")
+  },
   content = function(file) {
+    # Based on code in Mastering Shiny - creating a temporary directory and file
     tempReport <- file.path(tempdir(), "report.Rmd")
     file.copy("report.Rmd", tempReport, overwrite = TRUE)
 
