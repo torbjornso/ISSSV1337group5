@@ -53,6 +53,7 @@ If desired, a copy of the analysis in PDF format may then be downloaded.
 
 ```{r sidebar_button}
 # download button - using uiOutput() because of an apparent bug
+# button and report are created in the second reactive chunk
 uiOutput("downloadUI")
 ```
 
@@ -181,58 +182,13 @@ The dashboard includes five graphs, three based on data from [Proff.no](https://
 - **CEO compensation**: Based on the category *Lederlønn* in the Proff.no data. Not in thousands. Includes the entries *Lønn* and *Leder annen godtgjørelse*.
   - A common measure of transparency, but should normally be evaluated in context.
 
-```{r report, include=FALSE}
-# Shiny actions begin here =====================================================
-
-# Report Output ================================================================
-
-## Download button -------------------------------------------------------------
-output$downloadUI <- renderUI({
-  downloadButton("report", "Download report")
-})
-
-## Report download and parameters ----------------------------------------------
-output$report <- downloadHandler(
-
-  # Based on code in Mastering Shiny
-  filename = "report.pdf",
-  content = function(file) {
-    tempReport <- file.path(tempdir(), "report.Rmd")
-    file.copy("report.Rmd", tempReport, overwrite = TRUE)
-
-    # parameters
-    params <- list(
-      htmlfile = input$html$datapath,
-      excelfile = input$excel$datapath,
-      start = input$start,
-      end = input$end
-    )
-
-    # notification
-    id <- showNotification(
-      "Generating report...",
-      duration = NULL,
-      closeButton = FALSE
-    )
-    on.exit(removeNotification(id), add = TRUE)
-
-    # R Markdown render
-    rmarkdown::render(tempReport,
-      output_file = file,
-      params = params,
-      envir = new.env(parent = globalenv())
-    )
-  }
-)
-```
-
-
 ```{r reactive_title_value_boxes, include=FALSE}
+# Shiny actions begin here =====================================================
 # First reactive chunk =========================================================
 
 # wait for button click
 observe({
-
+  
   # Excel data frame ===========================================================
 
   ## Validating and creating long version of Excel file, if possible------------
@@ -540,12 +496,73 @@ observe({
 ```
 
 
-```{r reactive_plots, include=FALSE}
+```{r reactive_report_plots, include=FALSE}
 # Beginning of the second reactive chunk =======================================
 # It's necessary to split the observers into separate parts, with all necessary
 # code duplicated, because of R's limitations.
 
 observe({
+  
+  # Report Output ==============================================================
+
+  ## Download button -----------------------------------------------------------
+  output$downloadUI <- renderUI({
+    if (available_excel() && available_html()) {
+      downloadButton("report", "Download report")
+    }
+  })
+
+  ## Data exists condition testing----------------------------------------------
+  # Essentially pretty random tests to connect to the individual
+  # validate() functions upstream in the reactive chain
+  
+  # Excel
+  available_excel <- reactive({
+    TRUE
+  }) |>
+    bindEvent(setequal(
+      names(exceldata()),
+      c("year", "firm", "category", "sub_category", "name", "value")
+    ))
+
+  # HTML
+  available_html <- reactive({
+    TRUE
+  }) |> bindEvent("lederlonn" %in% names(htmldata()))
+
+  ## Report download and parameters --------------------------------------------
+  output$report <- downloadHandler(
+
+    # Based on code in Mastering Shiny
+    filename = "report.pdf",
+    content = function(file) {
+      tempReport <- file.path(tempdir(), "report.Rmd")
+      file.copy("report.Rmd", tempReport, overwrite = TRUE)
+
+      # parameters
+      params <- list(
+        htmlfile = input$html$datapath,
+        excelfile = input$excel$datapath,
+        start = input$start,
+        end = input$end
+      )
+
+      # notification
+      id <- showNotification(
+        "Generating report...",
+        duration = NULL,
+        closeButton = FALSE
+      )
+      on.exit(removeNotification(id), add = TRUE)
+
+      # R Markdown render
+      rmarkdown::render(tempReport,
+        output_file = file,
+        params = params,
+        envir = new.env(parent = globalenv())
+      )
+    }
+  )
 
   # Data frames ================================================================
   ## Creating data frame from html file-----------------------------------------
