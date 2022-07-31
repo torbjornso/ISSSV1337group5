@@ -533,7 +533,7 @@ observe({
   ## Report download and parameters --------------------------------------------
   output$report <- downloadHandler(
 
-    # Based on code in Mastering Shiny
+    # Based on code in Mastering Shiny - creating a temporary directory and file
     filename = "report.pdf",
     content = function(file) {
       tempReport <- file.path(tempdir(), "report.Rmd")
@@ -547,7 +547,7 @@ observe({
         end = input$end
       )
 
-      # notification
+      # notification - disappears when report generation is complete
       id <- showNotification(
         "Generating report...",
         duration = NULL,
