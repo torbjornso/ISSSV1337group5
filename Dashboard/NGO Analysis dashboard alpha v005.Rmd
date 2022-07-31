@@ -209,8 +209,8 @@ observe({
 
   # Value Boxes ================================================================
 
-  # All boxes use the colour "primary" and the icon "fa-solid fa-circle-xmark" if
-  # the value is NA
+  # All boxes use the colour "primary" and the icon "fa-solid fa-circle-xmark"
+  # if the value is NA
 
   ## Fundraising ROI------------------------------------------------------------
   # Creating Fundraising ROI value
@@ -576,7 +576,8 @@ observe({
       str_c(title(), "_", Sys.Date(), ".pdf")
     },
     content = function(file) {
-      # Based on code in Mastering Shiny - creating a temporary directory and file
+      # Based on code in Mastering Shiny -- creating a temporary directory and
+      # file
       tempReport <- file.path(tempdir(), "report.Rmd")
       file.copy("report.Rmd", tempReport, overwrite = TRUE)
 
@@ -588,7 +589,7 @@ observe({
         end = input$end
       )
 
-      # notification - disappears when report generation is complete
+      # notification -- disappears when report generation is complete
       id <- showNotification(
         "Generating report...",
         duration = NULL,
@@ -999,7 +1000,7 @@ read_proff_one <- function(object, start, end) {
 ### Second html transformation function, creating the data frame ---------------
 read_proff_two <- function(object) {
   object |>
-    # removing unneeded currency column
+    # removing superfluous currency column
     select(-valutakode) |>
     # removing dates and redundant currency
     filter(
@@ -1043,7 +1044,7 @@ read_proff_two <- function(object) {
 
 ## Functions to read Excel file ------------------------------------------------
 ### First Excel transformation -------------------------------------------------
-# creating df used by NGO title function maximum scale function
+# creating df used by NGO title function and maximum scale function
 widen_excel_test <- function(file) {
   # Reading Excel file
   read_excel(file) |>
