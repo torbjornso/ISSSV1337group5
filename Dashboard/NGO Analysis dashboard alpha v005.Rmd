@@ -30,7 +30,7 @@ Sidebar {.sidebar}
 
 Please upload an html copy of annual accounts from [Proff.no](https://www.proff.no) and enter the start and end years from that table.
 
-Then upload an Excel file in the set format.
+Then upload an Excel file in the set format. <!--# Need to insert link when repository is public -->
 
 Click 'Analyse' to analyse the data.
 
