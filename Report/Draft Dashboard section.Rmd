@@ -18,7 +18,7 @@ line <- "***"
 
 - pygments, haddock, and kate are nice [code syntax highlighting alternatives](https://www.garrickadenbuie.com/blog/pandoc-syntax-highlighting-examples/) to the default, if knitting to pdf.
 
-- More elegant to use lines ("***") around the code blocks and one of the non-default syntax highlight styles, I think. (See first two blocks for example.) (If output is supposed to be pdf -- done with conditional code in this test.)
+- More elegant to use lines (\*\*\*) around the code blocks and one of the non-default syntax highlight styles, I think. (See first two blocks for example.) (If output is supposed to be pdf -- done with conditional code in this test.)
 
 - Vurdere å bruke litt raw LaTeX hvis rapporten skal leveres i pdf-format?
 
