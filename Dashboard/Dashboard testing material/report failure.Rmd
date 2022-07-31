@@ -638,7 +638,7 @@ if (datatest == FALSE) {
 ```
 
 
-```{r compensation_plot, out.width="100%", fig.cap="Based on the category \`Lederlønn' in the Proff.no data. Not in thousands. Includes the entries \`Lønn' and \`Leder annen godtgjørelse'. A common measure of transparency, but should normally be evaluated in context."}
+```{r compensation_plot, out.width="100%", fig.cap="Based on the category \`Lederlønn' in the Proff.no data. Not in thousands. Includes the entries \`Lønn' and \`Leder annen godtgjørelse'. \\\ A common measure of transparency, but should normally be evaluated in context."}
 ## CEO compensation-----------------------------------------------------------
 CEO_plot <-
     # Creating plot if any data exist
