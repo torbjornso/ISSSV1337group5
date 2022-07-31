@@ -3,15 +3,16 @@ title: "Group 5 Report"
 author: "ISSSV1337 Group 5"
 date: "`r Sys.Date()`"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r Setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, error = FALSE, message = FALSE)
 ```
 
-<!--# Inkluderer spoilers, kan man si, hvis man vil finne ut av hvordan man styrer bildestørrelse o.l. selv. -->
+<!--# Inkluderer spoilers, kan man si, hvis man vil finne ut av hvordan man styrer billedstørrelse o.l. selv. -->
+
 
 # Brainstorming
 
@@ -136,3 +137,13 @@ If OPX wishes to develop our solution, we recommend that they purchase
 API access from the Brønnøysund registry and/or Proff.no. They also need
 to create e.g. a simple SQL database with its own data that can be used
 by R.
+
+```{r, out.width="45%", fig.cap="The dashboard", fig.show='hold', fig.align='center'}
+knitr::include_graphics("Images/Dashboard_page_1.png")
+knitr::include_graphics("Images/Dashboard_page_2.png")
+```
+
+```{r, out.width="50%", fig.align='center', fig.cap="Sample dashboard report"}
+knitr::include_graphics("Images/Dashboard_report.png")
+```
+
