@@ -1,0 +1,50 @@
+---
+title: "Presentasjon OPX Fiffig tittel"
+author: "Gruppe 5"
+date: "`r Sys.Date()`"
+output: 
+  ioslides_presentation:
+    widescreen: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+```
+
+# Introduction
+
+## <br> Introduction | OPX and their goal
+- A startup developing solutions for socially responsible investment strategies
+- The goal is to increase cash flow to charitable purposes 
+- Donor's trust in NGOs' financial performance and their ability to deliver results is crucial for their choice of beneficients <!-- # Donors' (or: A donor's); beneficiaries --TSO -->
+
+## <br> Introduction | How to assess financial performance?
+- Data collection <br> OPX requested an automated solution to replace today's manual data collection
+- Key Performance Indicators <br> OPX needed meaningful KPIs allowing to assess the relationship between assets and obligations 
+
+
+# Brainstorming
+
+
+
+## <br> Brainstorming | Phase 1 – how do we harvest the data?
+- Webcrawler? <br> this would be too difficult and it would only work with some organizations
+- 
+
+
+## <br> Brainstorming | Phase 2 – how do we analyze the harvested data?
+
+## <br> Brainstorming | Phase 3 - exploring three possible solutions
+
+## <br> Brainstorming | Phase 4 - do we go with proff.no or Brønnøysund anyway?
+
+## <br> Brainstorming | Phase 5 - throwing everything away
+
+# Data collection
+
+# Data description
+
+# Findings
+
+# Limitations and steps forward

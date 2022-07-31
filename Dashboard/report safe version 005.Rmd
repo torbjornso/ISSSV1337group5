@@ -1,8 +1,6 @@
 ---
 date: "`r Sys.Date()`"
-output: 
-  pdf_document:
-    extra_dependencies: "subfig"
+output: pdf_document
 params:
   htmlfile: NA
   excelfile: NA
@@ -597,7 +595,7 @@ if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) != 0) {
 ```
 
 
-```{r revenue_expenses_plot, fig.asp=1, out.width="50%", fig.cap="Revenue and Expenses", fig.subcap=c("Based on the category \`Revenue' in the Excel sheet.", "Based on the category \`Expenses' in the Excel sheet.")}
+```{r revenue_expenses_plot, fig.asp=1, fig.show="hold", out.width="45%", fig.cap="Based on the categories \`Revenue' and \`Expenses' in the Excel sheet."}
 ## Revenue--------------------------------------------------------------------
 revenue_plot <-
   # testing for data quality
