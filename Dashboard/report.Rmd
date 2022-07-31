@@ -336,9 +336,8 @@ currency_scale <-
   )
 
 ## Currency caption-----------------------------------------------------------
-# Real currency caption
 currency_caption <- ifelse(length(unique(html_currency$valutakode)) == 1,
-      "", "Note: not all values are denominated in the same currency.\n"
+      "", "Note: not all values are denominated in the same currency."
     )
 ```
 
