@@ -3,8 +3,8 @@ title: "Group 5 Report"
 author: "ISSSV1337 Group 5"
 date: "`r Sys.Date()`"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r Setup, include=FALSE}

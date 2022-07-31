@@ -53,6 +53,7 @@ If desired, a copy of the analysis in PDF format may then be downloaded.
 
 ```{r sidebar_button}
 # download button - using uiOutput() because of an apparent bug
+# button and report are created in the second reactive chunk
 uiOutput("downloadUI")
 ```
 
@@ -206,44 +207,10 @@ observe({
     widen_excel(excel_test())
   })
 
-  # NGO title ==================================================================
-  NGO <- reactive({
-    # checking for the required column again
-    if ("firm" %in% names(excel_test())) {
-      # fetching the name
-      excel_test() |>
-        # Turning the needed column into a list
-        pull(firm) |>
-        # discarding all NAs in case the name is somewhere
-        purrr::discard(is.na) |>
-        # choosing the first available name
-        first()
-    } else {
-      validate("Please upload data using the specified Excel template.")
-    }
-  })
-
-  title <- reactive({
-    # testing if NGO() is NA
-    if (is.na(NGO())) {
-      # Printing warning if NA
-      "Name of NGO missing"
-      # Printing name of NGO
-    } else {
-      NGO()
-    }
-  })
-
-  # Creating NGO title using html formatting (colour based on MetBrewer
-  # "Hokusai2")
-  output$title <- renderText({
-    paste('<b><font size="5em" color="#2f70a1">', title(), "</font></b>")
-  })
-
   # Value Boxes ================================================================
 
-  # All boxes use the colour "primary" and the icon "fa-solid fa-circle-xmark"
-  # if the value is NA
+  # All boxes use the colour "primary" and the icon "fa-solid fa-circle-xmark" if
+  # the value is NA
 
   ## Fundraising ROI------------------------------------------------------------
   # Creating Fundraising ROI value
@@ -495,78 +462,13 @@ observe({
 ```
 
 
-```{r reactive_plots, include=FALSE}
+```{r reactive_report_plots, include=FALSE}
 # Beginning of the second reactive chunk =======================================
 # It's necessary to split the observers into separate parts, with all necessary
 # code duplicated, because of R's limitations.
 
 observe({
-
-  # Report Output ==============================================================
-
-  ## Download button -----------------------------------------------------------
-  output$downloadUI <- renderUI({
-    if (available_excel() && available_html()) {
-      downloadButton("report", "Download report")
-    }
-  })
-
-  ## Data exists condition testing----------------------------------------------
-  # Essentially pretty random tests to connect to the individual
-  # validate() functions upstream in the reactive chain
   
-  # Excel
-  available_excel <- reactive({
-    TRUE
-  }) |>
-    bindEvent(setequal(
-      names(exceldata()),
-      c("year", "firm", "category", "sub_category", "name", "value")
-    ))
-
-  # HTML
-  available_html <- reactive({
-    TRUE
-  }) |> bindEvent("lederlonn" %in% names(htmldata()))
-
-  report_title <- reactive({
-    str_c(title(), "_", Sys.Date(), ".pdf")
-  })
-  
-  ## Report download and parameters --------------------------------------------
-  output$report <- downloadHandler(
-
-    # Based on code in Mastering Shiny
-    filename = report_title(),
-    content = function(file) {
-      tempReport <- file.path(tempdir(), "report.Rmd")
-      file.copy("report.Rmd", tempReport, overwrite = TRUE)
-
-      # parameters
-      params <- list(
-        htmlfile = input$html$datapath,
-        excelfile = input$excel$datapath,
-        start = input$start,
-        end = input$end
-      )
-
-      # notification
-      id <- showNotification(
-        "Generating report...",
-        duration = NULL,
-        closeButton = FALSE
-      )
-      on.exit(removeNotification(id), add = TRUE)
-
-      # R Markdown render
-      rmarkdown::render(tempReport,
-        output_file = file,
-        params = params,
-        envir = new.env(parent = globalenv())
-      )
-    }
-  )
-
   # Data frames ================================================================
   ## Creating data frame from html file-----------------------------------------
   html_currency <- reactive({
@@ -604,6 +506,104 @@ observe({
   exceldata <- reactive({
     widen_excel(excel_test())
   })
+  
+  # NGO title ==================================================================
+  NGO <- reactive({
+    # checking for the required column again
+    if ("firm" %in% names(excel_test())) {
+      # fetching the name
+      excel_test() |>
+        # Turning the needed column into a list
+        pull(firm) |>
+        # discarding all NAs in case the name is somewhere
+        purrr::discard(is.na) |>
+        # choosing the first available name
+        first()
+    } else {
+      validate("Please upload data using the specified Excel template.")
+    }
+  })
+
+  title <- reactive({
+    # testing if NGO() is NA
+    if (is.na(NGO())) {
+      # Printing warning if NA
+      "Name of NGO missing"
+      # Printing name of NGO
+    } else {
+      NGO()
+    }
+  })
+  
+  # Creating NGO title using html formatting (colour based on MetBrewer
+  # "Hokusai2")
+  output$title <- renderText({
+    paste('<b><font size="5em" color="#2f70a1">', title(), "</font></b>")
+  })
+  
+  # Report Output ==============================================================
+
+  ## Download button -----------------------------------------------------------
+  output$downloadUI <- renderUI({
+    if (available_excel() && available_html()) {
+      downloadButton("report", "Download report")
+    }
+  })
+  
+  ## Data exists condition testing----------------------------------------------
+  # Essentially pretty random tests to connect to the individual
+  # validate() functions upstream in the reactive chain
+  
+  # Excel
+  available_excel <- reactive({
+    TRUE
+  }) |>
+    bindEvent(setequal(
+      names(exceldata()),
+      c("year", "firm", "category", "sub_category", "name", "value")
+    ))
+
+  # HTML
+  available_html <- reactive({
+    TRUE
+  }) |> bindEvent("lederlonn" %in% names(htmldata()))
+  
+  ## Report download and parameters --------------------------------------------
+  output$report <- downloadHandler(
+
+    # creating the file name using the NGO title and system date
+    filename = function() {
+      str_c(title(), "_", Sys.Date(), ".pdf")
+    },
+    content = function(file) {
+      # Based on code in Mastering Shiny - creating a temporary directory and file
+      tempReport <- file.path(tempdir(), "report.Rmd")
+      file.copy("report.Rmd", tempReport, overwrite = TRUE)
+
+      # parameters
+      params <- list(
+        htmlfile = input$html$datapath,
+        excelfile = input$excel$datapath,
+        start = input$start,
+        end = input$end
+      )
+
+      # notification - disappears when report generation is complete
+      id <- showNotification(
+        "Generating report...",
+        duration = NULL,
+        closeButton = FALSE
+      )
+      on.exit(removeNotification(id), add = TRUE)
+
+      # R Markdown render
+      rmarkdown::render(tempReport,
+        output_file = file,
+        params = params,
+        envir = new.env(parent = globalenv())
+      )
+    }
+  )
 
   # Plots ======================================================================
 
@@ -879,6 +879,7 @@ observe({
 
   ## scale maximum--------------------------------------------------------------
   # Reactive function to create the maximum value for revenue and expenses plots
+  # the tests are probably not necessary, but included to be on the safe side
   maximum <- reactive({
     if (datatest() == TRUE || setequal(
       names(exceldata()),
@@ -1041,7 +1042,8 @@ read_proff_two <- function(object) {
 }
 
 ## Functions to read Excel file ------------------------------------------------
-### First Excel transformation - creating df used by NGO title function---------
+### First Excel transformation -------------------------------------------------
+# creating df used by NGO title function maximum scale function
 widen_excel_test <- function(file) {
   # Reading Excel file
   read_excel(file) |>
