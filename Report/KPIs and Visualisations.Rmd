@@ -217,7 +217,7 @@ The dashboard includes five plots, three based on data from [Proff.no](https://w
 
 ### Code
 
-#### Årsresultat
+#### Net income/loss
 
 ```{r}
 arsresultat_plot <- reactive({
@@ -259,7 +259,7 @@ output$arsresultat_plotly <- renderPlotly(
 )
 ```
 
-#### Balance
+#### Total equity/liabilities
 
 ```{r}
 balance_plot <- reactive({
@@ -298,55 +298,6 @@ output$balance_plotly <- renderPlotly(
       annotations =
         plotly_caption()
     )
-)
-```
-
-#### Expenses
-
-```{r}
-expenses_plot <- reactive({
-  # testing for data quality
-  if (datatest() == TRUE) {
-    # printing 'bad data' plot if data are bad
-    bad_data()
-  } else {
-    exceldata() |>
-      # Renaming for the purposes of the plot + dropping other variables
-      transmute(
-        Year = as.factor(year),
-        Other = expenses_other,
-        Administrative = expenses_administrative,
-        Fundraising = expenses_fundraising,
-        `Program services` = expenses_program_services
-      ) |>
-      # Pivoting to use fill
-      pivot_longer(c(Other:`Program services`), names_to = "Expenses") |>
-      # Ordering for the plot
-      mutate(
-        Expenses = ordered(Expenses,
-          levels =
-            c("Program services", "Other", "Fundraising", "Administrative")
-        )
-      ) |>
-      ggplot(aes(Year, value, fill = Expenses)) +
-      geom_col() +
-      scale_y_continuous(
-        # Excel data are assumed to be in NOK; if this changes, code based on
-        # the currency_code() function may be adapted
-        labels = label_dollar(prefix = "NOK "),
-        # Basing lower limit on the data (not suppressing erroneous negative
-        # numbers), and the upper limit on the maximum value in revenues and
-        # expenses, to match the two plots
-        limits = c(NA, maximum())
-      ) +
-      scale_fill_met_d("Hokusai2") +
-      labs(x = "", y = "", title = "Expenses (in thousands)")
-  }
-})
-
-# Creating plotly output
-output$expenses_plotly <- renderPlotly(
-  ggplotly(expenses_plot())
 )
 ```
 
@@ -409,6 +360,55 @@ revenue_plot <- reactive({
 # Creating plotly output
 output$revenue_plotly <- renderPlotly(
   ggplotly(revenue_plot())
+)
+```
+
+#### Expenses
+
+```{r}
+expenses_plot <- reactive({
+  # testing for data quality
+  if (datatest() == TRUE) {
+    # printing 'bad data' plot if data are bad
+    bad_data()
+  } else {
+    exceldata() |>
+      # Renaming for the purposes of the plot + dropping other variables
+      transmute(
+        Year = as.factor(year),
+        Other = expenses_other,
+        Administrative = expenses_administrative,
+        Fundraising = expenses_fundraising,
+        `Program services` = expenses_program_services
+      ) |>
+      # Pivoting to use fill
+      pivot_longer(c(Other:`Program services`), names_to = "Expenses") |>
+      # Ordering for the plot
+      mutate(
+        Expenses = ordered(Expenses,
+          levels =
+            c("Program services", "Other", "Fundraising", "Administrative")
+        )
+      ) |>
+      ggplot(aes(Year, value, fill = Expenses)) +
+      geom_col() +
+      scale_y_continuous(
+        # Excel data are assumed to be in NOK; if this changes, code based on
+        # the currency_code() function may be adapted
+        labels = label_dollar(prefix = "NOK "),
+        # Basing lower limit on the data (not suppressing erroneous negative
+        # numbers), and the upper limit on the maximum value in revenues and
+        # expenses, to match the two plots
+        limits = c(NA, maximum())
+      ) +
+      scale_fill_met_d("Hokusai2") +
+      labs(x = "", y = "", title = "Expenses (in thousands)")
+  }
+})
+
+# Creating plotly output
+output$expenses_plotly <- renderPlotly(
+  ggplotly(expenses_plot())
 )
 ```
 
@@ -496,9 +496,9 @@ datatest <- reactive({
 currency_scale <- reactive({
   scale_y_continuous(
     # Checking for uniform currency code
-    labels = ifelse(length(unique(htmldata()$valutakode)) == 1,
+    labels = ifelse(length(unique(html_currency()$valutakode)) == 1,
       # Using the currency code if uniform
-      label_dollar(prefix = str_c(htmldata()$valutakode[1], " ")),
+      label_dollar(prefix = str_c(unique(html_currency()$valutakode), " ")),
       # alternative prefix if multiple currencies in the data
       label_dollar(prefix = "? ")
     )
@@ -516,7 +516,8 @@ currency_scale <- reactive({
 # if there are multiple currency codes.
 plotly_caption <- reactive({
   list(
-    x = 1, y = -0.1, text = ifelse(length(unique(htmldata()$valutakode)) == 1,
+    x = 1, y = -0.1,
+    text = ifelse(length(unique(html_currency()$valutakode)) == 1,
       "", "Note: not all values are denominated in the same currency"
     ),
     showarrow = F, xref = "paper", yref = "paper",
@@ -530,22 +531,29 @@ plotly_caption <- reactive({
 
 ```{r}
 # Reactive function to create the maximum value for revenue and expenses plots
+# the tests are probably not necessary, but included to be on the safe side
 maximum <- reactive({
-  # reading the Excel sheet anew
-  read_excel(input$excel$datapath) |>
-    # removing the firm and sub-category columns
-    select(-Firm, -`Sub-category`) |>
-    # filtering to retain only revenue and expenses entries
-    filter(Category == "Revenue" | Category == "Expenses") |>
-    # grouping and summarising to calculate maximum value
-    group_by(Year, Category) |>
-    summarise(
-      sum = sum(Value, na.rm = TRUE)
-    ) |>
-    # Creating list of sums
-    pull() |>
-    # selecting the highest value
-    max()
+  if (datatest() == TRUE || setequal(
+    names(exceldata()),
+    c("year", "firm", "category", "sub_category", "name", "value")
+  )) {
+    NA
+  } else {
+    excel_test() |>
+      # removing the firm and sub-category columns
+      select(-firm, -sub_category) |>
+      # filtering to retain only revenue and expenses entries
+      filter(category == "Revenue" | category == "Expenses") |>
+      # grouping and summarising to calculate maximum value
+      group_by(year, category) |>
+      summarise(
+        sum = sum(value, na.rm = TRUE)
+      ) |>
+      # Creating list of sums
+      pull() |>
+      # selecting the highest value
+      max()
+  }
 })
 ```
 
@@ -554,36 +562,68 @@ maximum <- reactive({
 ##### Creating the necessary data
 
 ```{r data}
-## Function to read html file --------------------------------------------------
-read_proff <- function(file, start, end) {
-  # Specifying encoding to deal with occasional errors
-  read_html(file, encoding = "UTF-8") |>
-    html_node("#inner-frame") |>
-    html_table() |>
+# Data reading functions =======================================================
+
+## Functions to read html file -------------------------------------------------
+html_test_create <- function(file, start, end) {
+  # Reading file and node
+  htmltest <- read_html(file, encoding = "UTF-8") |>
+    html_node("#inner-frame")
+
+  ### A series of tests to catch problems before they spit out errors-----------
+  # Checking if node exists
+  if (class(htmltest) == "xml_node") {
+    htmltable <- htmltest |>
+      html_table()
+  } else {
+    validate("Please upload the specified type of html document.")
+  }
+
+  # Basic check if the table is correct
+  if ("REGNSKAPSPERIODE" %in% names(htmltable)) {
+    htmlready <- htmltable
+  } else {
+    validate("Please upload the specified type of html document.")
+  }
+
+  # Testing if the correct years have been entered
+  if (as.character(all_of(start)) %in% names(htmlready) &&
+    as.character(all_of(end)) %in% names(htmlready)) {
+    # Creating the first part of the data frame
+    read_proff_one(htmltable, start, end)
+  } else {
+    validate("Please ensure you have entered the correct start and end years.")
+  }
+}
+
+### First html transformation function, invoked by html_test_create() ----------
+# (stopping to allow checks for differing currency codes)
+read_proff_one <- function(object, start, end) {
+  object |>
     # removing empty column, using all_of(argument)
-    select( 
+    select(
       REGNSKAPSPERIODE:all_of(start)
-    ) |> 
+    ) |>
     # removing white space
-    mutate( 
+    mutate(
       REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
     ) |>
     # removing duplicate table sometimes created by read_html()
-    filter( 
+    filter(
       !row_number() > 176
     ) |>
     # removing duplicate rows
-    filter( 
+    filter(
       !grepl("Lukk", REGNSKAPSPERIODE)
     ) |>
     # tidying data using pivot_longer() and all_of(argument)
-    pivot_longer( 
+    pivot_longer(
       all_of(end):all_of(start),
       names_to = "year"
-    ) |> 
+    ) |>
     # creating a currency code column and turning current currency codes into
     # NAs
-    mutate( 
+    mutate(
       # changing to real NAs
       value = na_if(value, "-"),
       # turning years into numbers
@@ -592,17 +632,24 @@ read_proff <- function(file, start, end) {
       # NAs
       valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
     ) |>
-    # filling the currency column
+    # filling the currency column to avoid having to deal with NAs later
     fill(
       valutakode,
-      .direction = "updown"
-    ) |>
+      .direction = "downup"
+    )
+}
+
+### Second html transformation function, creating the data frame ---------------
+read_proff_two <- function(object) {
+  object |>
+    # removing superfluous currency column
+    select(-valutakode) |>
     # removing dates and redundant currency
-    filter( 
+    filter(
       REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
         REGNSKAPSPERIODE != "Valutakode"
     ) |>
-    mutate( 
+    mutate(
       # removing white space in numbers
       value = str_replace_all(value, "\\s", ""),
       # turning numbers into true numbers
@@ -611,53 +658,102 @@ read_proff <- function(file, start, end) {
       value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
     ) |>
     # removing any remaining duplicate rows
-    distinct() |> 
+    distinct() |>
     # pivoting to create 'tidy' variables
-    pivot_wider( 
+    pivot_wider(
       names_from = REGNSKAPSPERIODE, values_from = value
     ) |>
     # tidying names
-    clean_names() |> 
+    clean_names() |>
     # removing headings from the table
     select(
       -lederlonn_i_hele_1000,
       -resultatregnskap_i_hele_1000,
       -balanseregnskap_i_hele_1000
-    ) |> 
+    ) |>
     # making it clear what lonn refers to
-    rename( 
+    rename(
       lederlonn = lonn
     ) |>
-    # Creating new variables for plots
+    # Creating new variables for plots (red/green profit/loss)
     mutate(
       annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
       balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
     ) |>
     # arranging by year for practical display
-    arrange(desc(year)) 
+    arrange(desc(year))
 }
 
-# Creating data frame
-htmldata <- read_proff("Data/Kreftforeningen.html", "2002", "2021")
-
-## Function to read Excel file -------------------------------------------------
-widen_excel <- function(file) {
+## Functions to read Excel file ------------------------------------------------
+### First Excel transformation -------------------------------------------------
+# creating df used by NGO title function and maximum scale function
+widen_excel_test <- function(file) {
+  # Reading Excel file
   read_excel(file) |>
-    # uniting Category and Name to deal with multiple 'Other'
-    unite(
-      entry, c(Category, Name),
-      sep = "_"
-    ) |>
-    # deleting Sub-category and Firm
-    select(-`Sub-category`, -Firm) |> 
-    # pivoting to create 'tidy' variables
-    pivot_wider(names_from = entry, values_from = Value) |>
-    # cleaning names
-    clean_names() 
+    # cleaning names to enable later operations
+    clean_names()
 }
 
-# Creating data frame
-exeldata <- widen_excel("Data/OPXfinans_final.xlsx")
+### Second Excel function - creating primary Excel data frame-------------------
+widen_excel <- function(object) {
+  # testing if all columns are present
+  if (setequal(
+    names(object),
+    c("year", "firm", "category", "sub_category", "name", "value")
+  )) {
+    object |>
+      # uniting category and name to deal with multiple 'Other'
+      unite(
+        entry, c(category, name)
+      ) |>
+      # deleting Sub-category and Firm
+      select(-sub_category, -firm) |>
+      # pivoting to create 'tidy' variables
+      pivot_wider(names_from = entry, values_from = value) |>
+      # cleaning names
+      clean_names()
+    # Notification if all columns are not present
+  } else {
+    validate("Please upload data using the specified Excel template.")
+  }
+}
+
+# Data frames ================================================================
+## Creating data frame from html file-----------------------------------------
+html_currency <- reactive({
+  # validating file
+  validate(need(
+    tools::file_ext(input$html$datapath) == "html",
+    "Please upload an html file."
+  ))
+
+  # Testing and creating data frame
+  html_test_create(
+    input$html$datapath,
+    as.character(input$start), as.character(input$end)
+  )
+})
+
+htmldata <- reactive({
+  read_proff_two(html_currency())
+})
+
+
+## Validating and creating long version of Excel file, if possible------------
+excel_test <- reactive({
+  # validating file
+  validate(need(
+    tools::file_ext(input$excel$datapath) == "xlsx",
+    "Please upload an Excel file."
+  ))
+
+  widen_excel_test(input$excel$datapath)
+})
+
+## Creating the primary Excel data frame--------------------------------------
+exceldata <- reactive({
+  widen_excel(excel_test())
+})
 ```
 
 ##### KPI_to_string
