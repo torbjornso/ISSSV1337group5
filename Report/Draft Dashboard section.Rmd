@@ -252,6 +252,11 @@ excel_test <- reactive({
 
   widen_excel_test(input$excel$datapath)
 })
+
+## Creating the primary Excel data frame--------------------------------------
+exceldata <- reactive({
+  widen_excel(excel_test())
+})
 ```
 
 ## The dashboard proper
