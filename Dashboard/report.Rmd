@@ -211,8 +211,8 @@ title: "NGO Analysis: `r title`"
 ---
 
 ```{r data_warnings}
-# Excel data test =============================================================
-# Function to test for Excel data quality (basic)
+# Excel data tests =============================================================
+# Functions to test for Excel data quality (basic)
 datatest <-
   # let me know if anyone has a better idea for testing
   if (mean(unlist(lapply(exceldata, is.character))) != 0) {
@@ -220,6 +220,8 @@ datatest <-
   } else {
     FALSE
   }
+
+
 
 ## Creating the Excel warning text --------------------------------------------
 excel_warning <- if (datatest == TRUE) {
@@ -656,7 +658,6 @@ if (datatest == FALSE) {
 expenses_plot <-
   # testing for data quality
   if (datatest == TRUE) {
-    # printing 'bad data' plot if data are bad
     NA
   } else {
     exceldata |>

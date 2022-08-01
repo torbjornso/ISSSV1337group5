@@ -1061,7 +1061,7 @@ read_proff_two <- function(object) {
 
 ## Functions to read Excel file ------------------------------------------------
 ### First Excel transformation -------------------------------------------------
-# creating df used by NGO title function and maximum scale function
+# creating df used by NGO title function, maximum scale function, and excel zero check
 widen_excel_test <- function(file) {
   # Reading Excel file
   read_excel(file) |>
