@@ -2,11 +2,13 @@
 title: "Group 5 Report"
 author: "ISSSV1337 Group 5"
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r Setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = FALSE, message = FALSE, out.width = "100%")
 ```
 
 # Introduction
@@ -72,7 +74,7 @@ However, different organizations publish financial data in different
 ways in their yearly reports -- some financial statements were included
 as tables, some as pictures, etc. This led us to phase 2.
 
-```{r}
+```{r, echo=FALSE}
 knitr::include_graphics("Images/lagret_tekst.png") # må finne ut av hvordan vi deler disse bildene
 
 # inkluder en med årsregnskapet som pdf her
@@ -116,7 +118,7 @@ the Brønnøysund items. This was e.g. because OPX had split the operating
 income into public and private contributions, while the Brønnøysund
 registry and Proff.no had not.
 
-```{r}
+```{r, echo=FALSE}
 knitr::include_graphics("Images/info_kreft.png")
 knitr::include_graphics("Images/regnskapssti.png")
 ```
