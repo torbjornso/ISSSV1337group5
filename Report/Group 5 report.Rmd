@@ -42,10 +42,12 @@ The scope of the problem statement was narrowed down to the Nordic
 countries as a starting point. 
 
 It is important to solve this problem because:
+
 1. Creating KPI(s) is important for the organization’s performance 
-management, to influence the objective, and to foster growth
+management, to influence the objective, and to foster growth.
+
 2. Automating the data collection will streamline the work of OPX 
-and create more transparency which enhances trust in charities
+and create more transparency which enhances trust in charities.
 
 
 # Brainstorming
@@ -173,6 +175,65 @@ by R.
 
 # Findings
 
+## KPIs and visualisations
+
+### Key Performance Indicators
+
+On the basis of such data as we could gather we developed five potential KPIs:
+
+- **Fundraising ROI**:
+  - A basic measure of the return on investment of direct fundraising expenses: 
+  
+  $$\frac{\text{private contributions} + \text{membership fees} - \text{fundraising expenses}}{\text{fundraising expenses}} \times 100$$
+  
+This KPI is not a true measure of fundraising ROI, as it only includes (as we understand OPX's data) the direct fundraising expenses, and does not include major indirect expenses such as salary costs.
+
+***
+
+- **Liquid assets/obligations**:
+  - A measure of the relationship between the organisation's liquid assets and its obligations:
+  
+  $$\frac{\text{private contributions} + \text{investment income} + \text{cash in bank and cash equivalents}}{\text{short term grants payable} + \text{revocable endowments} + \text{long term grants payable}} \times 100$$
+  
+This KPI was suggested by OPX.
+
+***
+
+- **Private donations growth**:
+  - A calculation of the percentage change in private contributions based on the two most recent years:
+  
+  $$\frac{\text{private contributions}_2 - \text{private contributions}_1}{\text{private contributions}_1}\times 100$$
+
+***
+
+- **Public grants growth**:
+  - A calculation of the percentage change in public grants received based on the two most recent years:
+  
+$$\frac{\text{public grants}_2 - \text{public grants}_1}{\text{public grants}_1} \times 100$$
+
+***
+
+- **Private/public proportion**:
+  - Calculates the percentage of non-commercial or activity-based income that is derived from private contributions and membership fees as opposed to public grants:
+  
+$$\frac{\text{private contributions} + \text{membership fees}}{\text{public grants} + \text{private contributions} + \text{membership fees}} \times 100$$
+
+This KPI may say something about the NGO's sources of funding. There are prima facie no specific desirable funding mix, but this measure may be of interest to some donors.
+
+***
+
+### Visualisations
+
+The dashboard includes five plots, three based on data from Proff.no and two based on data from the Excel sheet.
+
+-   **Net income/loss**: Based on the entry *Årsresultat* in the Proff.no data.
+-   **Total equity/liabilities**: Based on the entry *Sum egenkapital og gjeld* in the Proff.no data.
+-   **Revenues**: Based on the category *Revenue* in the Excel sheet.
+-   **Expenses**: Based on the category *Expenses* in the Excel sheet.
+-   **CEO compensation**: Based on the category *Lederlønn* in the Proff.no data. Not in thousands. Includes the entries *Lønn* and *Leder annen godtgjørelse*.
+    -   This appears to increasingly be treated as a necessary measure of transparency and performance, but the values should normally be evaluated in the context of the size of the NGO and the sector(s) within which it operates.
+
+The plots based on data from Proff.no often demonstrate surprising lacunae, but it difficult to know where they originate -- NGO reporting, Brønnøysund, or Proff.no.
 
 # Limitations and steps forward
 
