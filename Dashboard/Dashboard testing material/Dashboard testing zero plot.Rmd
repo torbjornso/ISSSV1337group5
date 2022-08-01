@@ -692,6 +692,8 @@ observe({
     if (datatest() == TRUE) {
       # printing 'bad data' plot if data are bad
       bad_data()
+    } else if (excel_zero_check("Expenses") == 0) {
+      zero_data()
     } else {
       exceldata() |>
         # Renaming for the purposes of the plot + dropping other variables
@@ -738,6 +740,8 @@ observe({
     if (datatest() == TRUE) {
       # printing 'bad data' plot if data are bad
       bad_data()
+    } else if (excel_zero_check("Revenue") == 0) {
+      zero_data()
     } else {
       exceldata() |>
         # Renaming for the purposes of the plot + dropping other variables
@@ -915,6 +919,19 @@ observe({
       FALSE
     }
   })
+  
+  ## Excel zero test------------------------------------------------------------
+  excel_zero_check <- function(type) {
+    excel_test() |>
+      filter(
+        category == as.character(all_of(type))
+      ) |>
+      summarise(
+        zero = sum(value != 0, na.rm = TRUE)
+      ) |>
+      pull()
+  }
+  
   # Let the magic/disaster happen (i.e. execute when the user clicks the button)
 }) |> bindEvent(input$click)
 ```
