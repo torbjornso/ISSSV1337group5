@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ```
 
-# Introduction
+## {data-background="Images/start1.png" data-background-size=cover}
 
 ## <br> OPX and their goal
 - A startup developing solutions for socially responsible investment strategies
