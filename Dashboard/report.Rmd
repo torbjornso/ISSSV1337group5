@@ -55,8 +55,6 @@ read_proff <- function(file, start, end) {
       all_of(end):all_of(start),
       names_to = "year"
     ) |>
-    # creating a currency code column and turning current currency codes into
-    # NAs
     mutate(
       # changing to real NAs
       value = na_if(value, "-"),
@@ -170,7 +168,8 @@ html_currency <- read_proff_currency(
 
 ## Functions to read Excel file ------------------------------------------------
 ### First Excel transformation -------------------------------------------------
-# creating df used by NGO title function and maximum scale function
+# creating df used by NGO title function, maximum scale function, and excel zero
+# check
 widen_excel_test <- function(file) {
   # Reading Excel file
   read_excel(file) |>
@@ -296,11 +295,15 @@ CEO_plot_warning <- if (sum(!is.na(htmldata$lederlonn)) == 0 &&
 }
 
 # Creating general warning
-general_warning <- if (datatest == TRUE ||
-  sum(!is.na(htmldata$arsresultat)) == 0 ||
-  sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0 ||
-  (sum(!is.na(htmldata$lederlonn)) == 0 &&
-    sum(!is.na(htmldata$leder_annen_godtgjorelse)) == 0)) {
+general_warning <- if (
+  datatest == TRUE ||
+    sum(!is.na(htmldata$arsresultat)) == 0 ||
+    sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0 ||
+    (sum(!is.na(htmldata$lederlonn)) == 0 &&
+      sum(!is.na(htmldata$leder_annen_godtgjorelse)) == 0) ||
+    excel_zero_check("Revenue") == 0 ||
+    excel_zero_check("Expenses") == 0
+) {
   "## Note:"
 } else {
   ""
@@ -606,7 +609,6 @@ if (sum(!is.na(htmldata$arsresultat)) != 0) {
 balance_plot <-
   # testing for the presence of data
   if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0) {
-    # Printing 'no information' plot if no data
     NA
   } else {
     htmldata |>
@@ -631,7 +633,7 @@ balance_plot <-
   }
 
 # Printing the plot if the data are available
-if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) != 0) {
+if (is.ggplot(balance_plot)) {
   balance_plot
 }
 ```
@@ -641,8 +643,7 @@ if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) != 0) {
 ## Revenue--------------------------------------------------------------------
 revenue_plot <-
   # testing for data quality
-  if (datatest == TRUE) {
-    # printing 'bad data' plot if data are bad
+  if (datatest == TRUE || excel_zero_check("Revenue") == 0) {
     NA
   } else {
     exceldata |>
@@ -694,14 +695,14 @@ revenue_plot <-
   }
 
 # Printing the plot if the data are OK
-if (datatest == FALSE && excel_zero_check("Revenue") != 0) {
+if (is.ggplot(revenue_plot)) {
   revenue_plot
 }
 
 ## Expenses -------------------------------------------------------------------
 expenses_plot <-
   # testing for data quality
-  if (datatest == TRUE) {
+  if (datatest == TRUE || excel_zero_check("Expenses") == 0) {
     NA
   } else {
     exceldata |>
@@ -740,7 +741,7 @@ expenses_plot <-
   }
 
 # Printing the plot if the data are OK
-if (datatest == FALSE && excel_zero_check("Expenses") != 0) {
+if (is.ggplot(expenses_plot)) {
   expenses_plot
 }
 ```
@@ -789,8 +790,7 @@ CEO_plot <-
   }
 
 # Printing the plot if the data are available
-if (sum(!is.na(htmldata$lederlonn)) != 0 ||
-  sum(!is.na(htmldata$leder_annen_godtgjorelse)) != 0) {
+if (is.ggplot(CEO_plot)) {
   CEO_plot
 }
 ```
