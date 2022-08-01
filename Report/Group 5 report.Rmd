@@ -9,6 +9,40 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = FALSE, message = FALSE)
 ```
 
+# Introduction
+
+This report describes the group's approach to the problem statement and
+our findings. First, the problem statement is presented, then the
+brainstorming and data collection processes are elaborated, before data
+description and findings are presented. Lastly, limitations and steps
+forward, as well as a summary of our experience.
+
+The project chosen for our group was Oslo Philanthropic Exchange (OPX), 
+a startup working to develop solutions to assist individuals and 
+organizations wanting to donate to charities and designing a socially 
+responsible investment strategy.  Their main goal is to increase cash 
+flow from private to charitable purposes. Therefore, the donor's trust 
+in the charities’ abilities to carry out their promises is significant. 
+ 
+To do this, data from charities need to be collected. OPX’s current 
+challenge is the data collection, which must be collected manually today
+since the data is unstructured. Therefore, they wanted a way to automate 
+the data collection, using web scraping.
+ 
+Additionally, by creating KPIs (Key Performance Indicator), OPX can use 
+them to benchmark the relationship between financial assets and emergency 
+relief obligations. 
+ 
+The scope of the problem statement was narrowed down to the Nordic 
+countries as a starting point. 
+
+It is important to solve this problem because:
+Creating KPI(s) is important for the organization’s performance 
+management, to influence the objective, and to foster growth
+Automating the data collection will streamline the work of OPX 
+and create more transparency which enhances trust in charities
+
+
 # Brainstorming
 
 Our brainstorming process for this case was characterized by several
@@ -128,3 +162,15 @@ If OPX wishes to develop our solution, we recommend that they purchase
 API access from the Brønnøysund registry and/or Proff.no. They also need
 to create e.g. a simple SQL database with its own data that can be used
 by R.
+
+# Data description
+
+
+# Findings
+
+
+# Limitations and steps forward
+
+
+# Our experience
+
