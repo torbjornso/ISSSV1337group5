@@ -163,8 +163,10 @@ htmldata <- read_proff(
 )
 
 # Creating the currency data frame
-html_currency <- read_proff_currency(params$htmlfile,
-  as.character(params$start), as.character(params$end))
+html_currency <- read_proff_currency(
+  params$htmlfile,
+  as.character(params$start), as.character(params$end)
+)
 
 ## Functions to read Excel file ------------------------------------------------
 ### First Excel transformation -------------------------------------------------
@@ -295,7 +297,7 @@ CEO_plot_warning <- if (sum(!is.na(htmldata$lederlonn)) == 0 &&
 
 # Creating general warning
 general_warning <- if (datatest == TRUE ||
-  sum(!is.na(htmldata$arsresultat)) == 0 || 
+  sum(!is.na(htmldata$arsresultat)) == 0 ||
   sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0 ||
   (sum(!is.na(htmldata$lederlonn)) == 0 &&
     sum(!is.na(htmldata$leder_annen_godtgjorelse)) == 0)) {
@@ -378,8 +380,8 @@ currency_scale <-
 
 ## Currency caption-----------------------------------------------------------
 currency_caption <- ifelse(length(unique(html_currency$valutakode)) == 1,
-      "", "Note: not all values are denominated in the same currency."
-    )
+  "", "Note: not all values are denominated in the same currency."
+)
 ```
 
 <!--# Creating KPIs -->
@@ -505,7 +507,7 @@ KPI_proportion <-
 
 ### NA warning-----------------------------------------------------------------
 # Testing for the presence of NAs; printing warning if there are any
-KPI_warning <- if (is.na(fundraising) || is.na(KPI_OPX) || is.na( KPI_private) ||
+KPI_warning <- if (is.na(fundraising) || is.na(KPI_OPX) || is.na(KPI_private) ||
   is.na(KPI_public) || is.na(KPI_proportion)) {
   "*A value of 'NA' indicates that there is something wrong with the Excel data, that the necessary data are not available, or that the data are unsuited to an automatic calculation of the KPI.*"
 } else {
