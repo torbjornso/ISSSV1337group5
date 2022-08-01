@@ -992,8 +992,6 @@ read_proff_one <- function(object, start, end) {
       all_of(end):all_of(start),
       names_to = "year"
     ) |>
-    # creating a currency code column and turning current currency codes into
-    # NAs
     mutate(
       # changing to real NAs
       value = na_if(value, "-"),
@@ -1057,7 +1055,8 @@ read_proff_two <- function(object) {
 
 ## Functions to read Excel file ------------------------------------------------
 ### First Excel transformation -------------------------------------------------
-# creating df used by NGO title function, maximum scale function, and excel zero check
+# creating df used by NGO title function, maximum scale function, and excel zero
+# check
 widen_excel_test <- function(file) {
   # Reading Excel file
   read_excel(file) |>
