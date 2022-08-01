@@ -22,7 +22,7 @@ line <- "***"
 
 - Vurdere å bruke litt raw LaTeX hvis rapporten skal leveres i pdf-format?
 
-# The Dashboard
+## The Dashboard
 
 One of the outputs we have created is an example dashboard that calculates some KPIs and creates a few visualisations based on user-uploaded data from Proff.no and the Excel template we developed. The basic layout and structure of the dashboard were created using Flexdashboard, whilst most of the logic 'under the hood' was created using Shiny. Additionally, the dashboard provides the user with the option of downloading a pdf version of the analysis, using a parameterised R Markdown document.
 
@@ -43,7 +43,7 @@ p_load(
 
 The dashboard consists of three main parts: a sidebar, the dashboard proper, and a 'Details' tab that provides basic information about the KPIs and plots.
 
-## The Sidebar
+### The Sidebar
 
 The sidebar includes file upload boxes for Excel and html files, numeric input boxes in which the user can input the years covered by the Proff.no data, and an 'Analyse' button which is connected to two Shiny `observe() |> bindEvent()` structures, ensuring that most of the code is not executed until the user has finished entering data. (Though both structures await the same button click, the division was necessary to remain within R's 10,000 byte limit.)
 
@@ -265,9 +265,9 @@ exceldata <- reactive({
 })
 ```
 
-## The dashboard proper
+### The dashboard proper
 
-### Key Performance Indicators
+#### Key Performance Indicators
 
 The main section of the dashboard has a row-based layout, with a top row containing five 'value boxes' displaying KPIs derived from data in the Excel sheet, calculated and formatted in separate reactive functions. As Flexdashboard fails particularly gracelessly when errors occur with the value boxes, each function relies on some basic checks carried out by separate functions created for this purpose. In the case of both this is a simple function that checks if any of the numeric columns contain characters (in which case the data frame is probably hopelessly corrupted):
 ```{r dashboard_datatest, eval=FALSE}
@@ -359,7 +359,7 @@ All the boxes also include, as mentioned, a Fontawesome icon, fetched using the 
 htmltools::tagList(fontawesome::fa_html_dependency())
 ```
 
-### Plots
+#### Plots
 
 Below the row of KPI boxes, the dashboard contains three more rows containing five plots, three based on Proff.no data and two based on Excel data. The html-based plots include a basic test of whether the necessary data are available, as some or all may sometimes be missing, printing a 'no information' plot using a separate function if the data is missing.
 ```{r html_datatest, eval=FALSE}
@@ -574,7 +574,7 @@ All the plots based on the Excel data make use of the colour-blind-friendly "Hok
 
 Below these two plots is a plot showing the total reported CEO compensation in the years covered by the html data, where this information is available.
 
-## Details tab
+### Details tab
 
 Finally, the dashboard contains a separate tab with some basic details about the KPIs and plots. At the top it includes a heading containing the name of the NGO as written in the Excel file:
 ```{r dashboard_title_creation, eval=FALSE}
@@ -616,7 +616,7 @@ output$title <- renderText({
 })
 ```
 
-## The parameterised R Markdown report
+### The parameterised R Markdown report
 
 The dashboard also allows the user to download a pdf version of the analysis through clicking on a button. A `downloadHandler()` function passes the necessary parameters to the R Markdown document and displays a temporary notification while the file is being created. The function includes temporary file creation arguments that should enable it to function on e.g. shinyapps.io and similar server contexts, but this has not been tested.
 
