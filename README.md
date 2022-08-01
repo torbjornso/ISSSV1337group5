@@ -25,5 +25,3 @@ This repository contains the following elements:
 [R for Data Science](https://r4ds.had.co.nz/index.html)
 
 [R for Data Science: Tidy data](https://r4ds.had.co.nz/tidy-data.html).
-
-(Hvis noen trenger en pdf av Healy's ggplot bok, let me know.)
