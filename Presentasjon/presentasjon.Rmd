@@ -2,9 +2,7 @@
 title: "Presentasjon OPX Fiffig tittel"
 author: "Gruppe 5"
 date: "`r Sys.Date()`"
-output: 
-  ioslides_presentation:
-     css: styles.css
+output: ioslides_presentation
 ---
 
 ```{r setup, include=FALSE}
@@ -17,29 +15,37 @@ knitr::opts_chunk$set(echo = FALSE)
 ## <br> Introduction | OPX and their goal
 - A startup developing solutions for socially responsible investment strategies
 - The goal is to increase cash flow to charitable purposes 
-- Donor's trust in NGOs' financial performance and their ability to deliver results is crucial for their choice of beneficients <!-- # Donors' (or: A donor's); beneficiaries --TSO -->
+- Donors' trust in NGOs' financial performance and their ability to deliver results is crucial for their choice of beneficients 
 
 ## <br> Introduction | How to assess financial performance?
 - Data collection <br> OPX requested an automated solution to replace today's manual data collection
 - Key Performance Indicators <br> OPX needed meaningful KPIs allowing to assess the relationship between assets and obligations 
 
 
-# Brainstorming
+## {data-background="Images/9-Brainstorming-techniques-to-come-up-with-great-ideas.png" data-background-size=cover}
 
 
+## <br> Phase 1 – how to harvest and analyze the data?
+- A webcrawler that could collect data across different websites? <br> This would be too difficult and it would only work with some organizations
+- A code that could read PDF? <br> 
 
-## <br> Brainstorming | Phase 1 – how do we harvest the data?
-- Webcrawler? <br> this would be too difficult and it would only work with some organizations
-- 
 
+## <br> Phase 2 – Exploring three options
+- Financial statements in yearly reports published as PDF <br>
+Issue: Financial statements are not always published as text
+- Webscraping financial statements from Proff.no <br>
+Issue: Proff.no does not allow webscraping!
+- Webscraping the Brønnøysund registry <br>
+Issue: The registry does store downloadable XML documents, but the access cost about 500k kr
 
-## <br> Brainstorming | Phase 2 – how do we analyze the harvested data?
+## <br> Workarounds... 
+- Proff.no: It maaay be legal to manually download the websites as HTML instead of scraping 
+- Brønnøysund: We attempted to request a temporary access to XML documents
 
-## <br> Brainstorming | Phase 3 - exploring three possible solutions
-
-## <br> Brainstorming | Phase 4 - do we go with proff.no or Brønnøysund anyway?
-
-## <br> Brainstorming | Phase 5 - throwing everything away
+## <br> ... and why they did not work
+- Different accounting divisions at Proff.no and Brønnøysund prohibited extracting the correct sums the OPX wanted
+- Not all NGOs publish their financial statements and certainly not for every year
+- **Which led us to Phase 3 - scrapping the scraping**
 
 # Data collection
 
