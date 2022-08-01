@@ -40,9 +40,9 @@ The scope of the problem statement was narrowed down to the Nordic
 countries as a starting point. 
 
 It is important to solve this problem because:
-Creating KPI(s) is important for the organization’s performance 
+1. Creating KPI(s) is important for the organization’s performance 
 management, to influence the objective, and to foster growth
-Automating the data collection will streamline the work of OPX 
+2. Automating the data collection will streamline the work of OPX 
 and create more transparency which enhances trust in charities
 
 
