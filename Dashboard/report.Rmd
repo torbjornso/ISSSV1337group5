@@ -198,9 +198,11 @@ widen_excel <- function(object) {
 excel_test <- widen_excel_test(params$excelfile)
 
 exceldata <- widen_excel(excel_test)
+```
 
+
+```{r ngo_title}
 # NGO title ==================================================================
-
 NGO <- excel_test |>
   # Turning the needed column into a list
   pull(firm) |>
@@ -209,7 +211,8 @@ NGO <- excel_test |>
   # choosing the first available name
   first()
 
-title <- # testing if NGO() is NA
+title <-
+  # testing if NGO() is NA
   if (is.na(NGO)) {
     # Printing warning if NA
     "Name of NGO missing"
@@ -294,7 +297,7 @@ CEO_plot_warning <- if (sum(!is.na(htmldata$lederlonn)) == 0 &&
   ""
 }
 
-# Creating general warning
+## Creating general warning-----------------------------------------------------
 general_warning <- if (
   datatest == TRUE ||
     sum(!is.na(htmldata$arsresultat)) == 0 ||
@@ -349,6 +352,7 @@ scale_fill_green <- function(variable) {
 ```{r functions_reliant}
 ## scale maximum--------------------------------------------------------------
 # Function to create the maximum value for revenue and expenses plots
+# Testing, because this function cannot rely on the reactive chain to stop
 maximum <- if (datatest == TRUE) {
   NA
 } else {
@@ -750,7 +754,6 @@ if (!is.ggplot(revenue_plot) && is.ggplot(expenses_plot)) {
 ```
 
 ```{r revenue_expenses_plot_both, fig.asp=1, out.width="50%", fig.cap="Revenue and Expenses", fig.subcap=c("Based on the category \`Revenue' in the Excel sheet.", "Based on the category \`Expenses' in the Excel sheet.")}
-
 # Printing the plots if the data are OK
 if (is.ggplot(revenue_plot) && is.ggplot(expenses_plot)) {
   revenue_plot
