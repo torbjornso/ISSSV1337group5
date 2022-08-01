@@ -12,14 +12,20 @@ knitr::opts_chunk$set(echo = FALSE)
 
 # Introduction
 
-## <br> Introduction | OPX and their goal
+## <br> OPX and their goal
 - A startup developing solutions for socially responsible investment strategies
 - The goal is to increase cash flow to charitable purposes 
 - Donors' trust in NGOs' financial performance and their ability to deliver results is crucial for their choice of beneficients 
 
-## <br> Introduction | How to assess financial performance?
-- Data collection <br> OPX requested an automated solution to replace today's manual data collection
-- Key Performance Indicators <br> OPX needed meaningful KPIs allowing to assess the relationship between assets and obligations 
+## <br> How to assess financial performance?
+- Data collection 
+- Key Performance Indicators
+
+```{r, fig.align='center'}
+knitr::include_graphics("Images/kpi.png")
+
+```
+
 
 
 ## {data-background="Images/9-Brainstorming-techniques-to-come-up-with-great-ideas.png" data-background-size=cover}
