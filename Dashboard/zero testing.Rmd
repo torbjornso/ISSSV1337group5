@@ -1,0 +1,50 @@
+---
+title: "Zero testing"
+author: "Torbjørn Skinnemoen Ottersen"
+date: "2022-08-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/ISSSV1337/ISSSV1337-Case/Dashboard")
+```
+
+```{r}
+x <- c(5, NA, 0, 0, 10, -15)
+
+sum(x == 0, na.rm = TRUE)
+
+warning_message <- "ALl values are zero. This is unusual and may indicate a data problem."
+
+?pull
+
+setwd("~/ISSSV1337/ISSSV1337-Case/Dashboard")
+
+exceltest <- read_excel("Data/Kreftforeningen.xlsx") |> clean_names()
+
+exceltest
+
+revenue_zero <- exceltest |>
+  filter(category == "Revenue") |>
+  summarise(
+    zero = sum(value != 0, na.rm = TRUE)
+  ) |> 
+  pull()
+
+revenue_zero
+
+excel_zero_check <- function(type) {
+  exceltest |>
+    filter(
+      category == as.character(all_of(type))
+    ) |>
+    summarise(
+      zero = sum(value != 0, na.rm = TRUE)
+    ) |>
+    pull()
+}
+
+excel_zero_check("Revenue")
+```
+
