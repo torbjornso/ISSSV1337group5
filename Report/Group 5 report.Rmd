@@ -181,9 +181,9 @@ The limitations can be divided into problems regarding:
 (i) the accessible data, and 
 (ii) the non-accessible data
  
-The limitation with the accessible data is first and foremost the lack of 
-relevant data in the annual reports from the NGOs.  Since there is no 
-obligation to provide annual accounts, they often have more information 
+The limitation with the accessible data is first and foremost the lack 
+of relevant data in the annual reports from the NGOs.  Since there is 
+no obligation to provide annual accounts, they often have more information 
 about the organization in general rather than numbers. If they do provide 
 the annual accounts, they are not standardized. This means that different 
 NGOs do not have an established template for what the different posts in 
@@ -208,15 +208,15 @@ that would be of relevance and not. After examining the different
 alternatives, we concluded that the NGOs could report in a standardized 
 excel document from which our code retrieves the data to calculate the KPIs.
 
-In addition, we looked at the draft of a new law on associations from 2021 
-by the Ministry of Trade, Industries, and Fisheries, to see if it contained 
-changes in the laws regarding annual reports, which would have made the data 
-needed available in the future. This turned out to be a dead end, as the 
-draft focused largely on smaller and local associations and contained no 
-changes in reporting obligations. Therefore, if this law were to be 
-implemented, it would not be of any relevance to OPX. As a result, due to 
-OPX’s need for this data to be available, we recommend discussions with 
-relevant politicians and ministry officials as a starting point.
+In addition, we looked at the draft of a new law on associations from 
+2021 by the Ministry of Trade, Industries, and Fisheries, to see if it 
+contained changes in the laws regarding annual reports, which would have 
+made the data needed available in the future. This turned out to be a dead 
+end, as the draft focused largely on smaller and local associations and 
+contained no changes in reporting obligations. Therefore, if this law were 
+to be implemented, it would not be of any relevance to OPX. As a result, 
+due to OPX’s need for this data to be available, we recommend discussions 
+with relevant politicians and ministry officials as a starting point.
 
 Based on the findings of working with this case, we would recommend looking 
 at best practices for further development. One good example could be charity 
