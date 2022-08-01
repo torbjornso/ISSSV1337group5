@@ -884,14 +884,7 @@ observe({
 
   ## scale maximum--------------------------------------------------------------
   # Reactive function to create the maximum value for revenue and expenses plots
-  # the tests are probably not necessary, but included to be on the safe side
   maximum <- reactive({
-    if (datatest() == TRUE || setequal(
-      names(exceldata()),
-      c("year", "firm", "category", "sub_category", "name", "value")
-    )) {
-      NA
-    } else {
       excel_test() |>
         # removing the firm and sub-category columns
         select(-firm, -sub_category) |>
@@ -906,13 +899,13 @@ observe({
         pull() |>
         # selecting the highest value
         max()
-    }
   })
 
   ## Excel data test (also above)-----------------------------------------------
   # Reactive function to test for Excel data quality (basic)
   datatest <- reactive({
-    # let me know if anyone has a better idea for testing
+    # Testing if there are any characters instead of numbers (data probably
+    # hopelessly corrupted)
     if (mean(unlist(lapply(exceldata(), is.character))) != 0) {
       TRUE
     } else {
@@ -923,12 +916,15 @@ observe({
   ## Excel zero test------------------------------------------------------------
   excel_zero_check <- function(type) {
     excel_test() |>
+      # Choosing the specified category (i.e. Revenue or Expenses)
       filter(
         category == as.character(all_of(type))
       ) |>
+      # Calculating if there are any zeroes
       summarise(
         zero = sum(value != 0, na.rm = TRUE)
       ) |>
+      # just the single number
       pull()
   }
   
@@ -1138,9 +1134,11 @@ bad_data <- function() {
 }
 
 ## zero_data_plot --------------------------------------------------------------
-
 zero_data <- function() {
-  empty_plot("All values are zero or missing.\nThis is unusual and may\nindicate a data problem.")
+  empty_plot(
+    "All values are zero or missing.
+    This is unusual and may
+    indicate a data problem.")
 }
 
 ## empty_plot-------------------------------------------------------------------
