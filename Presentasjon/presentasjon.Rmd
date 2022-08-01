@@ -21,7 +21,7 @@ knitr::opts_chunk$set(echo = FALSE)
 - Data collection 
 - Key Performance Indicators
 
-```{r, fig.align='center'}
+```{r, out.height="268px", out.width="350px", fig.align='center'}
 knitr::include_graphics("Images/kpi.png")
 
 ```
