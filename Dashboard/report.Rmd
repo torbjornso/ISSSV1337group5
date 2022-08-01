@@ -638,8 +638,7 @@ if (is.ggplot(balance_plot)) {
 }
 ```
 
-
-```{r revenue_expenses_plot, fig.asp=1, out.width="50%", fig.cap="Revenue and Expenses", fig.subcap=c("Based on the category \`Revenue' in the Excel sheet.", "Based on the category \`Expenses' in the Excel sheet.")}
+```{r revenue_expenses_plots_creation}
 ## Revenue--------------------------------------------------------------------
 revenue_plot <-
   # testing for data quality
@@ -694,11 +693,6 @@ revenue_plot <-
       theme(title = element_text(size = 14))
   }
 
-# Printing the plot if the data are OK
-if (is.ggplot(revenue_plot)) {
-  revenue_plot
-}
-
 ## Expenses -------------------------------------------------------------------
 expenses_plot <-
   # testing for data quality
@@ -739,9 +733,30 @@ expenses_plot <-
       theme_light() +
       theme(title = element_text(size = 14))
   }
+```
 
-# Printing the plot if the data are OK
-if (is.ggplot(expenses_plot)) {
+```{r revenue_only, fig.asp=1, out.width="50%", fig.cap="Based on the category \`Revenue' in the Excel sheet."}
+# Printing the plot if ONLY the revenue data are OK
+if (is.ggplot(revenue_plot) && !is.ggplot(expenses_plot)) {
+  revenue_plot
+}
+```
+
+```{r expenses_only, fig.asp=1, out.width="50%", fig.cap="Based on the category \`Expenses' in the Excel sheet."}
+# Printing the plot if ONLY the expenses data are ok
+if (!is.ggplot(revenue_plot) && is.ggplot(expenses_plot)) {
+  expenses_plot
+}
+```
+
+```{r revenue_expenses_plot_both, fig.asp=1, out.width="50%", fig.cap="Revenue and Expenses", fig.subcap=c("Based on the category \`Revenue' in the Excel sheet.", "Based on the category \`Expenses' in the Excel sheet.")}
+
+# Printing the plots if the data are OK
+if (is.ggplot(revenue_plot) && is.ggplot(expenses_plot)) {
+  revenue_plot
+}
+
+if (is.ggplot(revenue_plot) && is.ggplot(expenses_plot)) {
   expenses_plot
 }
 ```
