@@ -1140,7 +1140,7 @@ bad_data <- function() {
 ## zero_data_plot --------------------------------------------------------------
 
 zero_data <- function() {
-  empty_plot("All values are zero.\nThis is unusual and may\nindicate a data problem.")
+  empty_plot("All values are zero or missing.\nThis is unusual and may\nindicate a data problem.")
 }
 
 ## empty_plot-------------------------------------------------------------------
@@ -1156,7 +1156,7 @@ empty_plot <- function(warning) {
       "text",
       label = warning,
       # Using the same palette as the other non-profit/loss plots
-      x = 0, y = 0, size = 8, colour = met.brewer("Hokusai2", 1)
+      x = 0, y = 0, size = 6, colour = met.brewer("Hokusai2", 1)
     )
 }
 ```
