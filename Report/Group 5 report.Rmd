@@ -17,6 +17,9 @@ brainstorming and data collection processes are elaborated, before data
 description and findings are presented. Lastly, limitations and steps
 forward, as well as a summary of our experience.
 
+
+## Problem statement
+
 The project chosen for our group was Oslo Philanthropic Exchange (OPX), 
 a startup working to develop solutions to assist individuals and 
 organizations wanting to donate to charities and designing a socially 
@@ -171,6 +174,56 @@ by R.
 
 # Limitations and steps forward
 
+During the case we realized that we had to limit our solution. The case 
+presented by OPX wanted an automated code which would retrieve the data 
+and calculate the different KPIs, which turned out not to be possible. 
+The limitations can be divided into problems regarding: 
+(i) the accessible data, and 
+(ii) the non-accessible data
+ 
+The limitation with the accessible data is first and foremost the lack of 
+relevant data in the annual reports from the NGOs.  Since there is no 
+obligation to provide annual accounts, they often have more information 
+about the organization in general rather than numbers. If they do provide 
+the annual accounts, they are not standardized. This means that different 
+NGOs do not have an established template for what the different posts in 
+the annual accounts should contain. 
+
+Also, these annual reports themselves appear in different formats. If they 
+do appear in the same format, the accounts we want to retrieve are often 
+in an image format rather than text. The lack of data, standardization and 
+diverse formats made it impossible to create an automated solution for 
+collecting data based on the NGOs’ annual reports. 
+
+The limitation with the non-accessible data is that the data OPX needs to 
+calculate the different KPIs do not exist in the annual reports.  We 
+experimented with an annual report from Brønnøysundregisteret. Although 
+the reports were standardized, the different posts in the report did not 
+match the template from OPX. Additionally the data that OPX is interested 
+in and which is necessary for calculating the relevant KPIs are not 
+available.   
+
+Also, with limited experience with KPIs it was hard to sort out which ones 
+that would be of relevance and not. After examining the different 
+alternatives, we concluded that the NGOs could report in a standardized 
+excel document from which our code retrieves the data to calculate the KPIs.
+
+In addition, we looked at the draft of a new law on associations from 2021 
+by the Ministry of Trade, Industries, and Fisheries, to see if it contained 
+changes in the laws regarding annual reports, which would have made the data 
+needed available in the future. This turned out to be a dead end, as the 
+draft focused largely on smaller and local associations and contained no 
+changes in reporting obligations. Therefore, if this law were to be 
+implemented, it would not be of any relevance to OPX. As a result, due to 
+OPX’s need for this data to be available, we recommend discussions with 
+relevant politicians and ministry officials as a starting point.
+
+Based on the findings of working with this case, we would recommend looking 
+at best practices for further development. One good example could be charity 
+navigator. 
+
 
 # Our experience
+
+
 
