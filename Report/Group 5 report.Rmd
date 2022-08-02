@@ -62,7 +62,7 @@ forced us to change course. In particular, there were four turning
 points. Therefore, we have decided to divide the brainstorming into
 three phases.
 
-### Phase 1: How to harvest and analyze the data? {.smaller}
+## Phase 1: How to harvest and analyze the data? {.smaller}
 
 OPX wanted us to harvest the organizations' financial data from the web.
 During the first stage of brainstorming, we wanted to find a simple and
@@ -86,7 +86,7 @@ knitr::include_graphics("Images/lagret_tekst.png") # må finne ut av hvordan vi 
 ```
 
 
-### Phase 2: Exploring solutions {.smaller}
+## Phase 2: Exploring solutions {.smaller}
 
 At this stage, we wanted to explore alternatives to analyzing PDF
 documents. We discussed how to do so, and concluded that we had three
@@ -130,7 +130,7 @@ statements, and certainly not for every year, we decided to give up on
 collecting financial data for OPX. This is when we moved on to the third
 and final stage.
 
-### Phase 3: Scrapping the scraping {.smaller}
+## Phase 3: Scrapping the scraping {.smaller}
 
 The OPX case requested two tasks -- webscrape financial data, and create
 KPIs. During phase three, we scrapped all ideas and progress from the
