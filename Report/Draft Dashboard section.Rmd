@@ -66,204 +66,11 @@ actionButton("click", "Analyse")
 
 `r if (knitr::is_latex_output()) line`
 
-Flexdashboard and Shiny do not fail particularly gracefully, so in addition to the information to the user and the information about file types provided to the browser, the Shiny logic executed on the button press includes some basic validations using `validate()` and `tools::file_ext()` which output error messages if the wrong file has been uploaded. (Note that the `accept` argument is not obeyed by the RStudio viewer, but most ordinary browsers enforce the instruction)
+Flexdashboard and Shiny do not fail particularly gracefully, so in addition to the information to the user and the information about file types provided to the browser, the Shiny logic executed on the button press includes some basic validations using `validate()` and `tools::file_ext()` which output error messages if the wrong file has been uploaded.^[Note that the `accept` argument is not obeyed by the RStudio viewer, but most ordinary browsers enforce the instruction.]
 
 <!--# Parenthesis as footnote? -->
 
-If the validation is successful the files are read using the functions developed for this purpose, which conduct further testing, outputting error messages using `validate()`:
-```{r dashboard_file_functions, eval=FALSE, class.source = "fold-hide"}
-# Data reading functions =======================================================
-
-## Functions to read html file -------------------------------------------------
-html_test_create <- function(file, start, end) {
-  # Reading file and node
-  htmltest <- read_html(file, encoding = "UTF-8") |>
-    html_node("#inner-frame")
-
-  ### A series of tests to catch problems before they spit out errors-----------
-  # Checking if node exists
-  if (class(htmltest) == "xml_node") {
-    htmltable <- htmltest |>
-      html_table()
-  } else {
-    validate("Please upload the specified type of html document.")
-  }
-
-  # Basic check if the table is correct
-  if ("REGNSKAPSPERIODE" %in% names(htmltable)) {
-    htmlready <- htmltable
-  } else {
-    validate("Please upload the specified type of html document.")
-  }
-
-  # Testing if the correct years have been entered
-  if (as.character(all_of(start)) %in% names(htmlready) &&
-    as.character(all_of(end)) %in% names(htmlready)) {
-    # Creating the first part of the data frame
-    read_proff_one(htmltable, start, end)
-  } else {
-    validate("Please ensure you have entered the correct start and end years.")
-  }
-}
-
-### First html transformation function, invoked by html_test_create() ----------
-# (stopping to allow checks for differing currency codes)
-read_proff_one <- function(object, start, end) {
-  object |>
-    # removing empty column, using all_of(argument)
-    select(
-      REGNSKAPSPERIODE:all_of(start)
-    ) |>
-    # removing white space
-    mutate(
-      REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
-    ) |>
-    # removing duplicate table sometimes created by read_html()
-    filter(
-      !row_number() > 176
-    ) |>
-    # removing duplicate rows
-    filter(
-      !grepl("Lukk", REGNSKAPSPERIODE)
-    ) |>
-    # tidying data using pivot_longer() and all_of(argument)
-    pivot_longer(
-      all_of(end):all_of(start),
-      names_to = "year"
-    ) |>
-    mutate(
-      # changing to real NAs
-      value = na_if(value, "-"),
-      # turning years into numbers
-      year = as.integer(year),
-      # creating a currency code column and turning current currency codes into
-      # NAs
-      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
-    ) |>
-    # filling the currency column to avoid having to deal with NAs later
-    fill(
-      valutakode,
-      .direction = "downup"
-    )
-}
-
-### Second html transformation function, creating the data frame ---------------
-read_proff_two <- function(object) {
-  object |>
-    # removing unneeded currency column
-    select(-valutakode) |>
-    # removing dates and redundant currency
-    filter(
-      REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
-        REGNSKAPSPERIODE != "Valutakode"
-    ) |>
-    mutate(
-      # removing white space in numbers
-      value = str_replace_all(value, "\\s", ""),
-      # turning numbers into true numbers
-      value = as.numeric(value),
-      # removing values that are years
-      value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
-    ) |>
-    # removing any remaining duplicate rows
-    distinct() |>
-    # pivoting to create 'tidy' variables
-    pivot_wider(
-      names_from = REGNSKAPSPERIODE, values_from = value
-    ) |>
-    # tidying names
-    clean_names() |>
-    # removing headings from the table
-    select(
-      -lederlonn_i_hele_1000,
-      -resultatregnskap_i_hele_1000,
-      -balanseregnskap_i_hele_1000
-    ) |>
-    # making it clear what lonn refers to
-    rename(
-      lederlonn = lonn
-    ) |>
-    # Creating new variables for plots (red/green profit/loss)
-    mutate(
-      annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
-      balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
-    ) |>
-    # arranging by year for practical display
-    arrange(desc(year))
-}
-
-## Functions to read Excel file ------------------------------------------------
-### First Excel transformation - creating df used by NGO title function---------
-widen_excel_test <- function(file) {
-  # Reading Excel file
-  read_excel(file) |>
-    # cleaning names to enable later operations
-    clean_names()
-}
-
-### Second Excel function - creating primary Excel data frame-------------------
-widen_excel <- function(object) {
-  # testing if all columns are present
-  if (setequal(
-    names(object),
-    c("year", "firm", "category", "sub_category", "name", "value")
-  )) {
-    object |>
-      # uniting category and name to deal with multiple 'Other'
-      unite(
-        entry, c(category, name)
-      ) |>
-      # deleting Sub-category and Firm
-      select(-sub_category, -firm) |>
-      # pivoting to create 'tidy' variables
-      pivot_wider(names_from = entry, values_from = value) |>
-      # cleaning names
-      clean_names()
-    # Notification if all columns are not present
-  } else {
-    validate("Please upload data using the specified Excel template.")
-  }
-}
-```
-
-Using these functions, the actual creation of data frames takes place in two stages for each file, partially for data testing and partially to create subsidiary data frames used by some functions:
-```{r dashboard_data_frames, eval=FALSE}
-# Data frames ================================================================
-## Creating data frame from html file-----------------------------------------
-html_currency <- reactive({
-  # validating file
-  validate(need(
-    tools::file_ext(input$html$datapath) == "html",
-    "Please upload an html file."
-  ))
-
-  # Testing and creating data frame
-  html_test_create(
-    input$html$datapath,
-    as.character(input$start), as.character(input$end)
-  )
-})
-
-htmldata <- reactive({
-  read_proff_two(html_currency())
-})
-
-## Validating and creating long version of Excel file, if possible------------
-excel_test <- reactive({
-  # validating file
-  validate(need(
-    tools::file_ext(input$excel$datapath) == "xlsx",
-    "Please upload an Excel file."
-  ))
-
-  widen_excel_test(input$excel$datapath)
-})
-
-## Creating the primary Excel data frame--------------------------------------
-exceldata <- reactive({
-  widen_excel(excel_test())
-})
-```
+If the validation is successful the files are read using the functions developed for this purpose, which conduct further testing, outputting error messages using `validate()`. Using these functions, the actual creation of data frames takes place in two stages for each file, partially for data testing and partially to create subsidiary data frames used by some functions.^[The data reading code is included as an appendix because of its length.]
 
 ### The dashboard proper
 
@@ -622,9 +429,8 @@ The dashboard also allows the user to download a pdf version of the analysis thr
 
 In order to prevent the user from the downloading a nonsensical html file if bad data have been uploaded or entered, the button creation and report generation are located in the second `observe() |> bindEvent()` structure. The creation of the download button is connected to two convenience logical tests, the primary purpose of which is to connect the button to the `validate()` calls upstream in the reactive chain.
 
-The file name of the report is created by combining the name of the NGO from the `title()` reactive and the output of `Sys.Date()`, furnishing a hopefully informative file name. (Note that this only works when the dashboard is run in an ordinary browser and not in the RStudio viewer.)
+The file name of the report is created by combining the name of the NGO from the `title()` reactive and the output of `Sys.Date()`, furnishing a hopefully informative file name.^[Note that this only works when the dashboard is run in an ordinary browser and not in the RStudio viewer.]
 
-<!--# Parenthesis as footnote? -->
 ```{r}
 # Report Output ==============================================================
 
@@ -692,3 +498,195 @@ output$report <- downloadHandler(
 ```
 
 The code in the R Markdown document is very similar to that of the dashboard, but structured in a more conventional way. Data warnings are here text rather than blank plots, and the KPIs are integrated into the text instead of being presented in value boxes. Plot descriptions are included as knitr/LaTeX captions.
+
+# Appendix: Data reading and cleaning code
+```{r dashboard_file_functions, eval=FALSE}
+# Data reading functions =======================================================
+
+## Functions to read html file -------------------------------------------------
+html_test_create <- function(file, start, end) {
+  # Reading file and node
+  htmltest <- read_html(file, encoding = "UTF-8") |>
+    html_node("#inner-frame")
+
+  ### A series of tests to catch problems before they spit out errors-----------
+  # Checking if node exists
+  if (class(htmltest) == "xml_node") {
+    htmltable <- htmltest |>
+      html_table()
+  } else {
+    validate("Please upload the specified type of html document.")
+  }
+
+  # Basic check if the table is correct
+  if ("REGNSKAPSPERIODE" %in% names(htmltable)) {
+    htmlready <- htmltable
+  } else {
+    validate("Please upload the specified type of html document.")
+  }
+
+  # Testing if the correct years have been entered
+  if (as.character(all_of(start)) %in% names(htmlready) &&
+    as.character(all_of(end)) %in% names(htmlready)) {
+    # Creating the first part of the data frame
+    read_proff_one(htmltable, start, end)
+  } else {
+    validate("Please ensure you have entered the correct start and end years.")
+  }
+}
+
+### First html transformation function, invoked by html_test_create() ----------
+# (stopping to allow checks for differing currency codes)
+read_proff_one <- function(object, start, end) {
+  object |>
+    # removing empty column, using all_of(argument)
+    select(
+      REGNSKAPSPERIODE:all_of(start)
+    ) |>
+    # removing white space
+    mutate(
+      REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+    ) |>
+    # removing duplicate table sometimes created by read_html()
+    filter(
+      !row_number() > 176
+    ) |>
+    # removing duplicate rows
+    filter(
+      !grepl("Lukk", REGNSKAPSPERIODE)
+    ) |>
+    # tidying data using pivot_longer() and all_of(argument)
+    pivot_longer(
+      all_of(end):all_of(start),
+      names_to = "year"
+    ) |>
+    mutate(
+      # changing to real NAs
+      value = na_if(value, "-"),
+      # turning years into numbers
+      year = as.integer(year),
+      # creating a currency code column and turning current currency codes into
+      # NAs
+      valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+    ) |>
+    # filling the currency column to avoid having to deal with NAs later
+    fill(
+      valutakode,
+      .direction = "downup"
+    )
+}
+
+### Second html transformation function, creating the data frame ---------------
+read_proff_two <- function(object) {
+  object |>
+    # removing unneeded currency column
+    select(-valutakode) |>
+    # removing dates and redundant currency
+    filter(
+      REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+        REGNSKAPSPERIODE != "Valutakode"
+    ) |>
+    mutate(
+      # removing white space in numbers
+      value = str_replace_all(value, "\\s", ""),
+      # turning numbers into true numbers
+      value = as.numeric(value),
+      # removing values that are years
+      value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+    ) |>
+    # removing any remaining duplicate rows
+    distinct() |>
+    # pivoting to create 'tidy' variables
+    pivot_wider(
+      names_from = REGNSKAPSPERIODE, values_from = value
+    ) |>
+    # tidying names
+    clean_names() |>
+    # removing headings from the table
+    select(
+      -lederlonn_i_hele_1000,
+      -resultatregnskap_i_hele_1000,
+      -balanseregnskap_i_hele_1000
+    ) |>
+    # making it clear what lonn refers to
+    rename(
+      lederlonn = lonn
+    ) |>
+    # Creating new variables for plots (red/green profit/loss)
+    mutate(
+      annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
+      balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
+    ) |>
+    # arranging by year for practical display
+    arrange(desc(year))
+}
+
+## Functions to read Excel file ------------------------------------------------
+### First Excel transformation - creating df used by NGO title function---------
+widen_excel_test <- function(file) {
+  # Reading Excel file
+  read_excel(file) |>
+    # cleaning names to enable later operations
+    clean_names()
+}
+
+### Second Excel function - creating primary Excel data frame-------------------
+widen_excel <- function(object) {
+  # testing if all columns are present
+  if (setequal(
+    names(object),
+    c("year", "firm", "category", "sub_category", "name", "value")
+  )) {
+    object |>
+      # uniting category and name to deal with multiple 'Other'
+      unite(
+        entry, c(category, name)
+      ) |>
+      # deleting Sub-category and Firm
+      select(-sub_category, -firm) |>
+      # pivoting to create 'tidy' variables
+      pivot_wider(names_from = entry, values_from = value) |>
+      # cleaning names
+      clean_names()
+    # Notification if all columns are not present
+  } else {
+    validate("Please upload data using the specified Excel template.")
+  }
+}
+
+# Data frames ================================================================
+## Creating data frame from html file-----------------------------------------
+html_currency <- reactive({
+  # validating file
+  validate(need(
+    tools::file_ext(input$html$datapath) == "html",
+    "Please upload an html file."
+  ))
+
+  # Testing and creating data frame
+  html_test_create(
+    input$html$datapath,
+    as.character(input$start), as.character(input$end)
+  )
+})
+
+htmldata <- reactive({
+  read_proff_two(html_currency())
+})
+
+## Validating and creating long version of Excel file, if possible------------
+excel_test <- reactive({
+  # validating file
+  validate(need(
+    tools::file_ext(input$excel$datapath) == "xlsx",
+    "Please upload an Excel file."
+  ))
+
+  widen_excel_test(input$excel$datapath)
+})
+
+## Creating the primary Excel data frame--------------------------------------
+exceldata <- reactive({
+  widen_excel(excel_test())
+})
+```
