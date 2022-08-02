@@ -7,7 +7,6 @@ output:
     toc: true
     highlight: pygments
     extra_dependencies: "subfig"
-  html_document: default
 ---
 
 ```{r Setup, include=FALSE}
@@ -182,9 +181,11 @@ OPX wanted us to harvest the organisations' financial data from the web.
 During the first stage of brainstorming, we wanted to find a simple and
 automated way to do so.
 
-We discussed creating a webcrawler that could collect data across
+<!--# En webcrawler er en bot -->
+
+We discussed creating web scraping code that could collect data across
 different websites, but quickly decided that this would be too
-difficult, and that it would only work with selected organizations. The next
+difficult, and that it would only work with selected organisations. The next
 suggested solution was to create code that could read PDF documents
 that OPX downloaded themselves. Our code would analyse and organise the
 uploaded data from the PDF documents.
@@ -209,8 +210,8 @@ documents. We discussed how to do so, and concluded that we had three
 options:
 
 - Financial statements in annual report PDF documents. 
-- Webscrape Proff.no for financial statements. 
-- Webscrape the Brønnøysund registry.
+- Web scrape Proff.no for financial statements. 
+- Web scrape the Brønnøysund registry.
 
 We divided the task among ourselves to explore whether these solutions
 were feasible or not. The first option of using PDF documents still had
@@ -246,7 +247,7 @@ and final stage.
 
 ## Phase 3: Scrapping the scraping {.smaller}
 
-The OPX case requested two tasks -- webscrape financial data, and create
+The OPX case requested two tasks -- web scrape financial data, and create
 KPIs. During phase three, we scrapped all ideas and progress from the
 first two stages, and focused on creating KPIs.
 
@@ -263,10 +264,10 @@ themselves, as well as download data manually from Proff.no, and then upload thi
 
 # Data collection
 
-We wanted to use webscraping to collect the data, so that we could have
+We wanted to use web scraping to collect the data, so that we could have
 automated the data input process. As described, we explored different
 potential solutions. We experimented on coding such that data could have
-been imported from XML files. However, once we realised that the
+been imported from XML files. However, once we realised that the available
 financial data was of little use, this experimentation stopped.
 
 As we entered the third phase of brainstorming, we still needed some
@@ -275,7 +276,7 @@ financial data that OPX had already gathered from different
 organizations and organized into useful accounting items.
 
 We copied these financial statements manually into an Excel document.
-Perhaps a "simple" solution, however our code requires OPX to import
+Perhaps a 'simple' solution, however our code requires OPX to import
 both an Excel document themselves into shiny, as well as a HTML document
 from Proff.no.
 
@@ -286,6 +287,7 @@ by R.
 
 # Data description
 
+<!--# Fra Visualisations (nedenfor): The plots based on data from Proff.no often demonstrate surprising lacunae, but it difficult to know where they originate -- NGO reporting, Brønnøysund, or Proff.no.-->
 
 <!--Legg inn bilder her-->
 
@@ -420,7 +422,7 @@ The plots based on data from Proff.no often demonstrate surprising lacunae, but 
 
 One of the outputs we have created is an example dashboard that calculates some KPIs and creates a few visualisations based on user-uploaded data from Proff.no and the Excel template we developed. The basic layout and structure of the dashboard were created using Flexdashboard, whilst most of the logic 'under the hood' was created using Shiny. Additionally, the dashboard provides the user with the option of downloading a pdf version of the analysis, using a parameterised R Markdown document.
 
-As the dashboard uses a fair number of packages, it uses the pacman package to ensure they are installed, to avoid the user being confronted with messages about missing packages:
+As the dashboard uses a fair number of packages, it uses the pacman package to ensure they are installed, to avoid the user being confronted with (cryptic) messages about missing functions:
 
 `r if (knitr::is_latex_output()) line`
 
@@ -439,7 +441,7 @@ The dashboard consists of three main parts: a sidebar, the dashboard proper, and
 
 ### The Sidebar
 
-The sidebar includes file upload boxes for Excel and html files, numeric input boxes in which the user can input the years covered by the Proff.no data, and an 'Analyse' button which is connected to two Shiny `observe() |> bindEvent()` structures, ensuring that most of the code is not executed until the user has finished entering data. (Though both structures await the same button click, the division was necessary to remain within R's 10,000 byte limit.)
+The sidebar includes file upload boxes for Excel and html files, numeric input boxes in which the user can input the years covered by the Proff.no data (needed because of the highly variable availability of historical data), and an 'Analyse' button which is connected to two Shiny `observe() |> bindEvent()` structures, ensuring that most of the code is not executed until the user has finished entering data. (Though both structures await the same button click, the division was necessary to remain within R's 10,000 byte limit.)
 
 `r if (knitr::is_latex_output()) line`
 
@@ -477,12 +479,12 @@ The main section of the dashboard has a row-based layout, with a top row contain
 `r if (knitr::is_latex_output()) line`
 ```{r dashboard_datatest, eval=FALSE}
 datatest <- reactive({
-    if (mean(unlist(lapply(exceldata(), is.character))) != 0) {
-      TRUE
-    } else {
-      FALSE
-    }
-  })
+  if (mean(unlist(lapply(exceldata(), is.character))) != 0) {
+    TRUE
+  } else {
+    FALSE
+  }
+})
 ```
 
 `r if (knitr::is_latex_output()) line`
@@ -594,13 +596,11 @@ The 'no information' plot is an essentially empty plot displaying a notice to th
 
 `r if (knitr::is_latex_output()) line`
 ```{r dashboard_no_information, eval=FALSE}
-## no_information plot ---------------------------------------------------------
 # Function to print a 'no information' plot, if necessary
 no_information <- function() {
   empty_plot("No information available")
 }
 
-## empty_plot-------------------------------------------------------------------
 # Function to print an empty plot with a supplied message
 empty_plot <- function(warning) {
   ggplot() +
@@ -737,13 +737,14 @@ zero_data <- function() {
   empty_plot(
     "All values are zero or missing.
     This is unusual and may
-    indicate a data problem.")
+    indicate a data problem."
+  )
 }
 ```
 
 `r if (knitr::is_latex_output()) line`
 
-Both plots feature a certain amount of data transformation, including renaming the variables, so that the legend includes appropriate information; pivoting - in order to use the `fill` aesthetic; and ordering of the categories, so that they occur in an appropriate order. Excel data are presumed to be supplied in NOK.
+Both plots feature a certain amount of data transformation, including renaming the variables, so that the legend includes appropriate information; pivoting -- in order to use the `fill` aesthetic; and ordering of the categories, so that they occur in an appropriate order. Excel data are presumed to be supplied in NOK.
 
 `r if (knitr::is_latex_output()) line`
 ```{r dashboard_excelplot, eval=FALSE}
@@ -801,26 +802,26 @@ The revenue and expenses plots rely on a separate 'maximum' function to create t
 ```{r dashboard_maximum, eval=FALSE}
 # Reactive function to create the maximum value for revenue and expenses plots
 maximum <- reactive({
-    excel_test() |>
-      # removing the firm and sub-category columns
-      select(-firm, -sub_category) |>
-      # filtering to retain only revenue and expenses entries
-      filter(category == "Revenue" | category == "Expenses") |>
-      # grouping and summarising to calculate maximum value
-      group_by(year, category) |>
-      summarise(
-        sum = sum(value, na.rm = TRUE)
-      ) |>
-      # Creating list of sums
-      pull() |>
-      # selecting the highest value
-      max()
+  excel_test() |>
+    # removing the firm and sub-category columns
+    select(-firm, -sub_category) |>
+    # filtering to retain only revenue and expenses entries
+    filter(category == "Revenue" | category == "Expenses") |>
+    # grouping and summarising to calculate maximum value
+    group_by(year, category) |>
+    summarise(
+      sum = sum(value, na.rm = TRUE)
+    ) |>
+    # Creating list of sums
+    pull() |>
+    # selecting the highest value
+    max()
 })
 ```
 
 `r if (knitr::is_latex_output()) line`
 
-All the plots based on the Excel data make use of the colour-blind-friendly "Hokusai2" palette from the MetBrewer package; in the case of the revenues plot this is not done using the convenience `scale_fill_met_d()` function but rather the `met.brewer()` function in conjunction with `scale_fill_manual()` as the base palette only contains six colours, but the plot has seven categories. The same function is used to generate the text colour in the 'no information' and 'bad data' plots.
+All the plots based on the Excel data make use of the colour-blind-friendly 'Hokusai2' palette from the MetBrewer package; in the case of the revenues plot this is not done using the convenience `scale_fill_met_d()` function but rather the `met.brewer()` function in conjunction with `scale_fill_manual()` as the base palette only contains six colours, but the plot has seven categories. The same function is used to generate the text colour in the 'no information' and 'bad data' plots in order to present the user with a somewhat unified plot aesthetic.
 
 Below these two plots is a plot showing the total reported CEO compensation in the years covered by the html data, where this information is available.
 
@@ -879,7 +880,79 @@ knitr::include_graphics("Images/Dashboard_report_cropped.png")
 
 The dashboard also allows the user to download a pdf version of the analysis through clicking on a button. A `downloadHandler()` function passes the necessary parameters to the R Markdown document and displays a temporary notification while the file is being created. The function includes temporary file creation arguments that should enable it to function on e.g. shinyapps.io and similar server contexts, but this has not been tested.
 
+`r if (knitr::is_latex_output()) line`
+```{r dashboard_download, eval=FALSE}
+output$report <- downloadHandler(
+
+  # creating the file name using the NGO title and system date
+  filename = function() {
+    str_c(title(), "_", Sys.Date(), ".pdf")
+  },
+  content = function(file) {
+    # Based on code in Mastering Shiny -- creating a temporary directory and
+    # file
+    tempReport <- file.path(tempdir(), "report.Rmd")
+    file.copy("report.Rmd", tempReport, overwrite = TRUE)
+
+    # parameters passed to the R Markdown document
+    params <- list(
+      htmlfile = input$html$datapath,
+      excelfile = input$excel$datapath,
+      start = input$start,
+      end = input$end
+    )
+
+    # notification -- disappears when report generation is complete
+    id <- showNotification(
+      "Generating report...",
+      duration = NULL,
+      closeButton = FALSE
+    )
+    on.exit(removeNotification(id), add = TRUE)
+
+    # R Markdown render
+    rmarkdown::render(tempReport,
+      output_file = file,
+      params = params,
+      envir = new.env(parent = globalenv())
+    )
+  }
+)
+```
+
+`r if (knitr::is_latex_output()) line`
+
 In order to prevent the user from the downloading a nonsensical html file if bad data have been uploaded or entered, the button creation and report generation are located in the second `observe() |> bindEvent()` structure. The creation of the download button is connected to two convenience logical tests, the primary purpose of which is to connect the button to the `validate()` calls upstream in the reactive chain.
+
+`r if (knitr::is_latex_output()) line`
+```{r dashboard_download_button, eval=FALSE}
+## Download button -----------------------------------------------------------
+output$downloadUI <- renderUI({
+  if (available_excel() && available_html()) {
+    downloadButton("report", "Download report")
+  }
+})
+
+## Data exists condition testing----------------------------------------------
+# Essentially pretty random tests to connect to the individual
+# validate() functions upstream in the reactive chain
+
+# Excel
+available_excel <- reactive({
+  TRUE
+}) |>
+  bindEvent(setequal(
+    names(exceldata()),
+    c("year", "firm", "category", "sub_category", "name", "value")
+  ))
+
+# HTML
+available_html <- reactive({
+  TRUE
+}) |> bindEvent("lederlonn" %in% names(htmldata()))
+```
+
+`r if (knitr::is_latex_output()) line`
 
 The file name of the report is created by combining the name of the NGO from the `title()` reactive and the output of `Sys.Date()`, furnishing a hopefully informative file name.^[Note that this only works when the dashboard is run in an ordinary browser and not in the RStudio viewer.]
 
@@ -894,30 +967,30 @@ The limitations can be divided into problems regarding:
 2. the non-accessible data.
  
 The limitation with the accessible data is first and foremost the lack 
-of relevant data in the annual reports from the NGOs.  Since there is 
+of relevant data in the annual reports from the NGOs. Since there is often 
 no obligation to provide annual accounts, they often have more information 
-about the organization in general rather than numbers. If they do provide 
+about the organisation in general rather than numbers. If they do provide 
 the annual accounts, they are not standardized. This means that different 
 NGOs do not have an established template for what the different posts in 
 the annual accounts should contain. 
 
 Also, these annual reports themselves appear in different formats. If they 
 do appear in the same format, the accounts we want to retrieve are often 
-in an image format rather than text. The lack of data, standardization and 
-diverse formats made it impossible to create an automated solution for 
+in an image format rather than text. The lack of data, standardisation and 
+diverse formats made it impossible to create an automated solution for (safely)
 collecting data based on the NGOs’ annual reports. 
 
 The limitation with the non-accessible data is that the data OPX needs to 
 calculate the different KPIs do not exist in the annual reports.  We 
-experimented with an annual report from Brønnøysundregisteret. Although 
-the reports were standardized, the different posts in the report did not 
+experimented with an annual report from Brønnøysund. Although 
+the reports were standardised, the different posts in the report did not 
 match the template from OPX. Additionally the data that OPX is interested 
 in and which is necessary for calculating the relevant KPIs are not 
 available.   
 
 Also, with limited experience with KPIs it was hard to sort out which ones 
 that would be of relevance and not. After examining the different 
-alternatives, we concluded that the NGOs could report in a standardized 
+alternatives, we concluded that the NGOs could report in a standardised 
 excel document from which our code retrieves the data to calculate the KPIs.
 
 In addition, we looked at the draft of a new law on associations from 
@@ -927,22 +1000,20 @@ made the data needed available in the future. This turned out to be a dead
 end, as the draft focused largely on smaller and local associations and 
 contained no changes in reporting obligations. Therefore, if this law were 
 to be implemented, it would not be of any relevance to OPX. As a result, 
-due to OPX’s need for this data to be available, we recommend discussions 
+due to OPX’s need for this data to be available, we weould suggest discussions 
 with relevant politicians and ministry officials as a starting point.
 
-Based on the findings of working with this case, we would recommend looking 
-at best practices for further development. One good example could be charity 
-navigator.
+Based on the findings of working with this case, we would recommend looking at best practices for further development. One well-known established actor in the field is Charity Navigator.
 
 # Our experience
 
-In this last section, we would like to describe how we experienced this process and what we have learned. As explained, the main challenge with the task was highlighted by an unsolvable due to non-existent data. In cases where data were available, they were inadequate.
+In this last section, we would like to describe how we experienced this process and what we have learned. As explained, the main challenge with the task was thatb it was in many ways unsolvable due to non-existent data. In cases where data were available, they were inadequate.
 
 In addition, parts of the case demanded knowledge from the field of economics, in which we were lucky to have Amalie on the team; this was, however, still an area that was new to all of us. Without detailed experience in the NGO sector, it was challenging to find credible KPIs and interpret these correctly.
 
-The lectures allowed us to learn about many interesting topics. However, as the connection between what we learned there and what we got to utilize in the case was distant, and parts were too advanced for some of us, especially those without any particular experience within statistics.
+The lectures allowed us to learn about many interesting topics. However, as the connection between what we learned there and what we got to utilise in the case was distant, and parts were too advanced for some of us, especially those without any particular experience within statistics.
 
-Despite this, we have done our best to work with the resources at hand. As shown in this presentation, trying out solutions and later scrapping them has been a big part of the problem-solving process. We also got an insight into real-life work situations, such as the challenges that come when what is desired clashes with what is possible. We are certain that these experiences will be useful for all of us in the future, and we are thankful for being given this opportunity.
+Despite this, we have done our best to work with the resources at hand. As shown in this presentation, trying out solutions and later scrapping them has been a big part of the problem-solving process. We also got an insight into real-life work situations, such as the challenges that come when what is desired clashes with what is possible. We are certain that these experiences will be useful for all of us in the future, and we are grateful for being given this opportunity.
 
 \newpage
 # Appendix: Data reading and cleaning code
