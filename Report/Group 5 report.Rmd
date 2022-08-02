@@ -950,7 +950,7 @@ The lectures allowed us to learn about many interesting topics. However, as the 
 
 Despite this, we have done our best to work with the resources at hand. As shown in this presentation, trying out solutions and later scrapping them has been a big part of the problem-solving process. We also got an insight into real-life work situations, such as the challenges that come when what is desired clashes with what is possible. We are certain that these experiences will be useful for all of us in the future, and we are thankful for being given this opportunity.
 
-
+\newpage
 # Appendix: Data reading and cleaning code
 ```{r dashboard_file_functions, eval=FALSE}
 # Data reading functions =======================================================
