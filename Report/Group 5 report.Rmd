@@ -716,9 +716,10 @@ The file name of the report is created by combining the name of the NGO from the
 During the case we realized that we had to limit our solution. The case 
 presented by OPX wanted an automated code which would retrieve the data 
 and calculate the different KPIs, which turned out not to be possible. 
-The limitations can be divided into problems regarding: 
-(i) the accessible data, and 
-(ii) the non-accessible data
+The limitations can be divided into problems regarding:
+
+1. the accessible data, and 
+2. the non-accessible data
  
 The limitation with the accessible data is first and foremost the lack 
 of relevant data in the annual reports from the NGOs.  Since there is 
