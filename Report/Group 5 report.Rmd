@@ -178,7 +178,7 @@ by R.
 # Data description
 
 
-
+<!-- Insert images here -->
 
 
 
@@ -294,13 +294,9 @@ If the validation is successful the files are read using the functions developed
 
 ### The dashboard proper
 
-<<<<<<< HEAD
 ```{r, out.width="50%", fig.cap="The main dashboard page", fig.align='center', echo=FALSE}
 knitr::include_graphics("Images/Dashboard_page_1.png")
 ```
-
-=======
->>>>>>> af1ab3786c28d79a58404a865cc4c9fb998df055
 #### Key Performance Indicators
 
 The main section of the dashboard has a row-based layout, with a top row containing five 'value boxes' displaying KPIs derived from data in the Excel sheet, calculated and formatted in separate reactive functions. As Flexdashboard fails particularly gracelessly when errors occur with the value boxes, each function relies on some basic checks carried out by separate functions created for this purpose. In the case of both this is a simple function that checks if any of the numeric columns contain characters (in which case the data frame is probably hopelessly corrupted):
@@ -609,6 +605,10 @@ All the plots based on the Excel data make use of the colour-blind-friendly "Hok
 Below these two plots is a plot showing the total reported CEO compensation in the years covered by the html data, where this information is available.
 
 ### Details tab
+```{r dashboard_page_2, out.width="50%", fig.cap="The details tab of the dashboard.", echo=FALSE}
+knitr::include_graphics("Images/Dashboard_page_2.png")
+```
+
 
 Finally, the dashboard contains a separate tab with some basic details about the KPIs and plots. At the top it includes a heading containing the name of the NGO as written in the Excel file:
 ```{r dashboard_title_creation, eval=FALSE}
@@ -651,6 +651,10 @@ output$title <- renderText({
 ```
 
 ### The parameterised R Markdown report
+
+```{r dashboard_report_image, echo=FALSE, out.width="50%"}
+knitr::include_graphics("Images/Dashboard_report.png")
+```
 
 The dashboard also allows the user to download a pdf version of the analysis through clicking on a button. A `downloadHandler()` function passes the necessary parameters to the R Markdown document and displays a temporary notification while the file is being created. The function includes temporary file creation arguments that should enable it to function on e.g. shinyapps.io and similar server contexts, but this has not been tested.
 
