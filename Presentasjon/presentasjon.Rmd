@@ -13,9 +13,8 @@ knitr::opts_chunk$set(echo = FALSE)
 ## {data-background="Images/start1.png" data-background-size=cover}
 
 ## <br> OPX and their goal
-- A startup developing solutions for socially responsible investment strategies
-- The goal is to increase cash flow to charitable purposes 
-- Donors' trust in NGOs' financial performance and their ability to deliver results is crucial for their choice of beneficients <br>
+- Develop solutions for socially responsible investment strategies
+- Increase cash flow to charitable purposes <br>
 
 ```{r, out.height="128px", out.width="568px", fig.align='center'}
 knitr::include_graphics("Images/logo_opx.png")
@@ -58,6 +57,9 @@ Issue: The registry does store downloadable XML documents, but the access cost a
 - Not all NGOs publish their financial statements and certainly not for every year
 - **Which led us to Phase 3 - scrapping the scraping**
 
+## {data-background="Images/fcuk.png" data-background-size=cover}
+
+
 # Data collection
 
 # Data description
@@ -65,3 +67,9 @@ Issue: The registry does store downloadable XML documents, but the access cost a
 # Findings
 
 # Limitations and steps forward
+
+
+## <iframe width="1280" height="720" src="Images/henrik.mp4" align="middle" frameborder="0" allowfullscreen></iframe>
+
+
+
