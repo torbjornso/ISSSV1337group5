@@ -97,9 +97,7 @@ We divided the task among ourselves to explore whether these solutions
 were feasible or not. The first option of using PDF documents still had
 the issue of financial statements not always being published as text.
 Also, we quickly found that Proff.no disallowed webscraping on their
-website. The Brønnøysund registry did store downloadable XML documents
-of all the financial statements on their website, but we discovered that
-access to these files cost about half a million NOK.
+website. The Brønnøysund registry does offer API access to all the financial statements, but we discovered that access to costs NOK 480,000.
 
 We started to look at workarounds for this problem. It would still be
 possible to download Proff.no HTML websites manually for each
