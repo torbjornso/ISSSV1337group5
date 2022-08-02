@@ -178,7 +178,11 @@ by R.
 # Data description
 
 
+<<<<<<< HEAD
 <!-- Insert images here -->
+=======
+<!--Legg inn bilder her-->
+>>>>>>> 9d83aadd013688929dd2135ad63c6e13cfa0a821
 
 
 
