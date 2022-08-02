@@ -6,6 +6,7 @@ output:
   pdf_document: 
     toc: true
     highlight: pygments
+    extra_dependencies: "subfig"
   html_document: default
 ---
 
@@ -213,8 +214,7 @@ options:
 
 We divided the task among ourselves to explore whether these solutions
 were feasible or not. The first option of using PDF documents still had
-the issue of financial statements not always being published as text, as well as their often wildly differing formats.
-Unfortunately, we quickly found that Proff.no disallows any automated collection of data from their website. The Brønnøysund registry does offer API access to all the financial statements, but we discovered that access currently costs NOK 480,000.
+the issue of financial statements not always being published as text, as well as their often wildly differing formats. Unfortunately, we quickly found that Proff.no disallows any automated collection of data from their website. The Brønnøysund registry does offer API access to all the financial statements, but we discovered that access currently costs NOK 480,000.
 
 We started to look at workarounds for this problem. It could still be
 possible to download Proff.no HTML websites manually for each
@@ -230,7 +230,7 @@ the Brønnøysund items. This was e.g. because OPX had split the operating
 income into public and private contributions, while the Brønnøysund
 registry and Proff.no had not.
 
-```{r, echo=FALSE, fig.cap="Need caption"}
+```{r, echo=FALSE, fig.cap="Need caption", fig.align='center'}
 knitr::include_graphics("Images/info_kreft.png")
 ```
 
@@ -291,7 +291,7 @@ by R.
 
 <!-- # Legger inn tre grafer som viser manglende data i Proffs årsregnskap-->
 
-```{r arsresultat, echo=FALSE, fig.align='center', fig.asp=0.5, fig.cap="Net income/loss data for the Norwegian Cancer Society from Proff.no"}
+```{r arsresultat, echo=FALSE, fig.align='center', fig.asp=0.5, fig.cap="Net income/loss (in NOK 1,000) data for the Norwegian Cancer Society from Proff.no"}
 kreftforeningen |>
   rename(
     Year = year,
@@ -309,14 +309,14 @@ kreftforeningen |>
   theme(legend.position = "none")
 ```
 
-```{r egenkapital, echo=FALSE, fig.align='center', fig.asp=0.5, fig.cap="Total equity/liabilities data for the Norwegian Cancer Society from Proff.no"}
+```{r egenkapital, echo=FALSE, fig.align='center', fig.asp=0.5, fig.cap="Total equity/liabilities (in NOK 1,000) data for the Norwegian Cancer Society from Proff.no"}
 kreftforeningen |>
   ggplot(aes(year, sum_egenkapital_og_gjeld, fill = balance_positive)) +
   geom_col() +
   scale_y_continuous(labels = scales::label_dollar(prefix = "NOK ")) +
   scale_fill_green(kreftforeningen$balance_positive) +
   labs(
-    x = "", y = "", title = "Total equity/liabilities (in thousands)"
+    x = "", y = ""
   ) +
   theme_light() +
   theme(legend.position = "none")
@@ -348,7 +348,7 @@ kreftforeningen |>
   # pretty colours
   scale_fill_met_d("Hokusai2", direction = -1) +
   labs(
-    x = "", y = "", title = "CEO compensation"
+    x = "", y = ""
   ) +
   theme_light() +
   theme(legend.position = "bottom")
@@ -399,7 +399,7 @@ $$\frac{\text{public grants}_2 - \text{public grants}_1}{\text{public grants}_1}
   
 $$\frac{\text{private contributions} + \text{membership fees}}{\text{public grants} + \text{private contributions} + \text{membership fees}} \times 100$$
 
-This KPI may say something about the NGO's sources of funding. There are prima facie no specific desirable funding mix, but this measure may be of interest to some donors.
+This KPI may say something about the NGO's sources of funding. There is *prima facie* no specific desirable funding mix, but this measure may be of interest to some donors.
 
 ***
 
@@ -466,8 +466,9 @@ If the validation is successful the files are read using the functions developed
 
 ### The dashboard proper
 
-```{r, out.width="50%", fig.cap="The main dashboard page", fig.align='center', echo=FALSE}
+```{r dashboard_images, out.width="50%", fig.cap="The dashboard.", fig.subcap=c("The main page.", "The details tab."), echo=FALSE}
 knitr::include_graphics("Images/Dashboard_page_1.png")
+knitr::include_graphics("Images/Dashboard_page_2.png")
 ```
 #### Key Performance Indicators
 
@@ -518,6 +519,8 @@ KPI_fundraising_num <- reactive({
 `r if (knitr::is_latex_output()) line`
 
 The value box then also relies on a function that converts the number into a percentage string, checking in the process if the number is `NA` or `Inf` (indicating a division by zero, and thus either a data problem or data not suited to this calculation).
+
+`r if (knitr::is_latex_output()) line`
 ```{r dashboard_KPI_string, eval=FALSE}
 # Function to turn KPI values into NA or percentage string
 KPI_to_string <- function(variable) {
@@ -538,6 +541,8 @@ KPI_to_string <- function(variable) {
 `r if (knitr::is_latex_output()) line`
 
 In the case of some value boxes, such as the Fundraising ROI one, the function includes logic that changes the colour and icon of the box based on the calculated number. The levels are based on some cursory examination of expected levels of Fundraising ROI, but may of course be changed if the dashboard is developed further.
+
+`r if (knitr::is_latex_output()) line`
 ```{r dashboard_valuebox, eval=FALSE}
 # Creating value box for fundraising ROI
 output$KPI_box_fundraising <- renderValueBox({
@@ -567,15 +572,12 @@ output$KPI_box_fundraising <- renderValueBox({
 `r if (knitr::is_latex_output()) line`
 
 All the boxes also include, as mentioned, a Fontawesome icon, fetched using the fontawesome package, as Flexdashboard relies on the unsupported version 3 of Fontawesome, whilst fontawesome used the still-supported version 5 when coding began, and has just been updated to use version 6.1.1. All boxes use the theme colour 'primary' and the icon 'fa-solid fa-circle-xmark' if the value is NA.
-```{r dashboard_fontawesome, eval=FALSE}
-# Using fontawesome for more up-to-date (and currently supported) fontawesome
-# icons
-htmltools::tagList(fontawesome::fa_html_dependency())
-```
 
 #### Plots
 
 Below the row of KPI boxes, the dashboard contains three more rows containing five plots, three based on Proff.no data and two based on Excel data. The html-based plots include a basic test of whether the necessary data are available, as some or all may sometimes be missing, printing a 'no information' plot using a separate function if the data is missing.
+
+`r if (knitr::is_latex_output()) line`
 ```{r html_datatest, eval=FALSE}
 # testing for the presence of data
 if (sum(!is.na(htmldata()$arsresultat)) == 0) {
@@ -589,6 +591,8 @@ if (sum(!is.na(htmldata()$arsresultat)) == 0) {
 `r if (knitr::is_latex_output()) line`
 
 The 'no information' plot is an essentially empty plot displaying a notice to the user, and is created through a function that passes label information into a more general blank plot function:
+
+`r if (knitr::is_latex_output()) line`
 ```{r dashboard_no_information, eval=FALSE}
 ## no_information plot ---------------------------------------------------------
 # Function to print a 'no information' plot, if necessary
@@ -640,7 +644,6 @@ A second function is used for the `fill` parameter in order to (1) ensure that p
 `r if (knitr::is_latex_output()) line`
 
 ```{r}
-## scale_fill_green ------------------------------------------------------------
 # Function with slightly nicer colours than default; ensuring uniformity; +
 # ensuring positive values are always green through a test for the presence of
 # FALSE values
@@ -664,9 +667,9 @@ The plots are converted to plotly using `ggplotly()`. As subtitles and captions 
 # Creating plotly output
 output$arsresultat_plotly <- renderPlotly(
   ggplotly(arsresultat_plot()) |>
-    ## ggplot subtitles and captions are lost when using ggplotly(), a
-    ## currency warning caption is therefore added in plotly, if needed, using
-    ## a separate function
+    # ggplot subtitles and captions are lost when using ggplotly(), a
+    # currency warning caption is therefore added in plotly, if needed, using
+    # a separate function
     layout(
       annotations =
         plotly_caption()
@@ -694,8 +697,9 @@ plotly_caption <- reactive({
 `r if (knitr::is_latex_output()) line`
 
 Below these plots are two plots based on Excel data. These both use the same check for data quality as the value box, outputting a 'bad data' plot if the data are bad using a function that passes label information to the `empty_plot()` function:
+
+`r if (knitr::is_latex_output()) line`
 ```{r dashboard_excel_datatest, eval=FALSE}
-## bad_data plot ---------------------------------------------------------------
 # Function to print a 'bad data' plot, if necessary
 bad_data <- function() {
   empty_plot("Something is wrong\nwith the Excel data.")
@@ -708,7 +712,6 @@ They also make use of a function that checks that any data are available in the 
 
 `r if (knitr::is_latex_output()) line`
 ```{r dashboard_zero_check, eval=FALSE}
-## Excel zero test------------------------------------------------------------
 excel_zero_check <- function(type) {
   excel_test() |>
     # Choosing the specified category (i.e. Revenue or Expenses)
@@ -730,7 +733,6 @@ Through a function that passes information to the `empty_plot()` function the us
 
 `r if (knitr::is_latex_output()) line`
 ```{r}
-## zero_data_plot --------------------------------------------------------------
 zero_data <- function() {
   empty_plot(
     "All values are zero or missing.
@@ -742,6 +744,8 @@ zero_data <- function() {
 `r if (knitr::is_latex_output()) line`
 
 Both plots feature a certain amount of data transformation, including renaming the variables, so that the legend includes appropriate information; pivoting - in order to use the `fill` aesthetic; and ordering of the categories, so that they occur in an appropriate order. Excel data are presumed to be supplied in NOK.
+
+`r if (knitr::is_latex_output()) line`
 ```{r dashboard_excelplot, eval=FALSE}
 exceldata() |>
   # Renaming for the purposes of the plot + dropping other variables
@@ -795,7 +799,6 @@ The revenue and expenses plots rely on a separate 'maximum' function to create t
 
 `r if (knitr::is_latex_output()) line`
 ```{r dashboard_maximum, eval=FALSE}
-## scale maximum--------------------------------------------------------------
 # Reactive function to create the maximum value for revenue and expenses plots
 maximum <- reactive({
     excel_test() |>
@@ -822,16 +825,11 @@ All the plots based on the Excel data make use of the colour-blind-friendly "Hok
 Below these two plots is a plot showing the total reported CEO compensation in the years covered by the html data, where this information is available.
 
 ### Details tab
-```{r dashboard_page_2, out.width="50%", fig.cap="The details tab of the dashboard.", fig.align='center', echo=FALSE}
-knitr::include_graphics("Images/Dashboard_page_2.png")
-```
-
 
 Finally, the dashboard contains a separate tab with some basic details about the KPIs and plots. At the top it includes a heading containing the name of the NGO as written in the Excel file:
 
 `r if (knitr::is_latex_output()) line`
 ```{r dashboard_title_creation, eval=FALSE}
-# NGO title ==================================================================
 NGO <- reactive({
   # checking for the required column again
   if ("firm" %in% names(excel_test())) {
@@ -875,8 +873,8 @@ output$title <- renderText({
 
 ### The parameterised R Markdown report
 
-```{r dashboard_report_image, echo=FALSE, out.width="50%", fig.align='center'}
-knitr::include_graphics("Images/Dashboard_report.png")
+```{r dashboard_report_image, echo=FALSE, out.width="50%", fig.align='center', fig.cap="Sample dashboard report."}
+knitr::include_graphics("Images/Dashboard_report_cropped.png")
 ```
 
 The dashboard also allows the user to download a pdf version of the analysis through clicking on a button. A `downloadHandler()` function passes the necessary parameters to the R Markdown document and displays a temporary notification while the file is being created. The function includes temporary file creation arguments that should enable it to function on e.g. shinyapps.io and similar server contexts, but this has not been tested.
@@ -934,8 +932,7 @@ with relevant politicians and ministry officials as a starting point.
 
 Based on the findings of working with this case, we would recommend looking 
 at best practices for further development. One good example could be charity 
-navigator. 
-
+navigator.
 
 # Our experience
 
