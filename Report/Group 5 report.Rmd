@@ -422,7 +422,7 @@ The plots based on data from Proff.no often demonstrate surprising lacunae, but 
 
 One of the outputs we have created is an example dashboard that calculates some KPIs and creates a few visualisations based on user-uploaded data from Proff.no and the Excel template we developed. The basic layout and structure of the dashboard were created using Flexdashboard, whilst most of the logic 'under the hood' was created using Shiny. Additionally, the dashboard provides the user with the option of downloading a pdf version of the analysis, using a parameterised R Markdown document.
 
-As the dashboard uses a fair number of packages, it uses the pacman package to ensure they are installed, to avoid the user being confronted with (cryptic) messages about missing functions:
+As the dashboard uses a fair number of packages, it uses the pacman package to ensure they are installed, to avoid the user being confronted with (cryptic) messages about missing functions when running the dashboard locally:^[A test version uploaded to [shinyapps.io](https://www.shinyapps.io) uses normal serial library calls, as the server then automatically installs the necessary packages during deployment.]
 
 `r if (knitr::is_latex_output()) line`
 
