@@ -599,7 +599,7 @@ All the plots based on the Excel data make use of the colour-blind-friendly "Hok
 Below these two plots is a plot showing the total reported CEO compensation in the years covered by the html data, where this information is available.
 
 ### Details tab
-```{r dashboard_page_2, out.width="50%", fig.cap="The details tab of the dashboard.", echo=FALSE}
+```{r dashboard_page_2, out.width="50%", fig.cap="The details tab of the dashboard.", fig.align='center', echo=FALSE}
 knitr::include_graphics("Images/Dashboard_page_2.png")
 ```
 
