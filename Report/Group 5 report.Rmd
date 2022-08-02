@@ -14,6 +14,8 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = FALSE, message = FAL
 line <- "***"
 ```
 
+<!--# Starting report on second page to avoid a tiny text portion below the toc-->
+\newpage
 # Introduction
 
 This report describes the group's approach to the problem statement and
