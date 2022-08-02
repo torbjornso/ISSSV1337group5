@@ -14,6 +14,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = FALSE, message = FAL
 ```
 
 <!--# Vi burde vel ha navnene våre, siden rapporten skal lastes opp på Inspera?-->
+
 <!--# Legg til et sted: The Norwegian Control Committee for Fundraising (Innsamlingskontrollen) also has some very basic financial data and information available about selected charitable organisations.-->
 
 ```{r libraries, include=FALSE}
@@ -144,15 +145,15 @@ forward, and provide a brief summary of our experience.
 
 ## Problem statement
 
-The project chosen for our group was Oslo Philanthropic Exchange (OPX), 
+The project assigned to our group was Oslo Philanthropic Exchange (OPX), 
 a startup working to develop solutions to assist individuals and 
 organisations wanting to donate to charities and designing a socially 
 responsible investment strategy. Their main goal is to increase cash 
 flow from private groups and individuals to charitable purposes. Therefore, the donor's trust 
 in the charities’ abilities to carry out their promises is of paramount significance. 
  
-To do this, data from charities need to be collected. OPX’s current 
-challenge is data acquisition, as data currently must be collected manually. They therefore wanted a way to automate data collection, for example using web scraping.
+To do this, data from charities need to be collected. One of OPX’s current 
+challenges is data acquisition, as data currently must be collected manually. They therefore wanted a way to automate data collection, for example using web scraping.
  
  <!-- Needs work -->
 Additionally, by creating Key Performance Indicators based on these data, OPX can use 
