@@ -286,13 +286,11 @@ actionButton("click", "Analyse")
 
 Flexdashboard and Shiny do not fail particularly gracefully, so in addition to the information to the user and the information about file types provided to the browser, the Shiny logic executed on the button press includes some basic validations using `validate()` and `tools::file_ext()` which output error messages if the wrong file has been uploaded.^[Note that the `accept` argument is not obeyed by the RStudio viewer, but most ordinary browsers enforce the instruction.]
 
-<!--# Parenthesis as footnote? -->
-
 If the validation is successful the files are read using the functions developed for this purpose, which conduct further testing, outputting error messages using `validate()`. Using these functions, the actual creation of data frames takes place in two stages for each file, partially for data testing and partially to create subsidiary data frames used by some functions.^[The data reading code is included as an appendix because of its length.]
 
 ### The dashboard proper
 
-```{r, out.width="65%", fig.cap="The dashboard", fig.align='center', echo=FALSE}
+```{r, out.width="50%", fig.cap="The main dashboard page", fig.align='center', echo=FALSE}
 knitr::include_graphics("Images/Dashboard_page_1.png")
 ```
 
