@@ -73,6 +73,8 @@ knitr::include_graphics("Images/fcuk.png")
 
 # Findings
 
+<!-- Hvis du kan legge inn en slide med webadressen til appen *etter* presentasjonen min hadde det vært fint: https://torbjornso.shinyapps.io/NGOanalysis/ (veldig begrenset med prosessortid på gratisversjonen, men ta en titt hvis du vil. Tenkte "førstemann til mølla" med den gjenstående prosessortiden etter presentasjonen-->
+
 # Limitations and steps forward
 
 ## <iframe width="1280" height="720" src="Images/henrik.mp4" align="middle" frameborder="0" allowfullscreen></iframe>
