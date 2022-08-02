@@ -106,11 +106,6 @@ We started to look at workarounds for this problem. It would still be
 possible to download Proff.no HTML websites manually for each
 organization. We did receive some XML files from Statistics Norway, but using these is ultimately not a viable solution for OPX.
 
-```{r}
-
-```
-
-
 The Brønnøysund registry and Proff.no had different divisions of
 accounting items than the ones OPX wanted. We found that we needed to
 create an item path from the webpage items to the OPX items, and we
@@ -651,7 +646,7 @@ output$title <- renderText({
 
 ### The parameterised R Markdown report
 
-```{r dashboard_report_image, echo=FALSE, out.width="50%"}
+```{r dashboard_report_image, echo=FALSE, out.width="50%", fig.align='center'}
 knitr::include_graphics("Images/Dashboard_report.png")
 ```
 
