@@ -196,7 +196,7 @@ as tables, some as pictures, etc. This led us to phase 2.
 
 <!-- # All images need captions-->
 
-```{r, echo=FALSE, out.width="70%"}
+```{r, echo=FALSE, out.width="70%", fig.cap="Need caption"}
 knitr::include_graphics("Images/lagret_tekst.png") # må finne ut av hvordan vi deler disse bildene
 
 # inkluder en med årsregnskapet som pdf her
@@ -233,12 +233,12 @@ the Brønnøysund items. This was e.g. because OPX had split the operating
 income into public and private contributions, while the Brønnøysund
 registry and Proff.no had not.
 
-```{r, echo=FALSE, out.width="70%"}
+```{r, echo=FALSE, out.width="70%", fig.cap="Need caption"}
 knitr::include_graphics("Images/info_kreft.png")
 ```
 
 
-```{r, echo=FALSE, out.width="100%"}
+```{r, echo=FALSE, out.width="100%", fig.cap="Need caption"}
 knitr::include_graphics("Images/regnskapssti.png")
 ```
 
