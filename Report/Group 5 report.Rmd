@@ -309,6 +309,8 @@ datatest <- reactive({
 `r if (knitr::is_latex_output()) line`
 
 If there are any characters, the calculation outputs `NA`, otherwise it carries out the calculation. One example:
+
+`r if (knitr::is_latex_output()) line`
 ```{r dashboard_KPI_calculation, eval=FALSE}
 # Creating Fundraising ROI value
 KPI_fundraising_num <- reactive({
