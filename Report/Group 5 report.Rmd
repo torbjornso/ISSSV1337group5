@@ -765,6 +765,14 @@ navigator.
 
 # Our experience
 
+In this last section, we would like to describe how we experienced this process and what we have learned. As explained, the main challenge with the task was highlighted by an unsolvable due to non-existent data. In cases where data were available, they were inadequate.
+
+In addition, parts of the case demanded knowledge from the field of economics, in which we were lucky to have Amalie on the team; this was, however, still an area that was new to all of us. Without detailed experience in the NGO sector, it was challenging to find credible KPIs and interpret these correctly.
+
+The lectures allowed us to learn about many interesting topics. However, as the connection between what we learned there and what we got to utilize in the case was distant, and parts were too advanced for some of us, especially those without any particular experience within statistics.
+
+Despite this, we have done our best to work with the resources at hand. As shown in this presentation, trying out solutions and later scrapping them has been a big part of the problem-solving process. We also got an insight into real-life work situations, such as the challenges that come when what is desired clashes with what is possible. We are certain that these experiences will be useful for all of us in the future, and we are thankful for being given this opportunity.
+
 
 # Appendix: Data reading and cleaning code
 ```{r dashboard_file_functions, eval=FALSE}
