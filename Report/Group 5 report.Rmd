@@ -13,6 +13,8 @@ output:
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = FALSE, message = FALSE, out.width = "70%")
 ```
 
+<!--# Vi burde vel ha navnene våre, siden rapporten skal lastes opp på Inspera?-->
+
 ```{r libraries, include=FALSE}
 library(tidyverse)
 library(janitor)
