@@ -292,9 +292,9 @@ by R.
 
 <!--Legg inn bilder her-->
 
-<!-- # Legger inn to grafer som viser manglende data i Proffs årsregnskap-->
+<!-- # Legger inn tre grafer som viser manglende data i Proffs årsregnskap-->
 
-```{r arsresultat, echo=FALSE, out.width="70%", fig.align='center', fig.cap="Net income/loss data for the Norwegian Cancer Society from Proff.no"}
+```{r arsresultat, echo=FALSE, out.width="70%", fig.align='center', fig.asp=0.5, fig.cap="Net income/loss data for the Norwegian Cancer Society from Proff.no"}
 kreftforeningen |>
   rename(
     Year = year,
@@ -306,12 +306,56 @@ kreftforeningen |>
   scale_y_continuous(labels = scales::label_dollar(prefix = "NOK ")) +
   scale_fill_green(kreftforeningen$annual_profit) +
   labs(
-    x = "", y = "", title = "Net income (in thousands)"
+    x = "", y = ""
   ) +
   theme_light() +
   theme(legend.position = "none")
 ```
 
+```{r egenkapital, echo=FALSE, out.width="70%", fig.align='center', fig.asp=0.5, fig.cap="Total equity/liabilities data for the Norwegian Cancer Society from Proff.no"}
+kreftforeningen |>
+  ggplot(aes(year, sum_egenkapital_og_gjeld, fill = balance_positive)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = "NOK ")) +
+  scale_fill_green(kreftforeningen$balance_positive) +
+  labs(
+    x = "", y = "", title = "Total equity/liabilities (in thousands)"
+  ) +
+  theme_light() +
+  theme(legend.position = "none")
+```
+
+```{r CEO, echo=FALSE, out.width="70%", fig.align='center', fig.asp=0.618, fig.cap="CEO compensation data for the Norwegian Cancer Society from Proff.no"}
+kreftforeningen |>
+  # preparing for pivoting
+  select(
+    year, lederlonn, leder_annen_godtgjorelse
+  ) |>
+  # Compensation in ordinary numbers
+  mutate(
+    lederlonn = lederlonn * 1000,
+    leder_annen_godtgjorelse = leder_annen_godtgjorelse * 1000
+  ) |>
+  # renaming for the purposes of the plot
+  rename(
+    Year = year,
+    Salary = lederlonn,
+    `Other compensation` = leder_annen_godtgjorelse
+  ) |>
+  # pivoting to join the two values to use fill
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |>
+  ggplot(aes(Year, value, fill = Compensation)) +
+  geom_col() +
+  # using currency scale function to add correct currency code or ?
+  scale_y_continuous(labels = scales::label_dollar(prefix = "NOK ")) +
+  # pretty colours
+  scale_fill_met_d("Hokusai2", direction = -1) +
+  labs(
+    x = "", y = "", title = "CEO compensation"
+  ) +
+  theme_light() +
+  theme(legend.position = "bottom")
+```
 
 # Findings
 
