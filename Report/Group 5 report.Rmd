@@ -90,8 +90,9 @@ knitr::include_graphics("Images/lagret_tekst.png") # må finne ut av hvordan vi 
 
 At this stage, we wanted to explore alternatives to analyzing PDF
 documents. We discussed how to do so, and concluded that we had three
-options: 
-- Financial statements in yearly report PDF documents. 
+options:
+
+- Financial statements in annual report PDF documents. 
 - Webscrape Proff.no for financial statements. 
 - Webscrape the Brønnøysund registry.
 
@@ -103,8 +104,7 @@ website. The Brønnøysund registry does offer API access to all the financial s
 
 We started to look at workarounds for this problem. It would still be
 possible to download Proff.no HTML websites manually for each
-organization. And, we attempted to request a temporary access to the
-Brønnøysund registry's XML documents. <!-- # Ikke Brønnøysund XML -- de har API. Vi fikk en XML-dump fra SSB, men det er ikke noe OPX kan bruke.-->
+organization. We did receive some XML files from Statistics Norway, but using these is ultimately not a viable solution for OPX.
 
 ```{r}
 
