@@ -294,6 +294,8 @@ knitr::include_graphics("Images/Dashboard_page_1.png")
 #### Key Performance Indicators
 
 The main section of the dashboard has a row-based layout, with a top row containing five 'value boxes' displaying KPIs derived from data in the Excel sheet, calculated and formatted in separate reactive functions. As Flexdashboard fails particularly gracelessly when errors occur with the value boxes, each function relies on some basic checks carried out by separate functions created for this purpose. In the case of both this is a simple function that checks if any of the numeric columns contain characters (in which case the data frame is probably hopelessly corrupted):
+
+`r if (knitr::is_latex_output()) line`
 ```{r dashboard_datatest, eval=FALSE}
 datatest <- reactive({
     if (mean(unlist(lapply(exceldata(), is.character))) != 0) {
@@ -303,6 +305,8 @@ datatest <- reactive({
     }
   })
 ```
+
+`r if (knitr::is_latex_output()) line`
 
 If there are any characters, the calculation outputs `NA`, otherwise it carries out the calculation. One example:
 ```{r dashboard_KPI_calculation, eval=FALSE}
@@ -331,6 +335,8 @@ KPI_fundraising_num <- reactive({
 })
 ```
 
+`r if (knitr::is_latex_output()) line`
+
 The value box then also relies on a function that converts the number into a percentage string, checking in the process if the number is `NA` or `Inf` (indicating a division by zero, and thus either a data problem or data not suited to this calculation).
 ```{r dashboard_KPI_string, eval=FALSE}
 # Function to turn KPI values into NA or percentage string
@@ -348,6 +354,8 @@ KPI_to_string <- function(variable) {
   }
 }
 ```
+
+`r if (knitr::is_latex_output()) line`
 
 In the case of some value boxes, such as the Fundraising ROI one, the function includes logic that changes the colour and icon of the box based on the calculated number. The levels are based on some cursory examination of expected levels of Fundraising ROI, but may of course be changed if the dashboard is developed further.
 ```{r dashboard_valuebox, eval=FALSE}
@@ -376,6 +384,8 @@ output$KPI_box_fundraising <- renderValueBox({
 })
 ```
 
+`r if (knitr::is_latex_output()) line`
+
 All the boxes also include, as mentioned, a Fontawesome icon, fetched using the fontawesome package, as Flexdashboard relies on the unsupported version 3 of Fontawesome, whilst fontawesome used the still-supported version 5 when coding began, and has just been updated to use version 6.1.1. All boxes use the theme colour 'primary' and the icon 'fa-solid fa-circle-xmark' if the value is NA.
 ```{r dashboard_fontawesome, eval=FALSE}
 # Using fontawesome for more up-to-date (and currently supported) fontawesome
@@ -395,6 +405,8 @@ if (sum(!is.na(htmldata()$arsresultat)) == 0) {
   ggplot() # create plot
 }
 ```
+
+`r if (knitr::is_latex_output()) line`
 
 The 'no information' plot is an essentially empty plot displaying a notice to the user, and is created through a function that passes label information into a more general blank plot function:
 ```{r dashboard_no_information, eval=FALSE}
@@ -421,7 +433,11 @@ empty_plot <- function(warning) {
 }
 ```
 
+`r if (knitr::is_latex_output()) line`
+
 The top row contains two plots showing the annual result and balance data for the years covered by Proff.no. These are fairly simple bar plots, including a `fill` parameter colouring the bars depending on whether the numbers are positive or negative. They do, however, rely on two simple additional functions, one which checks whether the currency code is uniform across the years, and, if so, using it for the y scale, or, otherwise, uses a question mark instead of a currency code, both using `scales::label_dollar()`.
+
+`r if (knitr::is_latex_output()) line`
 ```{r dashboard_currency, eval=FALSE}
 # Reactive function to check for currency and use currency code or ?
 currency_scale <- reactive({
@@ -437,7 +453,12 @@ currency_scale <- reactive({
 })
 ```
 
+`r if (knitr::is_latex_output()) line`
+
 A second function is used for the `fill` parameter in order to (1) ensure that positive numbers are always green, irrespective of the presence of negative numbers, and vice versa, and (2) to use slightly nicer colours than the default ggplot2 ones, making use of the 'Tsimshian' palette from Blake R. Mills' creative [MetBrewer](https://github.com/BlakeRMills/MetBrewer) package.
+
+`r if (knitr::is_latex_output()) line`
+
 ```{r}
 ## scale_fill_green ------------------------------------------------------------
 # Function with slightly nicer colours than default; ensuring uniformity; +
@@ -454,7 +475,11 @@ scale_fill_green <- function(variable) {
 }
 ```
 
+`r if (knitr::is_latex_output()) line`
+
 The plots are converted to plotly using `ggplotly()`. As subtitles and captions do not survive the conversion, a separate function outputs a plotly annotation if the data contains multiple currency codes:
+
+`r if (knitr::is_latex_output()) line`
 ```{r dashboard_plotly, eval=FALSE}
 # Creating plotly output
 output$arsresultat_plotly <- renderPlotly(
@@ -486,6 +511,8 @@ plotly_caption <- reactive({
 })
 ```
 
+`r if (knitr::is_latex_output()) line`
+
 Below these plots are two plots based on Excel data. These both use the same check for data quality as the value box, outputting a 'bad data' plot if the data are bad using a function that passes label information to the `empty_plot()` function:
 ```{r dashboard_excel_datatest, eval=FALSE}
 ## bad_data plot ---------------------------------------------------------------
@@ -495,7 +522,11 @@ bad_data <- function() {
 }
 ```
 
+`r if (knitr::is_latex_output()) line`
+
 They also make use of a function that checks that any data are available in the respective category:
+
+`r if (knitr::is_latex_output()) line`
 ```{r dashboard_zero_check, eval=FALSE}
 ## Excel zero test------------------------------------------------------------
 excel_zero_check <- function(type) {
@@ -513,7 +544,11 @@ excel_zero_check <- function(type) {
 }
 ```
 
+`r if (knitr::is_latex_output()) line`
+
 Through a function that passes information to the `empty_plot()` function the user receives a warning if an entire category consists of only zeroes or NA:
+
+`r if (knitr::is_latex_output()) line`
 ```{r}
 ## zero_data_plot --------------------------------------------------------------
 zero_data <- function() {
@@ -523,6 +558,8 @@ zero_data <- function() {
     indicate a data problem.")
 }
 ```
+
+`r if (knitr::is_latex_output()) line`
 
 Both plots feature a certain amount of data transformation, including renaming the variables, so that the legend includes appropriate information; pivoting - in order to use the `fill` aesthetic; and ordering of the categories, so that they occur in an appropriate order. Excel data are presumed to be supplied in NOK.
 ```{r dashboard_excelplot, eval=FALSE}
@@ -572,7 +609,11 @@ exceldata() |>
   labs(x = "", y = "", title = "Revenue (in thousands)")
 ```
 
+`r if (knitr::is_latex_output()) line`
+
 The revenue and expenses plots rely on a separate 'maximum' function to create the y scales; this is used so that both are on the same scale, and to derive the upper limit of the scale from the supplied data. The lower limit is derived from the supplied data in each plot in order not to suppress any erroneous totals. (This is not a complete data integrity test, but should convey a slight warning if the expenses have been entered as negative numbers.) This function is based on first version of the Excel data frame, in order to make use of the 'category' column:
+
+`r if (knitr::is_latex_output()) line`
 ```{r dashboard_maximum, eval=FALSE}
 ## scale maximum--------------------------------------------------------------
 # Reactive function to create the maximum value for revenue and expenses plots
@@ -594,6 +635,8 @@ maximum <- reactive({
 })
 ```
 
+`r if (knitr::is_latex_output()) line`
+
 All the plots based on the Excel data make use of the colour-blind-friendly "Hokusai2" palette from the MetBrewer package; in the case of the revenues plot this is not done using the convenience `scale_fill_met_d()` function but rather the `met.brewer()` function in conjunction with `scale_fill_manual()` as the base palette only contains six colours, but the plot has seven categories. The same function is used to generate the text colour in the 'no information' and 'bad data' plots.
 
 Below these two plots is a plot showing the total reported CEO compensation in the years covered by the html data, where this information is available.
@@ -605,6 +648,8 @@ knitr::include_graphics("Images/Dashboard_page_2.png")
 
 
 Finally, the dashboard contains a separate tab with some basic details about the KPIs and plots. At the top it includes a heading containing the name of the NGO as written in the Excel file:
+
+`r if (knitr::is_latex_output()) line`
 ```{r dashboard_title_creation, eval=FALSE}
 # NGO title ==================================================================
 NGO <- reactive({
@@ -635,6 +680,8 @@ title <- reactive({
 })
 ```
 
+`r if (knitr::is_latex_output()) line`
+
 The title is output using `htmlOutput()` to use some basic html styling:
 ```{r dashboard_title, eval=FALSE}
 # Creating NGO title using html formatting (colour based on MetBrewer
@@ -643,6 +690,8 @@ output$title <- renderText({
   paste('<b><font size="5em" color="#2f70a1">', title(), "</font></b>")
 })
 ```
+
+`r if (knitr::is_latex_output()) line`
 
 ### The parameterised R Markdown report
 
