@@ -719,7 +719,7 @@ and calculate the different KPIs, which turned out not to be possible.
 The limitations can be divided into problems regarding:
 
 1. the accessible data, and 
-2. the non-accessible data
+2. the non-accessible data.
  
 The limitation with the accessible data is first and foremost the lack 
 of relevant data in the annual reports from the NGOs.  Since there is 
