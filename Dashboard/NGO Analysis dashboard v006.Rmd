@@ -638,9 +638,9 @@ observe({
   # Creating plotly output
   output$arsresultat_plotly <- renderPlotly(
     ggplotly(arsresultat_plot()) |>
-      ## ggplot subtitles and captions are lost when using ggplotly(), a
-      ## currency warning caption is therefore added in plotly, if needed, using
-      ## a separate function
+      # ggplot subtitles and captions are lost when using ggplotly(), a
+      # currency warning caption is therefore added in plotly, if needed, using
+      # a separate function
       layout(
         annotations =
           plotly_caption()
