@@ -146,7 +146,7 @@ Row
 The KPIs are based on the following calculations, using data derived from the Excel sheet:
 
 - **Fundraising ROI**:
-  - A basic measure of the return on investment of direct fundraising expenses: 
+  - A basic measure of the return on investment of fundraising expenses: 
   
   $$\frac{\text{private contributions} + \text{membership fees} - \text{fundraising expenses}}{\text{fundraising expenses}} \times 100$$
 
