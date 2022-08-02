@@ -14,6 +14,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = FALSE, message = FAL
 ```
 
 <!--# Vi burde vel ha navnene våre, siden rapporten skal lastes opp på Inspera?-->
+<!--# Legg til et sted: The Norwegian Control Committee for Fundraising (Innsamlingskontrollen) also has some very basic financial data and information available about selected charitable organisations.-->
 
 ```{r libraries, include=FALSE}
 library(tidyverse)
@@ -110,8 +111,9 @@ read_proff <- function(file, start, end) {
     arrange(desc(year))
 }
 
-## Creating df------------------------------------------------------------------
+## Creating dfs-----------------------------------------------------------------
 kreftforeningen <- read_proff("Data/Kreftforeningen.html", "2002", "2021")
+care <- read_proff("Data/CARENorge2010_2021.html", "2010", "2021")
 
 ## scale_fill_green ------------------------------------------------------------
 # Function with slightly nicer colours than default; ensuring uniformity; +
@@ -182,8 +184,6 @@ three phases.
 OPX wanted us to harvest the organisations' financial data from the web.
 During the first stage of brainstorming, we wanted to find a simple and
 automated way to do so.
-
-<!--# En webcrawler er en bot -->
 
 We discussed creating web scraping code that could collect data across
 different websites, but quickly decided that this would be too
@@ -293,7 +293,7 @@ by R.
 
 <!--Legg inn bilder her-->
 
-<!-- # Legger inn tre grafer som viser manglende data i Proffs årsregnskap-->
+<!-- # Legger inn fire grafer som viser manglende data i Proffs årsregnskap-->
 
 ```{r arsresultat, echo=FALSE, fig.align='center', fig.asp=0.5, fig.cap="Net income/loss (in NOK 1,000) data for the Norwegian Cancer Society from Proff.no"}
 kreftforeningen |>
@@ -355,8 +355,27 @@ kreftforeningen |>
     x = "", y = ""
   ) +
   theme_light() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "top")
 ```
+
+```{r care_arsresultat, echo=FALSE, fig.align='center', fig.asp=0.5, fig.cap="Net income/loss (in NOK 1,000) data for CARE Norway from Proff.no"}
+care |>
+  rename(
+    Year = year,
+    `Net income` = arsresultat,
+    `Net positive` = annual_profit
+  ) |>
+  ggplot(aes(Year, `Net income`, fill = `Net positive`)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = "NOK ")) +
+  scale_fill_green(kreftforeningen$annual_profit) +
+  labs(
+    x = "", y = ""
+  ) +
+  theme_light() +
+  theme(legend.position = "none")
+```
+
 
 # Findings
 
@@ -367,11 +386,11 @@ kreftforeningen |>
 On the basis of such data as we could gather we developed five potential KPIs:
 
 - **Fundraising ROI**:
-  - A basic measure of the return on investment of direct fundraising expenses: 
+  - A basic measure of the return on investment of fundraising expenses: 
   
   $$\frac{\text{private contributions} + \text{membership fees} - \text{fundraising expenses}}{\text{fundraising expenses}} \times 100$$
   
-This KPI is not a true measure of fundraising ROI, as it only includes (as we understand OPX's data) the direct fundraising expenses, and does not include major indirect expenses such as salary costs.
+Whether this is a true measure of fundraising ROI depends on how the underlying data have been calculated -- e.g. if they include salary costs, etc.
 
 ***
 
