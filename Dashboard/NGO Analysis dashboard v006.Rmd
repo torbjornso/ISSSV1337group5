@@ -20,6 +20,8 @@ p_load(
 # Using the fontawesome package for more up-to-date (and currently supported)
 # Fontawesome icons
 htmltools::tagList(fontawesome::fa_html_dependency())
+
+# source_code: embed OR Github link
 ```
 
 
@@ -581,7 +583,7 @@ observe({
       tempReport <- file.path(tempdir(), "report.Rmd")
       file.copy("report.Rmd", tempReport, overwrite = TRUE)
 
-      # parameters
+      # parameters passed to the R Markdown document
       params <- list(
         htmlfile = input$html$datapath,
         excelfile = input$excel$datapath,
