@@ -15,7 +15,7 @@ if (!require("pacman")) install.packages("pacman")
 library(pacman)
 p_load(
   shiny, tidyverse, scales, rvest, janitor, plotly, readxl,
-  flexdashboard, MetBrewer, fontawesome, htmltools
+  flexdashboard, MetBrewer, fontawesome, htmltools, purrr
 )
 # Using the fontawesome package for more up-to-date (and currently supported)
 # Fontawesome icons
@@ -884,14 +884,7 @@ observe({
 
   ## scale maximum--------------------------------------------------------------
   # Reactive function to create the maximum value for revenue and expenses plots
-  # the tests are probably not necessary, but included to be on the safe side
   maximum <- reactive({
-    if (datatest() == TRUE || setequal(
-      names(exceldata()),
-      c("year", "firm", "category", "sub_category", "name", "value")
-    )) {
-      NA
-    } else {
       excel_test() |>
         # removing the firm and sub-category columns
         select(-firm, -sub_category) |>
@@ -906,13 +899,13 @@ observe({
         pull() |>
         # selecting the highest value
         max()
-    }
   })
 
   ## Excel data test (also above)-----------------------------------------------
   # Reactive function to test for Excel data quality (basic)
   datatest <- reactive({
-    # let me know if anyone has a better idea for testing
+    # Testing if there are any characters instead of numbers (data probably
+    # hopelessly corrupted)
     if (mean(unlist(lapply(exceldata(), is.character))) != 0) {
       TRUE
     } else {
@@ -923,12 +916,15 @@ observe({
   ## Excel zero test------------------------------------------------------------
   excel_zero_check <- function(type) {
     excel_test() |>
+      # Choosing the specified category (i.e. Revenue or Expenses)
       filter(
         category == as.character(all_of(type))
       ) |>
+      # Calculating if there are any zeroes
       summarise(
         zero = sum(value != 0, na.rm = TRUE)
       ) |>
+      # just the single number
       pull()
   }
   
@@ -996,8 +992,6 @@ read_proff_one <- function(object, start, end) {
       all_of(end):all_of(start),
       names_to = "year"
     ) |>
-    # creating a currency code column and turning current currency codes into
-    # NAs
     mutate(
       # changing to real NAs
       value = na_if(value, "-"),
@@ -1061,7 +1055,8 @@ read_proff_two <- function(object) {
 
 ## Functions to read Excel file ------------------------------------------------
 ### First Excel transformation -------------------------------------------------
-# creating df used by NGO title function and maximum scale function
+# creating df used by NGO title function, maximum scale function, and excel zero
+# check
 widen_excel_test <- function(file) {
   # Reading Excel file
   read_excel(file) |>
@@ -1138,9 +1133,11 @@ bad_data <- function() {
 }
 
 ## zero_data_plot --------------------------------------------------------------
-
 zero_data <- function() {
-  empty_plot("All values are zero.\nThis is unusual and may\nindicate a data problem.")
+  empty_plot(
+    "All values are zero or missing.
+    This is unusual and may
+    indicate a data problem.")
 }
 
 ## empty_plot-------------------------------------------------------------------
@@ -1156,7 +1153,7 @@ empty_plot <- function(warning) {
       "text",
       label = warning,
       # Using the same palette as the other non-profit/loss plots
-      x = 0, y = 0, size = 8, colour = met.brewer("Hokusai2", 1)
+      x = 0, y = 0, size = 6, colour = met.brewer("Hokusai2", 1)
     )
 }
 ```

@@ -55,8 +55,6 @@ read_proff <- function(file, start, end) {
       all_of(end):all_of(start),
       names_to = "year"
     ) |>
-    # creating a currency code column and turning current currency codes into
-    # NAs
     mutate(
       # changing to real NAs
       value = na_if(value, "-"),
@@ -155,21 +153,6 @@ read_proff_currency <- function(file, start, end) {
     )
 }
 
-## Function to read Excel file -------------------------------------------------
-widen_excel <- function(file) {
-  read_excel(file) |>
-    # uniting Category and Name to deal with multiple 'Other'
-    unite(
-      entry, c(Category, Name),
-      sep = "_"
-    ) |>
-    # deleting Sub-category and Firm
-    select(-`Sub-category`, -Firm) |>
-    # pivoting to create 'tidy' variables
-    pivot_wider(names_from = entry, values_from = Value) |>
-    # cleaning names
-    clean_names()
-}
 ### Reading html ---------------------
 # Creating the main data frame
 htmldata <- read_proff(
@@ -178,23 +161,58 @@ htmldata <- read_proff(
 )
 
 # Creating the currency data frame
-html_currency <- read_proff_currency(params$htmlfile,
-  as.character(params$start), as.character(params$end))
+html_currency <- read_proff_currency(
+  params$htmlfile,
+  as.character(params$start), as.character(params$end)
+)
+
+## Functions to read Excel file ------------------------------------------------
+### First Excel transformation -------------------------------------------------
+# creating df used by NGO title function, maximum scale function, and excel zero
+# check
+widen_excel_test <- function(file) {
+  # Reading Excel file
+  read_excel(file) |>
+    # cleaning names to enable later operations
+    clean_names()
+}
+
+### Second Excel function - creating primary Excel data frame-------------------
+widen_excel <- function(object) {
+  object |>
+    # uniting category and name to deal with multiple 'Other'
+    unite(
+      entry, c(category, name),
+      sep = "_"
+    ) |>
+    # deleting sub_category and firm
+    select(-sub_category, -firm) |>
+    # pivoting to create 'tidy' variables
+    pivot_wider(names_from = entry, values_from = value) |>
+    # cleaning names
+    clean_names()
+}
+
 
 ### Reading excel ---------------------
-exceldata <- widen_excel(params$excelfile)
+excel_test <- widen_excel_test(params$excelfile)
 
+exceldata <- widen_excel(excel_test)
+```
+
+
+```{r ngo_title}
 # NGO title ==================================================================
-
-NGO <- read_excel(params$excelfile) |>
+NGO <- excel_test |>
   # Turning the needed column into a list
-  pull(Firm) |>
+  pull(firm) |>
   # discarding all NAs in case the name is somewhere
   purrr::discard(is.na) |>
   # choosing the first available name
   first()
 
-title <- # testing if NGO() is NA
+title <-
+  # testing if NGO() is NA
   if (is.na(NGO)) {
     # Printing warning if NA
     "Name of NGO missing"
@@ -211,8 +229,9 @@ title: "NGO Analysis: `r title`"
 ---
 
 ```{r data_warnings}
-# Excel data test =============================================================
-# Function to test for Excel data quality (basic)
+# Excel data tests and warnings ================================================
+# Functions to test for Excel data quality (basic)
+## Excel datatest---------------------------------------------------------------
 datatest <-
   # let me know if anyone has a better idea for testing
   if (mean(unlist(lapply(exceldata, is.character))) != 0) {
@@ -221,14 +240,41 @@ datatest <-
     FALSE
   }
 
-## Creating the Excel warning text --------------------------------------------
+## Excel zero test------------------------------------------------------------
+excel_zero_check <- function(type) {
+  excel_test |>
+    filter(
+      category == as.character(all_of(type))
+    ) |>
+    summarise(
+      zero = sum(value != 0, na.rm = TRUE)
+    ) |>
+    pull()
+}
+
+## Creating the Excel warning texts --------------------------------------------
+# Excel data test warning
 excel_warning <- if (datatest == TRUE) {
   "***    Warning: something is wrong with the Excel data.***"
 } else {
   ""
 }
 
-# HTML warnings ===============================================================
+# Excel zero revenues warning
+excel_zero_revenue_warning <- if (excel_zero_check("Revenue") == 0) {
+  "*    All revenue values are zero or missing. This is unusual and may indicate a data problem.*"
+} else {
+  ""
+}
+
+# Excel zero expenses warning
+excel_zero_expenses_warning <- if (excel_zero_check("Expenses") == 0) {
+  "*    All expenses values are zero or missing. This is unusual and may indicate a data problem.*"
+} else {
+  ""
+}
+
+# HTML warnings ================================================================
 # Creating the arsresultat warning text
 arsresultat_plot_warning <- if (sum(!is.na(htmldata$arsresultat)) == 0) {
   "*    No information about net income/loss is available.*"
@@ -251,12 +297,16 @@ CEO_plot_warning <- if (sum(!is.na(htmldata$lederlonn)) == 0 &&
   ""
 }
 
-# Creating general warning
-general_warning <- if (datatest == TRUE ||
-  sum(!is.na(htmldata$arsresultat)) == 0 || 
-  sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0 ||
-  (sum(!is.na(htmldata$lederlonn)) == 0 &&
-    sum(!is.na(htmldata$leder_annen_godtgjorelse)) == 0)) {
+## Creating general warning-----------------------------------------------------
+general_warning <- if (
+  datatest == TRUE ||
+    sum(!is.na(htmldata$arsresultat)) == 0 ||
+    sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0 ||
+    (sum(!is.na(htmldata$lederlonn)) == 0 &&
+      sum(!is.na(htmldata$leder_annen_godtgjorelse)) == 0) ||
+    excel_zero_check("Revenue") == 0 ||
+    excel_zero_check("Expenses") == 0
+) {
   "## Note:"
 } else {
   ""
@@ -302,19 +352,19 @@ scale_fill_green <- function(variable) {
 ```{r functions_reliant}
 ## scale maximum--------------------------------------------------------------
 # Function to create the maximum value for revenue and expenses plots
+# Testing, because this function cannot rely on the reactive chain to stop
 maximum <- if (datatest == TRUE) {
   NA
 } else {
-  # reading the Excel sheet anew
-  read_excel(params$excelfile) |>
+  excel_test |>
     # removing the firm and sub-category columns
-    select(-Firm, -`Sub-category`) |>
+    select(-firm, -sub_category) |>
     # filtering to retain only revenue and expenses entries
-    filter(Category == "Revenue" | Category == "Expenses") |>
+    filter(category == "Revenue" | category == "Expenses") |>
     # grouping and summarising to calculate maximum value
-    group_by(Year, Category) |>
+    group_by(year, category) |>
     summarise(
-      sum = sum(Value, na.rm = TRUE)
+      sum = sum(value, na.rm = TRUE)
     ) |>
     # Creating list of sums
     pull() |>
@@ -337,8 +387,8 @@ currency_scale <-
 
 ## Currency caption-----------------------------------------------------------
 currency_caption <- ifelse(length(unique(html_currency$valutakode)) == 1,
-      "", "Note: not all values are denominated in the same currency."
-    )
+  "", "Note: not all values are denominated in the same currency."
+)
 ```
 
 <!--# Creating KPIs -->
@@ -350,23 +400,22 @@ currency_caption <- ifelse(length(unique(html_currency$valutakode)) == 1,
 fundraising <- if (datatest == TRUE) {
   NA
 } else {
-  {
-    exceldata |>
-      # most recent year
-      filter(year == max(year)) |>
-      transmute(
-        # Calculating the value as a percentage; removing all other
-        KPI_fundraising_num =
-          (sum(revenue_private_contributions,
-            revenue_membership_fees,
-            na.rm = TRUE
-          ) - expenses_fundraising) /
-            expenses_fundraising * 100
-      ) |>
-      # just want the single number
-      pull() |>
-      first()
-  } |> KPI_to_string()
+  exceldata |>
+    # most recent year
+    filter(year == max(year)) |>
+    transmute(
+      # Calculating the value as a percentage; removing all other
+      KPI_fundraising_num =
+        (sum(revenue_private_contributions,
+          revenue_membership_fees,
+          na.rm = TRUE
+        ) - expenses_fundraising) /
+          expenses_fundraising * 100
+    ) |>
+    # just want the single number
+    pull() |>
+    first() |>
+    KPI_to_string()
 }
 
 ## OPX KPI--------------------------------------------------------------------
@@ -465,7 +514,7 @@ KPI_proportion <-
 
 ### NA warning-----------------------------------------------------------------
 # Testing for the presence of NAs; printing warning if there are any
-KPI_warning <- if (is.na(fundraising) || is.na(KPI_OPX) || is.na( KPI_private) ||
+KPI_warning <- if (is.na(fundraising) || is.na(KPI_OPX) || is.na(KPI_private) ||
   is.na(KPI_public) || is.na(KPI_proportion)) {
   "*A value of 'NA' indicates that there is something wrong with the Excel data, that the necessary data are not available, or that the data are unsuited to an automatic calculation of the KPI.*"
 } else {
@@ -512,6 +561,10 @@ The KPIs are based on the following calculations, using data derived from the Ex
 <!--# specific alerts -->
 
 `r excel_warning`
+
+`r excel_zero_revenue_warning`
+
+`r excel_zero_expenses_warning`
 
 `r arsresultat_plot_warning`
 
@@ -560,7 +613,6 @@ if (sum(!is.na(htmldata$arsresultat)) != 0) {
 balance_plot <-
   # testing for the presence of data
   if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) == 0) {
-    # Printing 'no information' plot if no data
     NA
   } else {
     htmldata |>
@@ -585,18 +637,16 @@ balance_plot <-
   }
 
 # Printing the plot if the data are available
-if (sum(!is.na(htmldata$sum_egenkapital_og_gjeld)) != 0) {
+if (is.ggplot(balance_plot)) {
   balance_plot
 }
 ```
 
-
-```{r revenue_expenses_plot, fig.asp=1, out.width="50%", fig.cap="Revenue and Expenses", fig.subcap=c("Based on the category \`Revenue' in the Excel sheet.", "Based on the category \`Expenses' in the Excel sheet.")}
+```{r revenue_expenses_plots_creation}
 ## Revenue--------------------------------------------------------------------
 revenue_plot <-
   # testing for data quality
-  if (datatest == TRUE) {
-    # printing 'bad data' plot if data are bad
+  if (datatest == TRUE || excel_zero_check("Revenue") == 0) {
     NA
   } else {
     exceldata |>
@@ -647,16 +697,10 @@ revenue_plot <-
       theme(title = element_text(size = 14))
   }
 
-# Printing the plot if the data are OK
-if (datatest == FALSE) {
-  revenue_plot
-}
-
 ## Expenses -------------------------------------------------------------------
 expenses_plot <-
   # testing for data quality
-  if (datatest == TRUE) {
-    # printing 'bad data' plot if data are bad
+  if (datatest == TRUE || excel_zero_check("Expenses") == 0) {
     NA
   } else {
     exceldata |>
@@ -693,9 +737,29 @@ expenses_plot <-
       theme_light() +
       theme(title = element_text(size = 14))
   }
+```
 
-# Printing the plot if the data are OK
-if (datatest == FALSE) {
+```{r revenue_only, fig.asp=1, out.width="50%", fig.cap="Based on the category \`Revenue' in the Excel sheet."}
+# Printing the plot if ONLY the revenue data are OK
+if (is.ggplot(revenue_plot) && !is.ggplot(expenses_plot)) {
+  revenue_plot
+}
+```
+
+```{r expenses_only, fig.asp=1, out.width="50%", fig.cap="Based on the category \`Expenses' in the Excel sheet."}
+# Printing the plot if ONLY the expenses data are ok
+if (!is.ggplot(revenue_plot) && is.ggplot(expenses_plot)) {
+  expenses_plot
+}
+```
+
+```{r revenue_expenses_plot_both, fig.asp=1, out.width="50%", fig.cap="Revenue and Expenses", fig.subcap=c("Based on the category \`Revenue' in the Excel sheet.", "Based on the category \`Expenses' in the Excel sheet.")}
+# Printing the plots if the data are OK
+if (is.ggplot(revenue_plot) && is.ggplot(expenses_plot)) {
+  revenue_plot
+}
+
+if (is.ggplot(revenue_plot) && is.ggplot(expenses_plot)) {
   expenses_plot
 }
 ```
@@ -744,8 +808,7 @@ CEO_plot <-
   }
 
 # Printing the plot if the data are available
-if (sum(!is.na(htmldata$lederlonn)) != 0 ||
-  sum(!is.na(htmldata$leder_annen_godtgjorelse)) != 0) {
+if (is.ggplot(CEO_plot)) {
   CEO_plot
 }
 ```

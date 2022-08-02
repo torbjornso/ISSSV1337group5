@@ -13,8 +13,14 @@ knitr::opts_chunk$set(echo = FALSE)
 ## {data-background="Images/start1.png" data-background-size=cover}
 
 ## <br> OPX and their goal
+<<<<<<< HEAD
 - Develop solutions for socially responsible investment strategies
 - Increase cash flow to charitable purposes <br>
+=======
+- A startup developing solutions for socially responsible investment strategies
+- The goal is to increase cash flow to charitable purposes 
+- Donors' trust in NGOs' financial performance and their ability to deliver results is crucial for their choice of beneficiaries <br>
+>>>>>>> 449bd33948b8aaf79f3f361dac7aa5661ec527f4
 
 ```{r, out.height="128px", out.width="568px", fig.align='center'}
 knitr::include_graphics("Images/logo_opx.png")
@@ -46,14 +52,15 @@ Issue: Financial statements are not always published as text
 - Webscraping financial statements from Proff.no <br>
 Issue: Proff.no does not allow webscraping!
 - Webscraping the Brønnøysund registry <br>
-Issue: The registry does store downloadable XML documents, but the access cost about 500k kr
+Issue: The registry does offer API access, but access costs about 500k kr
 
 ## <br> Workarounds... 
 - Proff.no: It maaay be legal to manually download the websites as HTML instead of scraping 
 - Brønnøysund: We attempted to request a temporary access to XML documents
+<!--# We received some sample XML data from Statistics Norway -- we did not talk to Brønnøysund at all-->
 
 ## <br> ... and why they did not work
-- Different accounting divisions at Proff.no and Brønnøysund prohibited extracting the correct sums the OPX wanted
+- Different accounting divisions at Proff.no and Brønnøysund prohibited extracting the correct sums  OPX wanted
 - Not all NGOs publish their financial statements and certainly not for every year
 - **Which led us to Phase 3 - scrapping the scraping**
 
