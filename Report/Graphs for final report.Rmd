@@ -212,3 +212,21 @@ kreftforeningen |>
   theme(legend.position = "bottom")
 ```
 
+```{r}
+care |>
+  rename(
+    Year = year,
+    `Net income` = arsresultat,
+    `Net positive` = annual_profit
+  ) |>
+  ggplot(aes(Year, `Net income`, fill = `Net positive`)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::label_dollar(prefix = "NOK ")) +
+  scale_fill_green(kreftforeningen$annual_profit) +
+  labs(
+    x = "", y = "", title = "Net income (in thousands)"
+  ) +
+  theme_light() +
+  theme(legend.position = "none")
+```
+
