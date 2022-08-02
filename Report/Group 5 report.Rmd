@@ -104,7 +104,7 @@ access to these files cost about half a million NOK.
 We started to look at workarounds for this problem. It would still be
 possible to download Proff.no HTML websites manually for each
 organization. And, we attempted to request a temporary access to the
-Brønnøysund registry's XML documents.
+Brønnøysund registry's XML documents. <!-- # Ikke Brønnøysund XML -- de har API. Vi fikk en XML-dump fra SSB, men det er ikke noe OPX kan bruke.-->
 
 ```{r}
 
