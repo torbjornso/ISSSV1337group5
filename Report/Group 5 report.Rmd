@@ -10,7 +10,7 @@ output:
 ---
 
 ```{r Setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = FALSE, message = FALSE, out.width = "100%")
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = FALSE, message = FALSE, out.width = "70%")
 ```
 
 ```{r libraries, include=FALSE}
@@ -196,7 +196,7 @@ as tables, some as pictures, etc. This led us to phase 2.
 
 <!-- # All images need captions-->
 
-```{r, echo=FALSE, out.width="70%", fig.cap="Need caption"}
+```{r, echo=FALSE, fig.cap="Need caption"}
 knitr::include_graphics("Images/lagret_tekst.png") # må finne ut av hvordan vi deler disse bildene
 
 # inkluder en med årsregnskapet som pdf her
@@ -233,7 +233,7 @@ the Brønnøysund items. This was e.g. because OPX had split the operating
 income into public and private contributions, while the Brønnøysund
 registry and Proff.no had not.
 
-```{r, echo=FALSE, out.width="70%", fig.cap="Need caption"}
+```{r, echo=FALSE, fig.cap="Need caption"}
 knitr::include_graphics("Images/info_kreft.png")
 ```
 
@@ -294,7 +294,7 @@ by R.
 
 <!-- # Legger inn tre grafer som viser manglende data i Proffs årsregnskap-->
 
-```{r arsresultat, echo=FALSE, out.width="70%", fig.align='center', fig.asp=0.5, fig.cap="Net income/loss data for the Norwegian Cancer Society from Proff.no"}
+```{r arsresultat, echo=FALSE, fig.align='center', fig.asp=0.5, fig.cap="Net income/loss data for the Norwegian Cancer Society from Proff.no"}
 kreftforeningen |>
   rename(
     Year = year,
@@ -312,7 +312,7 @@ kreftforeningen |>
   theme(legend.position = "none")
 ```
 
-```{r egenkapital, echo=FALSE, out.width="70%", fig.align='center', fig.asp=0.5, fig.cap="Total equity/liabilities data for the Norwegian Cancer Society from Proff.no"}
+```{r egenkapital, echo=FALSE, fig.align='center', fig.asp=0.5, fig.cap="Total equity/liabilities data for the Norwegian Cancer Society from Proff.no"}
 kreftforeningen |>
   ggplot(aes(year, sum_egenkapital_og_gjeld, fill = balance_positive)) +
   geom_col() +
@@ -325,7 +325,7 @@ kreftforeningen |>
   theme(legend.position = "none")
 ```
 
-```{r CEO, echo=FALSE, out.width="70%", fig.align='center', fig.asp=0.618, fig.cap="CEO compensation data for the Norwegian Cancer Society from Proff.no"}
+```{r CEO, echo=FALSE, fig.align='center', fig.asp=0.618, fig.cap="CEO compensation data for the Norwegian Cancer Society from Proff.no"}
 kreftforeningen |>
   # preparing for pivoting
   select(
