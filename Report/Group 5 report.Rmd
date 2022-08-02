@@ -81,6 +81,8 @@ However, different organizations publish financial data in different
 ways in their yearly reports -- some financial statements were included
 as tables, some as pictures, etc. This led us to phase 2.
 
+<!-- # All images need captions-->
+
 ```{r, echo=FALSE, out.width="70%"}
 knitr::include_graphics("Images/lagret_tekst.png") # må finne ut av hvordan vi deler disse bildene
 
