@@ -11,8 +11,23 @@ output:
 
 ```{r Setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = FALSE, message = FALSE, out.width = "100%")
+```
+
+```{r libraries, include=FALSE}
+library(tidyverse)
+library(janitor)
+library(rvest)
+library(MetBrewer)
+```
+
+```{r line, include=FALSE}
 line <- "***"
 ```
+
+```{r}
+
+```
+
 
 <!--# Starting report on second page to avoid a tiny text portion below the toc-->
 \newpage
