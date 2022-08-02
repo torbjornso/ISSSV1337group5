@@ -178,6 +178,10 @@ by R.
 # Data description
 
 
+
+
+
+
 # Findings
 
 ## KPIs and visualisations
@@ -291,10 +295,6 @@ Flexdashboard and Shiny do not fail particularly gracefully, so in addition to t
 If the validation is successful the files are read using the functions developed for this purpose, which conduct further testing, outputting error messages using `validate()`. Using these functions, the actual creation of data frames takes place in two stages for each file, partially for data testing and partially to create subsidiary data frames used by some functions.^[The data reading code is included as an appendix because of its length.]
 
 ### The dashboard proper
-
-```{r, out.width="65%", fig.cap="The dashboard", fig.align='center', echo=FALSE}
-knitr::include_graphics("Images/Dashboard_page_1.png")
-```
 
 #### Key Performance Indicators
 
@@ -647,7 +647,7 @@ output$title <- renderText({
 
 ### The parameterised R Markdown report
 
-The dashboard also allows the user to download a pdf version of the analysis through clicking on a button. A `downloadHandler()` function passes the necessary parameters to the R Markdown document and displays a temporary notification while the file is being created. The function includes temporary file creation arguments that should enable it to function on e.g. [shinyapps.io](https://www.shinyapps.io/) and similar server contexts. It has been tested on shinyapps.io, but not on any private server.
+The dashboard also allows the user to download a pdf version of the analysis through clicking on a button. A `downloadHandler()` function passes the necessary parameters to the R Markdown document and displays a temporary notification while the file is being created. The function includes temporary file creation arguments that should enable it to function on e.g. shinyapps.io and similar server contexts, but this has not been tested.
 
 In order to prevent the user from the downloading a nonsensical html file if bad data have been uploaded or entered, the button creation and report generation are located in the second `observe() |> bindEvent()` structure. The creation of the download button is connected to two convenience logical tests, the primary purpose of which is to connect the button to the `validate()` calls upstream in the reactive chain.
 
@@ -705,6 +705,7 @@ navigator.
 
 
 # Our experience
+
 
 # Appendix: Data reading and cleaning code
 ```{r dashboard_file_functions, eval=FALSE}
