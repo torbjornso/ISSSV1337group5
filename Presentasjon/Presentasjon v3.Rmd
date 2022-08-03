@@ -1,9 +1,10 @@
 ---
 title: "Presentasjon OPX Fiffig tittel"
-author: "Gruppe 5"
-date: "4.8.2022"
+author: "Group 5: Aga, Amalie, Henrik, Ida, Torbjørn"
+date: "2022-08-04"
 output: 
-  ioslides_presentation: 
+  ioslides_presentation:
+    widescreen: TRUE 
     css: stylesss.css
 ---
 
@@ -59,13 +60,19 @@ Issue: No API access, and access costs ~ kr 500K
 - Different accounting items used
 - Incomplete financial reporting from NGOs
 
+
+
 ## Items Brønnøysund
-```{r, out.height="400", out.width="272", fig.align='center'}
+```{r, out.height="470", out.width="800", fig.align='center'}
 knitr::include_graphics("Images/Brns_items.png")
 
 ```
 
+## Items OPX
+```{r, out.height="514", out.width="710", fig.align='center'}
+knitr::include_graphics("Images/OPX_items.png")
 
+```
 
 ---- 
 ```{r, out.height="360", out.width="612", fig.align='center'}
