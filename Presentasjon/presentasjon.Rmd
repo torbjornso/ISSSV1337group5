@@ -64,16 +64,6 @@ knitr::include_graphics("Images/fcuk.png")
 ```
 
 
-# Data collection
-
-# Data description
-
-
-# Findings
-
-
-# Limitations and steps forward
-
 ## <iframe width="1280" height="720" src="Images/henrik.mp4" align="middle" frameborder="0" allowfullscreen></iframe>
 
 ## {data-background="Images/tenke.png" data-background-size=cover}
