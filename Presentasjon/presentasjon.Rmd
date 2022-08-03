@@ -51,7 +51,6 @@ Issue: The registry does offer API access, but access costs about 500k kr
 ## <br> Workarounds... 
 - Proff.no: It maaay be legal to manually download the websites as HTML instead of scraping 
 - Brønnøysund: We attempted to request a temporary access to XML documents
-<!--# We received some sample XML data from Statistics Norway -- we did not talk to Brønnøysund at all-->
 
 ## <br> ... and why they did not work
 - Different accounting divisions at Proff.no and Brønnøysund prohibited extracting the correct sums  OPX wanted
@@ -69,22 +68,15 @@ knitr::include_graphics("Images/fcuk.png")
 
 # Data description
 
-<<<<<<< HEAD
-=======
+
 # Findings
 
-<!-- Hvis du kan legge inn en slide med webadressen til appen *etter* presentasjonen min hadde det vært fint: https://torbjornso.shinyapps.io/NGOanalysis/ (veldig begrenset med prosessortid på gratisversjonen, men ta en titt hvis du vil. Tenkte "førstemann til mølla" med den gjenstående prosessortiden etter presentasjonen-->
 
 # Limitations and steps forward
->>>>>>> c702e0c77b668327b237709d92dcaa5b77a605a2
 
 ## <iframe width="1280" height="720" src="Images/henrik.mp4" align="middle" frameborder="0" allowfullscreen></iframe>
 
-----
-```{r, out.height="500", out.width="500", fig.align='center'}
-knitr::include_graphics("Images/tenke.png")
-
-```
+## {data-background="Images/tenke.png" data-background-size=cover}
 
 ## <br> Our experience
 - Unsolvable case due to non-existent data
