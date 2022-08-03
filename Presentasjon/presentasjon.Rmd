@@ -36,25 +36,29 @@ knitr::include_graphics("Images/kpi.png")
 
 
 ## <br> Phase 1 – how to harvest and analyze the data?
-- A webcrawler that could collect data across different websites? <br> This would be too difficult and it would only work with some organizations
+- OPX wanted us to harvest data --> how? <br> 
+- A webcrawler? <br> 
+- No: Would not work for every organization <br> 
 - A code that could read PDF? <br> 
+- Perhaps: Financial statements as text tables and as images
 
 
 ## <br> Phase 2 – Exploring three options
-- Financial statements in yearly reports published as PDF <br>
-Issue: Financial statements are not always published as text
-- Webscraping financial statements from Proff.no <br>
-Issue: Proff.no does not allow webscraping!
-- Webscraping the Brønnøysund registry <br>
-Issue: The registry does offer API access, but access costs about 500k kr
+- 1. Reading PDFs <br>
+Issue: Not always published as text
+- 2. Webscraping from Proff.no <br>
+Issue: Proff.no does not allow webscraping
+- 3. Webscraping the Brønnøysund registry <br>
+Issue: No API access, and access costs ~ kr 500K
 
 ## <br> Workarounds... 
-- Proff.no: It maaay be legal to manually download the websites as HTML instead of scraping 
-- Brønnøysund: We attempted to request a temporary access to XML documents
+- Proff.no: Download HTML?
+- Brønnøysund: Request temporary access
 
 ## <br> ... and why they did not work
-- Different accounting divisions at Proff.no and Brønnøysund prohibited extracting the correct sums  OPX wanted
-- Not all NGOs publish their financial statements and certainly not for every year
+- Different accounting items used
+- Incomplete financial reporting from NGOs
+
 - **Which led us to Phase 3 - scrapping the scraping**
 
 ----
@@ -63,11 +67,17 @@ knitr::include_graphics("Images/fcuk.png")
 
 ```
 
+## <br> Phase 3 – Scrapping the scraping
+- OPX wanted KPIs <br>
+- Found useful KPIs <br>
+- Created an interactive dashboard
 
-# Data collection
-
-# Data description
-
+## <br> Data collection & data description
+- Used data from OPX and Proff.no <br>
+- OPX: From their webpage. <br>
+- Used to create KPIs and check our codes <br>
+- Proff.no: Downloaded HTML documents. <br>
+- Used to create visualizations.
 
 # Findings
 
