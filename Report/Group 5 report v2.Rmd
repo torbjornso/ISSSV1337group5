@@ -240,8 +240,8 @@ registry and Proff.no had not.
 
 ```{r, echo=FALSE, fig.cap="Need caption", fig.align='center'}
 # Illustration brns vs OPX accounting items
-knitr::include_graphics("Images/Brns_items.png")
-knitr::include_graphics("Images/OPX_items.png")
+knitr::include_graphics("Images/Brns_items1.png")
+knitr::include_graphics("Images/OPX_items1.png")
 knitr::include_graphics("Images/Marriage.png")
 ```
 
