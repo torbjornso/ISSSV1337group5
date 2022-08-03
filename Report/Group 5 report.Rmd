@@ -131,6 +131,7 @@ scale_fill_green <- function(variable) {
 }
 ```
 
+**Github**: [https://github.com/torbjornso/ISSSV1337group5](https://github.com/torbjornso/ISSSV1337group5)
 
 <!--# Starting report on second page to avoid a tiny text portion below the toc-->
 \newpage
