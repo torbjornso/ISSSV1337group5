@@ -1,0 +1,157 @@
+---
+title: "Colourful plot tests"
+author: "Torbjørn Skinnemoen Ottersen"
+date: '2022-07-21'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+
+```{r}
+if (!require("pacman")) install.packages("pacman"); library(pacman)
+p_load(shiny,tidyverse, scales, rvest, janitor, plotly, readxl, MetBrewer)
+```
+
+
+```{r data}
+
+read_proff8 <- function(file, start, end){
+    read_html(file, encoding = "UTF-8") |> 
+      html_node("#inner-frame") |> 
+      html_table() |> 
+    # removing empty column
+      select( 
+        REGNSKAPSPERIODE:all_of(start)) |>
+    # removing whitespace
+      mutate( 
+        REGNSKAPSPERIODE = str_squish(REGNSKAPSPERIODE)
+      ) |> 
+    # removing duplicate table - no idea why it's necessary
+      filter(
+        !row_number() > 176
+      ) |>
+    # removing duplicate rows
+      filter( 
+        !grepl("Lukk", REGNSKAPSPERIODE)
+      ) |> 
+    # tidying data
+      pivot_longer( 
+        all_of(end):all_of(start), names_to = "year"
+        ) |> 
+    # changing to real NAs and turning years into numbers
+    # picking out the currency
+      mutate( 
+        value = na_if(value, "-"),
+        year = as.integer(year), 
+        valutakode = ifelse(REGNSKAPSPERIODE == "Valutakode", value, NA)
+      ) |> 
+    # filling the currency column
+      fill( 
+        valutakode, .direction = "updown"
+      ) |> 
+    # removing dates and redundant currency
+      filter( 
+        REGNSKAPSPERIODE != "Sluttdato" & REGNSKAPSPERIODE != "Startdato" &
+          REGNSKAPSPERIODE != "Valutakode") |> 
+    # removing white space in numbers
+    # removing years as numbers
+      mutate( 
+        value = str_replace_all(value, "\\s", ""),
+        value = as.numeric(value),
+        value = ifelse(grepl("i hele 1000", REGNSKAPSPERIODE), NA, value)
+      ) |> 
+    # removing any remaining duplicate rows
+      distinct() |> 
+    # pivoting
+      pivot_wider( 
+        names_from = REGNSKAPSPERIODE, values_from = value
+      ) |> 
+    # tidying names
+      clean_names() |> 
+    # removing headings
+      select(-lederlonn_i_hele_1000,
+             -resultatregnskap_i_hele_1000,
+             -balanseregnskap_i_hele_1000) |> 
+    # making it clear what lonn refers to
+      rename( 
+        lederlonn = lonn
+      ) |> 
+    # Creating new variables for plots
+    mutate(
+      annual_profit = ifelse(arsresultat >= 0, TRUE, FALSE),
+      balance_positive = ifelse(sum_egenkapital_og_gjeld >= 0, TRUE, FALSE)
+    ) |> 
+    # arranging by year
+      arrange(desc(year)) 
+}
+
+widen_excel <- function(file){
+  read_excel(file) |> 
+  unite(
+    entry, c(Category, Name), sep = "_"
+  ) |> 
+  select(-`Sub-category`) |> 
+  pivot_wider(names_from = entry, values_from = Value) |> 
+  clean_names()
+}
+
+kreft_excel <- widen_excel("Data/OPXfinans_final.xlsx")
+
+kreft_html <- read_proff8("Data/Kreftforeningen.html", "2002", "2021")
+
+```
+
+## Four colours
+```{r}
+palettes <- colorblind_palettes
+
+for (i in 1:length(palettes)) {
+  print(kreft_excel |> 
+    transmute(
+      Year = as.factor(year),
+      Other = expenses_other,
+      Administrative = expenses_administrative,
+      Fundraising = expenses_fundraising,
+      `Program services` = expenses_program_services
+    ) |> 
+    pivot_longer(c(Other:`Program services`), names_to = "Expenses") |> 
+    mutate(
+      Expenses = ordered(Expenses, levels =
+                           c("Program services", "Administrative",
+                             "Fundraising", "Other")) 
+    ) |> 
+    ggplot(aes(Year, value, fill = Expenses)) +
+    geom_col() +
+    coord_flip() +
+    scale_y_continuous(labels = label_dollar()) +
+    scale_fill_met_d(palettes[i]) +
+    labs(x = "Year", y = "", title = palettes[i]))
+}
+```
+
+## Two colours
+```{r}
+for (i in 1:length(palettes)) {
+  print(kreft_html |> 
+  select(
+    year, lederlonn, leder_annen_godtgjorelse
+  ) |> 
+  rename(
+    Year = year,
+    Salary = lederlonn,
+    `Other compensation` = leder_annen_godtgjorelse
+  ) |> 
+  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |> 
+  ggplot(aes(Year, value, fill = Compensation)) +
+  geom_col() +
+  scale_y_continuous(
+    labels = scales::label_dollar(prefix =
+                                    str_c(kreft_html$valutakode[1], " "))) +
+  scale_fill_met_d(palettes[i]) +
+  labs(x = "Year", y = "Total compensation", title = palettes[i]))
+}
+```
+

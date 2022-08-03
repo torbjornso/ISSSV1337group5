@@ -20,6 +20,8 @@ p_load(
 # Using the fontawesome package for more up-to-date (and currently supported)
 # Fontawesome icons
 htmltools::tagList(fontawesome::fa_html_dependency())
+
+# source_code: embed OR Github link
 ```
 
 
@@ -144,7 +146,7 @@ Row
 The KPIs are based on the following calculations, using data derived from the Excel sheet:
 
 - **Fundraising ROI**:
-  - A basic measure of the return on investment of direct fundraising expenses: 
+  - A basic measure of the return on investment of fundraising expenses: 
   
   $$\frac{\text{private contributions} + \text{membership fees} - \text{fundraising expenses}}{\text{fundraising expenses}} \times 100$$
 
@@ -581,7 +583,7 @@ observe({
       tempReport <- file.path(tempdir(), "report.Rmd")
       file.copy("report.Rmd", tempReport, overwrite = TRUE)
 
-      # parameters
+      # parameters passed to the R Markdown document
       params <- list(
         htmlfile = input$html$datapath,
         excelfile = input$excel$datapath,
@@ -638,9 +640,9 @@ observe({
   # Creating plotly output
   output$arsresultat_plotly <- renderPlotly(
     ggplotly(arsresultat_plot()) |>
-      ## ggplot subtitles and captions are lost when using ggplotly(), a
-      ## currency warning caption is therefore added in plotly, if needed, using
-      ## a separate function
+      # ggplot subtitles and captions are lost when using ggplotly(), a
+      # currency warning caption is therefore added in plotly, if needed, using
+      # a separate function
       layout(
         annotations =
           plotly_caption()

@@ -1,0 +1,149 @@
+---
+title: "Group 5 Report"
+author: "ISSSV1337 Group 5"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r Setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, error = FALSE, message = FALSE)
+```
+
+<!--# Inkluderer spoilers, kan man si, hvis man vil finne ut av hvordan man styrer billedstørrelse o.l. selv. -->
+
+
+# Brainstorming
+
+Our brainstorming process for this case was characterized by several
+surprises and turns in the direction of the solution. As we dug deeper
+into the solution opportunities, we were also met by new obstacles that
+forced us to change course. In particular, there were four turning
+points. Therefore, we have decided to divide the brainstorming into
+three phases.
+
+### Phase 1: How to harvest and analyze the data? {.smaller}
+
+OPX wanted us to harvest the organizations' financial data from the web.
+During the first stage of brainstorming, we wanted to find a simple and
+automated way to do so.
+
+We discussed creating a webcrawler that could collect data across
+different websites, but quickly decided that this would be too
+difficult, and that it would only work with selected organizations. The
+suggested solution was to create a code that could read PDF documents
+that OPX downloaded themselves. Our code would analyze and organize the
+uploaded data from the PDF documents.
+
+However, different organizations publish financial data in different
+ways in their yearly reports -- some financial statements were included
+as tables, some as pictures, etc. This led us to phase 2.
+
+```{r, out.width="70%"}
+knitr::include_graphics("Images/lagret_tekst.png") # må finne ut av hvordan vi deler disse bildene
+
+# inkluder en med årsregnskapet som pdf her
+```
+
+
+### Phase 2: Exploring solutions {.smaller}
+
+At this stage, we wanted to explore alternatives to analyzing PDF
+documents. We discussed how to do so, and concluded that we had three
+options: 
+- Financial statements in yearly report PDF documents. 
+- Webscrape Proff.no for financial statements. 
+- Webscrape the Brønnøysund registry.
+
+We divided the task among ourselves to explore whether these solutions
+were feasible or not. The first option of using PDF documents still had
+the issue of financial statements not always being published as text.
+Also, we quickly found that Proff.no disallowed webscraping on their
+website. The Brønnøysund registry did store downloadable XML documents
+of all the financial statements on their website, but we discovered that
+access to these files cost about half a million NOK.
+
+We started to look at workarounds for this problem. It would still be
+possible to download Proff.no HTML websites manually for each
+organization. And, we attempted to request a temporary access to the
+Brønnøysund registry's XML documents.
+
+```{r}
+
+```
+
+
+The Brønnøysund registry and Proff.no had different divisions of
+accounting items than the ones OPX wanted. We found that we needed to
+create an item path from the webpage items to the OPX items, and we
+attempted to do so in Excel at first, so that we later could code this
+into R. While doing so, we realized that it would be practically
+impossible to extract the correct sums for the OPX accounting items from
+the Brønnøysund items. This was e.g. because OPX had split the operating
+income into public and private contributions, while the Brønnøysund
+registry and Proff.no had not.
+
+```{r, out.width="70%"}
+knitr::include_graphics("Images/info_kreft.png")
+```
+
+
+```{r, out.width="100%"}
+knitr::include_graphics("Images/regnskapssti.png")
+```
+
+When also discovering that not all organizations publish their financial
+statements, and certainly not for every year, we decided to give up on
+collecting financial data for OPX. This is when we moved on to the third
+and final stage.
+
+### Phase 3: Scrapping the scraping {.smaller}
+
+The OPX case requested two tasks -- webscrape financial data, and create
+KPIs. During phase three, we scrapped all ideas and progress from the
+first two stages, and focused on creating KPIs.
+
+We divided amongst ourselves that some would find useful KPIs from best
+practices, while someone else found the accounting items in the OPX
+structure that were needed in the calculations. Then, we coded the KPI
+calculations into R.
+
+In order to create a somewhat more challenging task for ourselves, we
+also decided to create a shiny app that OPX could use, which would
+display the KPIs as well as financial trends for the selected
+organization. To use this, OPX needs to gather the financial data
+themselves, then upload this into the shiny app as a x document
+
+# Data collection
+
+We wanted to use webscraping to collect the data, so that we could have
+automated the data input process. As described, we explored different
+potential solutions. We experimented on coding such that data could have
+been imported from XML files. However, once we realized that the
+financial data was of little ¨use, this experimentation stopped.
+
+As we entered the third phase of brainstorming, we still needed some
+example data so that we could test our KPI codes. For this, we used the
+financial data that OPX had already gathered from different
+organizations and organized into useful accounting items.
+
+We copied these financial statements manually into an Excel document.
+Perhaps a "simple" solution, however our code requires OPX to import
+both an Excel document themselves into shiny, as well as a HTML document
+from Proff.no.
+
+If OPX wishes to develop our solution, we recommend that they purchase
+API access from the Brønnøysund registry and/or Proff.no. They also need
+to create e.g. a simple SQL database with its own data that can be used
+by R.
+
+```{r, out.width="45%", fig.cap="The dashboard", fig.show='hold', fig.align='center'}
+knitr::include_graphics("Images/Dashboard_page_1.png")
+knitr::include_graphics("Images/Dashboard_page_2.png")
+```
+
+```{r, out.width="50%", fig.align='center', fig.cap="Sample dashboard report"}
+knitr::include_graphics("Images/Dashboard_report.png")
+```
+
