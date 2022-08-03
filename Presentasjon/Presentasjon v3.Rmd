@@ -59,12 +59,13 @@ Issue: No API access, and access costs ~ kr 500K
 - Different accounting items used
 - Incomplete financial reporting from NGOs
 
+## Items Brønnøysund
+```{r, out.height="400", out.width="272", fig.align='center'}
+knitr::include_graphics("Images/Brns_items.png")
+
+```
 
 
-
-
-#brns_items
-#opx_items
 
 ---- 
 ```{r, out.height="360", out.width="612", fig.align='center'}
@@ -84,7 +85,9 @@ knitr::include_graphics("Images/fcuk.png")
 - Proff.no: Downloaded HTML documents
 - Used to create visualizations
 
+# Dashboard
 
+# Limitations and steps forward
 
 ## <iframe width="1280" height="720" src="Images/henrik.mp4" align="middle" frameborder="0" allowfullscreen></iframe>
 
