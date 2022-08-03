@@ -1,6 +1,9 @@
 ---
-title: "Group 5 Report"
-author: "ISSSV1337 Group 5"
+title: "ISSSV1337 Group 5 Report"
+author:    | 
+    | Amalie Halle Christensen, Ida Kristine Garthe
+    | Torbjørn Skinnemoen Ottersen, Henrik Waage Rui
+    | Agnieszka Sadlowska
 date: "2022-08-03"
 output:
   pdf_document: 
@@ -13,9 +16,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = FALSE, message = FALSE, out.width = "70%")
 ```
 
-<!--# Vi burde vel ha navnene våre, siden rapporten skal lastes opp på Inspera?-->
-
-<!--# Legg til et sted: The Norwegian Control Committee for Fundraising (Innsamlingskontrollen) also has some very basic financial data and information available about selected charitable organisations.-->
 
 ```{r libraries, include=FALSE}
 library(tidyverse)
@@ -149,23 +149,20 @@ The project assigned to our group was Oslo Philanthropic Exchange (OPX),
 a startup working to develop solutions to assist individuals and 
 organisations wanting to donate to charities and designing a socially 
 responsible investment strategy. Their main goal is to increase cash 
-flow from private groups and individuals to charitable purposes. Therefore, the donor's trust 
-in the charities’ abilities to carry out their promises is of paramount significance. 
+flow from private groups and individuals to charitable purposes. Therefore, the donors' trust in the charities’ abilities to carry out their promises is of paramount significance. 
  
 To do this, data from charities need to be collected. One of OPX’s current 
 challenges is data acquisition, as data currently must be collected manually. They therefore wanted a way to automate data collection, for example using web scraping.
  
- <!-- Needs work -->
-Additionally, by creating Key Performance Indicators based on these data, OPX can use 
-them to benchmark the relationship between financial assets and emergency 
-relief obligations. 
+
+Additionally, by creating Key Performance Indicators based on these data, OPX can use them to benchmark the relationship between financial assets and emergency relief obligations. 
 
 It is important to solve this problem because:
 
 1. Automating the data collection will streamline the work of OPX 
 and create more transparency, which enhances trust in charities.
 
-2. Creating KPI(s) is important for the organization’s performance 
+2. Creating KPI(s) is important for the organisation’s performance 
 management, to influence its objectives, and to foster growth.
 
 The scope of the problem statement was narrowed down to the Nordic 
@@ -180,100 +177,99 @@ forced us to change course. In particular, there were four turning
 points. Therefore, we have decided to divide the brainstorming section into
 three phases.
 
-## Phase 1: How to harvest and analyse the data? {.smaller}
+## Phase 1: How to harvest and analyse the data?
 
 OPX wanted us to harvest the organizations' financial data from the web.
 During the first stage of brainstorming, we wanted to find a simple and
 automated way to do so.
 
-We discussed creating a webcrawler that could collect data across
+We discussed creating web scraping code that could collect data across
 different websites, but quickly decided that this would be too
 difficult, and that it would only work with selected organizations. The
-suggested solution was to create a code that could read PDF documents
-that OPX downloaded themselves. Our code would analyze and organize the
+suggested solution was to create code that could read PDF documents
+that OPX downloaded themselves. Our code would analyse and organise the
 uploaded data from the PDF documents.
 
-However, different organizations publish financial data in different
-ways in their yearly reports -- some financial statements were included
+However, different organisations publish financial data in different
+ways in their annual reports -- some financial statements were included
 as tables, some as pictures, etc. This led us to phase 2.
 
 <!-- # All images need captions-->
 
-```{r, echo=FALSE, fig.cap="Kreftforeningen 2021: The financial report saved as text in the PDF"}
+```{r, echo=FALSE, fig.cap="Norwegian Cancer Society 2021: The financial report saved as text in the PDF."}
 # Illustration some text some pictures in financial statements
 knitr::include_graphics("Images/lagret_tekst.png") # Kreftforeningen 2021
 ```
 
-```{r, echo=FALSE, fig.cap="Regnskogfondet 2018: The financial report saved as an image in the PDF"}
+```{r, echo=FALSE, fig.cap="Rainforest Foundation 2018: The financial report saved as an image in the PDF."}
 # Illustration some text some pictures in financial statements
 knitr::include_graphics("Images/lagret_bilde.png") # Regnskogfondet 2018
 ```
 
-## Phase 2: Exploring solutions {.smaller}
+## Phase 2: Exploring solutions
 
-At this stage, we wanted to explore alternatives to analyzing PDF
+At this stage, we wanted to explore alternatives to analysing PDF
 documents. We discussed how to do so, and concluded that we had three
-options: 
-- Financial statements in yearly report PDF documents. 
-- Webscrape Proff.no for financial statements. 
-- Webscrape the Brønnøysund registry.
+options:
+
+- Financial statements in anual report PDF documents. 
+- Web scrape Proff.no for financial statements. 
+- Web scrape the Brønnøysund registry.
 
 We divided the task among ourselves to explore whether these solutions
 were feasible or not. The first option of using PDF documents still had
 the issue of financial statements not always being published as text.
-Also, we quickly found that Proff.no disallowed webscraping on their
-website. The Brønnøysund registry did store downloadable XML documents
-of all the financial statements on their website, but we discovered that
-access to these files cost about half a million NOK.
+Also, we quickly found that Proff.no disallowed web scraping on their
+website. The Brønnøysund registry did offer API access to all the financial statements on their website, but we discovered that
+access to these data costs about half a million NOK.
 
 We started to look at workarounds for this problem. It would still be
-possible to download Proff.no HTML websites manually for each
-organization. And, we attempted to request a temporary access to the
-Brønnøysund registry's XML documents.
+possible to download Proff.no HTML web pages manually for each
+organisation. We also received access to some XML files from Statistics Norway, but this would not be a viable solution for OPX in the long term.
 
 The Brønnøysund registry and Proff.no had different divisions of
 accounting items than the ones OPX wanted. We found that we needed to
 create an item path from the webpage items to the OPX items, and we
 attempted to do so in Excel at first, so that we later could code this
-into R. While doing so, we realized that it would be practically
+into R. While doing so, we realised that it would be practically
 impossible to extract the correct sums for the OPX accounting items from
 the Brønnøysund items. This was e.g. because OPX had split the operating
 income into public and private contributions, while the Brønnøysund
 registry and Proff.no had not.
 
-```{r, echo=FALSE, fig.cap="Accounting items for Kreftforeningen 2020 and Diabetesforbunet 2020, gathered from the Brønnøysund registry", fig.align='center'}
+```{r, echo=FALSE, fig.cap="Accounting items for the Norwegian Cancer Society 2020 and the Norwegian Diabetes Association 2020, gathered from the Brønnøysund registry.", fig.align='center'}
 # Illustration brns vs OPX accounting items
 knitr::include_graphics("Images/Brns_items1.png")
 ```
 
-```{r, echo=FALSE, fig.cap="Accounting items for Kreftforeningen 2020 and Diabetesforbunet 2020, gathered from OPX", fig.align='center'}
+```{r, echo=FALSE, fig.cap="Accounting items for the Norwegian Cancer Society 2020 and the Norwegian Diabetes Association 2020, gathered from OPX.", fig.align='center'}
 # Illustration brns vs OPX accounting items
 knitr::include_graphics("Images/OPX_items1.png")
 ```
 
-```{r, echo=FALSE, fig.cap="An attempt at marrying the two sets of accounting items", fig.align='center'}
+```{r, echo=FALSE, fig.cap="An attempt at marrying the two sets of accounting items.", fig.align='center'}
 # Illustration brns vs OPX accounting items
 knitr::include_graphics("Images/Marriage.png")
 ```
 
-When also discovering that not all organizations publish their financial
+When we also discovered that not all organisations publish their financial
 statements, and certainly not for every year, we decided to give up on
 collecting financial data for OPX. This is when we moved on to the third
 and final stage.
 
-```{r, echo=FALSE, out.width="100%", fig.cap="Regnskogfondet stopped posting financial statement PDFs on their website in 2018"}
+```{r, echo=FALSE, out.width="100%", fig.cap="The Rainforest Foundation stopped posting financial statement PDFs on their website in 2018."}
 # Illustration only published for some years example
 knitr::include_graphics("Images/Regnskogfondet_stops2018.png")
 ```
 
-```{r, echo=FALSE, out.width="100%", fig.cap="Kreftforeningen started posting financial statement PDFs on their website in 2019"}
+```{r, echo=FALSE, out.width="50%", fig.cap="The Norwegian Cancer Society started posting financial statement PDFs on their website in 2019."}
 # Illustration only published for some years example
 knitr::include_graphics("Images/Kreftforeningen_starts2019.png")
 ```
 
-## Phase 3: Scrapping the scraping {.smaller}
+## Phase 3: Scrapping the scraping
 
-The OPX case requested two tasks -- webscrape financial data, and create
+The OPX case requested two tasks -- web scrape financial data, and create
 KPIs. During phase three, we scrapped all ideas and progress from the
 first two stages, and focused on creating KPIs.
 
@@ -291,23 +287,23 @@ html document.
 
 # Data collection
 
-We wanted to use webscraping to collect the data, so that we could have
+We wanted to use web scraping to collect the data, so that we could have
 automated the data input process. As described, we explored different
 potential solutions. We experimented on coding such that data could have
-been imported from XML files. However, once we realized that the
+been imported from XML files. However, once we realised that the
 financial data was of little use, this experimentation stopped.
 
 As we entered the third phase of brainstorming, we still needed some
 example data so that we could test our KPI codes. For this, we used the
 financial data that OPX had already gathered from different
-organizations and organized into useful accounting items.
+organisations and organised into useful accounting items.
 
 We copied these financial statements manually into an Excel document.
-Perhaps a "simple" solution, however our code requires OPX to import
-both an Excel document themselves into shiny, as well as a HTML document
-from Proff.no.
+Perhaps a 'simple' solution, however our code requires OPX to upload
+both an Excel document, as well as a HTML document
+from Proff.no, to the dashboard.
 
-```{r, echo=FALSE, out.width="100%", fig.cap="The data format used to upload into shiny"}
+```{r, echo=FALSE, out.width="100%", fig.cap="The data format used to upload to the dashboard."}
 # Bilde av den "endelige" excel-versjonen som brukes til å laste inn i shiny
 knitr::include_graphics("Images/Excel_final.png")
 ```
@@ -320,24 +316,17 @@ by R.
 
 # Data description
 
-Our data was gathered from OPXs own web page, and from Proff.no. As described 
-in the previous parts, we wanted to gather data from the yearly reports or by 
-scraping the Brønnøyund registry or Proff.no, but found this to be close to 
-impossible. The data used is the one that OPX has gathered themselves directly 
-from the organizations. This data was also used to test that our codes in R 
+Our data was gathered from OPX's own web page, and from Proff.no. As described 
+in the previous parts, we wanted to gather data from the annual reports or by 
+scraping the Brønnøyund registry or Proff.no, but found this to be impossible. The data used is the one that OPX has gathered themselves directly 
+from the organisations. This data was also used to test that our codes in R 
 were correct.
 
-We have also used Proff.no to visualize the annual incomes and some KPIs. 
-This is data that the organizations have reported themselves to Proff.no. 
+We have also used Proff.no to visualise the annual incomes and some KPIs. 
+This is data that the organisations have reported themselves to Proff.no. 
 Since there are no regulations regarding reporting data for NGOs in Norway, 
-the organizations have not been consistent with the data reporting. This 
-explains the holes in the presented data.
-
-<!--# Fra Visualisations (nedenfor): The plots based on data from Proff.no often demonstrate surprising lacunae, but it difficult to know where they originate -- NGO reporting, Brønnøysund, or Proff.no.-->
-
-<!--Legg inn bilder her-->
-
-<!-- # Legger inn fire grafer som viser manglende data i Proffs årsregnskap-->
+the organisations have not been consistent with the data reporting. This may 
+explain the lacunae in the presented data (see e.g. figures 9 and 10).
 
 ```{r arsresultat, echo=FALSE, fig.align='center', fig.asp=0.5, fig.cap="Net income/loss (in NOK 1,000) data for the Norwegian Cancer Society from Proff.no"}
 kreftforeningen |>
@@ -375,7 +364,7 @@ care |>
   theme(legend.position = "none")
 ```
 
-
+\newpage
 # Findings
 
 ## KPIs and visualisations
