@@ -1,4 +1,4 @@
-----
+---
 title: "Group 5 Report"
 author: "ISSSV1337 Group 5"
 date: "2022-08-03"
@@ -199,12 +199,15 @@ as tables, some as pictures, etc. This led us to phase 2.
 
 <!-- # All images need captions-->
 
-```{r, echo=FALSE, fig.cap="Need caption"}
+```{r, echo=FALSE, fig.cap="Kreftforeningen 2021: The financial report saved as text in the PDF"}
 # Illustration some text some pictures in financial statements
-knitr::include_graphics("Images/lagret_tekst.png") # Kreftforeningen 201?
-knitr::include_graphics("Images/lagret_bilde.png") # Regnskogfondet 2018
+knitr::include_graphics("Images/lagret_tekst.png") # Kreftforeningen 2021
 ```
 
+```{r, echo=FALSE, fig.cap="Regnskogfondet 2018: The financial report saved as an image in the PDF"}
+# Illustration some text some pictures in financial statements
+knitr::include_graphics("Images/lagret_bilde.png") # Regnskogfondet 2018
+```
 
 ## Phase 2: Exploring solutions {.smaller}
 
@@ -238,10 +241,18 @@ the Brønnøysund items. This was e.g. because OPX had split the operating
 income into public and private contributions, while the Brønnøysund
 registry and Proff.no had not.
 
-```{r, echo=FALSE, fig.cap="Need caption", fig.align='center'}
+```{r, echo=FALSE, fig.cap="Accounting items for Kreftforeningen 2020 and Diabetesforbunet 2020, gathered from the Brønnøysund registry", fig.align='center'}
 # Illustration brns vs OPX accounting items
-knitr::include_graphics("Images/Brns_items.png")
-knitr::include_graphics("Images/OPX_items.png")
+knitr::include_graphics("Images/Brns_items1.png")
+```
+
+```{r, echo=FALSE, fig.cap="Accounting items for Kreftforeningen 2020 and Diabetesforbunet 2020, gathered from OPX", fig.align='center'}
+# Illustration brns vs OPX accounting items
+knitr::include_graphics("Images/OPX_items1.png")
+```
+
+```{r, echo=FALSE, fig.cap="An attempt at marrying the two sets of accounting items", fig.align='center'}
+# Illustration brns vs OPX accounting items
 knitr::include_graphics("Images/Marriage.png")
 ```
 
@@ -250,12 +261,15 @@ statements, and certainly not for every year, we decided to give up on
 collecting financial data for OPX. This is when we moved on to the third
 and final stage.
 
-```{r, echo=FALSE, out.width="100%", fig.cap="Need caption"}
+```{r, echo=FALSE, out.width="100%", fig.cap="Regnskogfondet stopped posting financial statement PDFs on their website in 2018"}
 # Illustration only published for some years example
 knitr::include_graphics("Images/Regnskogfondet_stops2018.png")
-knitr::include_graphics("Images/Kreftforeningen_starts2019.png")
 ```
 
+```{r, echo=FALSE, out.width="100%", fig.cap="Kreftforeningen started posting financial statement PDFs on their website in 2019"}
+# Illustration only published for some years example
+knitr::include_graphics("Images/Kreftforeningen_starts2019.png")
+```
 
 ## Phase 3: Scrapping the scraping {.smaller}
 
@@ -293,7 +307,7 @@ Perhaps a "simple" solution, however our code requires OPX to import
 both an Excel document themselves into shiny, as well as a HTML document
 from Proff.no.
 
-```{r, echo=FALSE, out.width="100%", fig.cap="Need caption"}
+```{r, echo=FALSE, out.width="100%", fig.cap="The data format used to upload into shiny"}
 # Bilde av den "endelige" excel-versjonen som brukes til å laste inn i shiny
 knitr::include_graphics("Images/Excel_final.png")
 ```
@@ -341,51 +355,6 @@ kreftforeningen |>
   ) +
   theme_light() +
   theme(legend.position = "none")
-```
-
-```{r egenkapital, echo=FALSE, fig.align='center', fig.asp=0.5, fig.cap="Total equity/liabilities (in NOK 1,000) data for the Norwegian Cancer Society from Proff.no"}
-kreftforeningen |>
-  ggplot(aes(year, sum_egenkapital_og_gjeld, fill = balance_positive)) +
-  geom_col() +
-  scale_y_continuous(labels = scales::label_dollar(prefix = "NOK ")) +
-  scale_fill_green(kreftforeningen$balance_positive) +
-  labs(
-    x = "", y = ""
-  ) +
-  theme_light() +
-  theme(legend.position = "none")
-```
-
-```{r CEO, echo=FALSE, fig.align='center', fig.asp=0.618, fig.cap="CEO compensation data for the Norwegian Cancer Society from Proff.no"}
-kreftforeningen |>
-  # preparing for pivoting
-  select(
-    year, lederlonn, leder_annen_godtgjorelse
-  ) |>
-  # Compensation in ordinary numbers
-  mutate(
-    lederlonn = lederlonn * 1000,
-    leder_annen_godtgjorelse = leder_annen_godtgjorelse * 1000
-  ) |>
-  # renaming for the purposes of the plot
-  rename(
-    Year = year,
-    Salary = lederlonn,
-    `Other compensation` = leder_annen_godtgjorelse
-  ) |>
-  # pivoting to join the two values to use fill
-  pivot_longer(c(Salary, `Other compensation`), names_to = "Compensation") |>
-  ggplot(aes(Year, value, fill = Compensation)) +
-  geom_col() +
-  # using currency scale function to add correct currency code or ?
-  scale_y_continuous(labels = scales::label_dollar(prefix = "NOK ")) +
-  # pretty colours
-  scale_fill_met_d("Hokusai2", direction = -1) +
-  labs(
-    x = "", y = ""
-  ) +
-  theme_light() +
-  theme(legend.position = "top")
 ```
 
 ```{r care_arsresultat, echo=FALSE, fig.align='center', fig.asp=0.5, fig.cap="Net income/loss (in NOK 1,000) data for CARE Norway from Proff.no"}
