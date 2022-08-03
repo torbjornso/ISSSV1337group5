@@ -1,5 +1,5 @@
 ---
-title: "Presentasjon OPX Fiffig tittel"
+title: "Presentation: OPX"
 author: "Group 5: Aga, Amalie, Henrik, Ida, Torbjørn"
 date: "2022-08-04"
 output: 
@@ -36,31 +36,37 @@ knitr::include_graphics("Images/kpi.png")
 ## {data-background="Images/brainstorming2.png" data-background-size=cover}
 
 
-## <br> Phase 1 – how to harvest and analyze the data?
-- OPX wanted us to harvest data --> how? <br> 
-- A webcrawler? <br> 
-No: Would not work for every organization 
-- A code that could read PDF? <br> 
+## <br> How to harvest and analyze the data?
+- OPX wanted data collection to be automated <br> 
+- Webscraping? <br> 
+No: Different HTML and PDF structures
+- A code that could read PDF documents? <br> 
 Perhaps: Financial statements as text tables and as images
 
 
-## <br> Phase 2 – Exploring three options
+## <br> Exploring three options
 - 1. Reading PDFs <br>
 Issue: Not always published as text
 - 2. Webscraping from Proff.no <br>
-Issue: Proff.no does not allow webscraping
+Issue: Proff.no does not allow (automated) webscraping
 - 3. Webscraping the Brønnøysund registry <br>
-Issue: No API access, and access costs ~ kr 500K
+Issue: No API access, and access costs ~ NOK 500 000
+
+#BYTTE UT MED 1 2 3
 
 ## <br> Workarounds... 
-- Proff.no: Download HTML?
-- Brønnøysund: Request temporary access
+- Proff.no: Download the webpage as HTML document?
+- Brønnøysund: Received XML files from Statistics Norway
 
 ## <br> ... and why they did not work
-- Different accounting items used
-- Incomplete financial reporting from NGOs
+- XML not a viable long term solution for OPX 
+- Incomplete financial reporting from NGOs -- no legal obligations
+- Proff.no vs. OPX: Different accounting items used <br> <br> <br>
 
+```{r, out.height="188", out.width="500", fig.align='center'}
+knitr::include_graphics("Images/FRI.png")
 
+```
 
 ## Items Brønnøysund
 ```{r, out.height="470", out.width="800", fig.align='center'}
@@ -80,19 +86,19 @@ knitr::include_graphics("Images/fcuk.png")
 
 ```
 
-## <br> Which led us to Phase 3 – Scrapping the scraping
-- OPX wanted KPIs
+## <br> Which led us to scrapping the scraping <br>
 - Found useful KPIs
 - Created an interactive dashboard
 
 ## <br> Data collection & data description
-- Used data from OPX and Proff.no 
-- OPX: From their webpage
-- Used to create KPIs and check our codes
-- Proff.no: Downloaded HTML documents
-- Used to create visualizations
+- Proff.no: Downloaded HTML documents <br>
+Used to create visualizations
+- OPX: From their webpage <br>
+Used to create KPIs and test our codes
 
 # Dashboard
+
+## <br> <br> <br> <br> torbjornso.shinyapps.io/NGOanalysis/
 
 # Limitations and steps forward
 
@@ -101,6 +107,6 @@ knitr::include_graphics("Images/fcuk.png")
 ## {data-background="Images/tenke.png" data-background-size=cover}
 
 ## <br> Our experience
-- Unsolvable case due to non-existent data
+- Unsolvable case due to lack of accessible and relevant data
 - Hard to create credible KPIs due to limited knowledge of economics and the NGO sector
 - **Insight into real-life work challenges - the clash between what is desired and what is possible**
