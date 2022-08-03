@@ -45,14 +45,12 @@ Perhaps: Financial statements as text tables and as images
 
 
 ## <br> Exploring three options
-- 1. Reading PDFs <br>
+1. Reading PDFs <br>
 Issue: Not always published as text
-- 2. Webscraping from Proff.no <br>
+2. Webscraping from Proff.no <br>
 Issue: Proff.no does not allow (automated) webscraping
-- 3. Webscraping the Brønnøysund registry <br>
+3. Webscraping the Brønnøysund registry <br>
 Issue: No API access, and access costs ~ NOK 500 000
-
-#BYTTE UT MED 1 2 3
 
 ## <br> Workarounds... 
 - Proff.no: Download the webpage as HTML document?
@@ -104,9 +102,13 @@ Used to create KPIs and test our codes
 
 ## <iframe width="1280" height="720" src="Images/henrik.mp4" align="middle" frameborder="0" allowfullscreen></iframe>
 
-## {data-background="Images/tenke.png" data-background-size=cover}
+## {data-background="Images/upbeat_and_happy.png" data-background-size=cover}
 
 ## <br> Our experience
 - Unsolvable case due to lack of accessible and relevant data
 - Hard to create credible KPIs due to limited knowledge of economics and the NGO sector
 - **Insight into real-life work challenges - the clash between what is desired and what is possible**
+
+## <br> <br> <br> The End
+**Thank you for this opportunity!** <br> <br> <br>
+- Questions?
