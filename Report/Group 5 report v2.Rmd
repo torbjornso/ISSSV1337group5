@@ -262,7 +262,7 @@ and final stage.
 knitr::include_graphics("Images/Regnskogfondet_stops2018.png")
 ```
 
-```{r, echo=FALSE, out.width="50%", fig.cap="The Norwegian Cancer Society started posting financial statement PDFs on their website in 2019."}
+```{r, echo=FALSE, out.width="50%", fig.align='center', fig.cap="The Norwegian Cancer Society started posting financial statement PDFs on their website in 2019."}
 # Illustration only published for some years example
 knitr::include_graphics("Images/Kreftforeningen_starts2019.png")
 ```
@@ -405,6 +405,7 @@ $$\frac{\text{public grants}_2 - \text{public grants}_1}{\text{public grants}_1}
 
 ***
 
+\newpage
 - **Private/public proportion**:
   - Calculates the percentage of non-commercial or activity-based income that is derived from private contributions and membership fees as opposed to public grants:
   
