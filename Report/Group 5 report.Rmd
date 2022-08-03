@@ -483,6 +483,7 @@ If the validation is successful the files are read using the functions developed
 knitr::include_graphics("Images/Dashboard_page_1.png")
 knitr::include_graphics("Images/Dashboard_page_2.png")
 ```
+
 #### Key Performance Indicators
 
 The main section of the dashboard has a row-based layout, with a top row containing five 'value boxes' displaying KPIs derived from data in the Excel sheet, calculated and formatted in separate reactive functions. As Flexdashboard fails particularly gracelessly when errors occur with the value boxes, each function relies on some basic checks carried out by separate functions created for this purpose. In the case of both this is a simple function that checks if any of the numeric columns contain characters (in which case the data frame is probably hopelessly corrupted):
