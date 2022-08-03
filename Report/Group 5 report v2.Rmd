@@ -306,12 +306,12 @@ by R.
 
 # Data description
 
-ur data was gathered from OPXs own web page, and from Proff.no. As described 
+Our data was gathered from OPXs own web page, and from Proff.no. As described 
 in the previous parts, we wanted to gather data from the yearly reports or by 
 scraping the Brønnøyund registry or Proff.no, but found this to be close to 
 impossible. The data used is the one that OPX has gathered themselves directly 
 from the organizations. This data was also used to test that our codes in R 
-were correct. 
+were correct.
 
 We have also used Proff.no to visualize the annual incomes and some KPIs. 
 This is data that the organizations have reported themselves to Proff.no. 
