@@ -38,9 +38,9 @@ knitr::include_graphics("Images/kpi.png")
 ## <br> Phase 1 – how to harvest and analyze the data?
 - OPX wanted us to harvest data --> how? <br> 
 - A webcrawler? <br> 
-- No: Would not work for every organization <br> 
+No: Would not work for every organization 
 - A code that could read PDF? <br> 
-- Perhaps: Financial statements as text tables and as images
+Perhaps: Financial statements as text tables and as images
 
 
 ## <br> Phase 2 – Exploring three options
@@ -59,30 +59,32 @@ Issue: No API access, and access costs ~ kr 500K
 - Different accounting items used
 - Incomplete financial reporting from NGOs
 
-- **Which led us to Phase 3 - scrapping the scraping**
 
-----
+
+
+
+#brns_items
+#opx_items
+
+---- 
 ```{r, out.height="360", out.width="612", fig.align='center'}
 knitr::include_graphics("Images/fcuk.png")
 
 ```
 
-## <br> Phase 3 – Scrapping the scraping
-- OPX wanted KPIs <br>
-- Found useful KPIs <br>
+## <br> Which led us to Phase 3 – Scrapping the scraping
+- OPX wanted KPIs
+- Found useful KPIs
 - Created an interactive dashboard
 
 ## <br> Data collection & data description
-- Used data from OPX and Proff.no <br>
-- OPX: From their webpage. <br>
-- Used to create KPIs and check our codes <br>
-- Proff.no: Downloaded HTML documents. <br>
-- Used to create visualizations.
-
-# Findings
+- Used data from OPX and Proff.no 
+- OPX: From their webpage
+- Used to create KPIs and check our codes
+- Proff.no: Downloaded HTML documents
+- Used to create visualizations
 
 
-# Limitations and steps forward
 
 ## <iframe width="1280" height="720" src="Images/henrik.mp4" align="middle" frameborder="0" allowfullscreen></iframe>
 
