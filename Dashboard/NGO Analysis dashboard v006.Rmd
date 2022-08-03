@@ -5,6 +5,7 @@ output:
     orientation: rows
     vertical_layout: scroll
     theme: lumen
+    source_code: https://github.com/torbjornso/ISSSV1337group5
 runtime: shiny
 ---
 
@@ -32,7 +33,7 @@ Sidebar {.sidebar}
 
 Please upload an html copy of annual accounts from [Proff.no](https://www.proff.no) and enter the start and end years from that table.
 
-Then upload an Excel file in the set format. <!--# Need to insert link when repository is public -->
+Then upload an Excel file in the [set format](https://github.com/torbjornso/ISSSV1337group5/blob/27d1d4c25882091d6aef51956000f7ef3fefff75/Dashboard/Data/NGO_template.xltx).
 
 Click 'Analyse' to analyse the data.
 
